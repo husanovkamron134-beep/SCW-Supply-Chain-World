@@ -43,6 +43,10 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Edge capacity, lead time, cost and reliability assumptions
 - Baseline-versus-disruption scenario simulation with service level and cost impact
 
+## Phase 8 — 3D digital twin
+- Separate Three.js supply-chain scene with facility buildings, route corridors and animated demo vehicles
+- Interactive orbit/zoom, playback, reset and simulation-speed controls
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
