@@ -60,7 +60,7 @@ function optimize(ids,vehicleId){
   const A=i===0?state.hub:ordered[i-1],B=ordered[i],C=ordered[k],D=k===ordered.length-1?state.hub:ordered[k+1];
   if(distance(A,C)+distance(B,D)+0.0001<distance(A,B)+distance(C,D)){const rev=ordered.slice(i,k+1).reverse();ordered.splice(i,rev.length,...rev);improved=true}
  }}
- const km=routeDistance(ordered),fuelLitres=km*vehicle.fuelL100/100,fuelCost=fuelLitres*12500,driverCost=80000,serviceCost=ordered.length*15000,totalCost=km*vehicle.ratePerKm+driverCost+serviceCost;
+ const km=routeDistance(ordered),fuelLitres=km*vehicle.fuelL100/100,fuelCost=fuelLitres*12500,driverCost=80000,serviceCost=ordered.length*15000,totalCost=km*vehicle.ratePerKm+fuelCost+driverCost+serviceCost;
  return {vehicle,stops:ordered,loadKg,km,fuelLitres,fuelCost,driverCost,serviceCost,totalCost,costPerKg:totalCost/loadKg,estimatedHours:km/45+ordered.length*.25}
 }
 function createRoute(input){
