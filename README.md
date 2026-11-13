@@ -52,6 +52,12 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - LOT-tracked inventory transfers through the shared Phase 2 ledger
 - Dispatch staging workflow and interactive 3D rack/forklift training scene
 
+## Phase 10 — Decision intelligence and optimization
+- Explainable inventory risk scoring and days-of-cover analysis
+- Replenishment prioritization using demand forecast and supplier lead time
+- Lowest-cost capacity-feasible fleet comparison using the route optimizer
+- Baseline-versus-disruption supply-network analysis and consolidated insights
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
