@@ -1,6 +1,6 @@
 # SCW backend — Phase 11
 
-Optional FastAPI service for accounts, role-based workspace access, shared state snapshots, audit events and a server-side Gemini proxy. The existing static SCW frontend remains usable on its own; browser modules are **not yet automatically synchronized** with this API.
+Optional FastAPI service for accounts, role-based workspace access, shared state snapshots, audit events and a server-side Gemini proxy. The existing static SCW frontend remains usable on its own. `src/cloud_sync.js` adds login/register, explicit import/export choice, version-aware autosync and the authenticated Gemini proxy. Configure the frontend with the deployed API base URL in the cloud modal.
 
 ## Local run
 
