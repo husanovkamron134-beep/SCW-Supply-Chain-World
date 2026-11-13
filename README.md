@@ -58,8 +58,16 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Lowest-cost capacity-feasible fleet comparison using the route optimizer
 - Baseline-versus-disruption supply-network analysis and consolidated insights
 
+## Phase 11 — multi-user backend foundation
+- Optional FastAPI service with account registration/login and hashed passwords
+- Workspace membership with owner, admin, operator and viewer roles
+- Shared versioned JSON state snapshots with conflict detection
+- Workspace audit events and server-side Gemini API proxy (API key never goes to the browser)
+- PostgreSQL production configuration, Dockerfile and API tests
+- Existing browser-only modules remain compatible; automatic frontend synchronization is Phase 12
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
 ## Data and limitations
-All data is stored in browser localStorage. This is an educational single-browser prototype, not a production multi-user WMS/TMS. Route distances use straight-line city coordinates, not live road routing or traffic. No authentication, server database, GPS, live carrier integration or payment processing is implemented.
+Phase 1–10 browser modules still store operational data in localStorage until Phase 12 connects their adapters to the backend. The Phase 11 API provides multi-user accounts, workspaces and versioned server snapshots but does not yet migrate each module. Route distances use straight-line city coordinates, not live road routing or traffic. No GPS or live carrier integration is implemented.
