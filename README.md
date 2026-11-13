@@ -66,6 +66,13 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - PostgreSQL production configuration, Dockerfile and API tests
 - Existing browser-only modules remain compatible; automatic frontend synchronization is Phase 12
 
+## Phase 12 — frontend cloud integration
+- Added browser login/register modal and configurable backend API URL
+- Explicit choice to import local browser state to server or restore server state into browser
+- Version-aware autosync after operational localStorage changes; conflicts stop automatic writes to avoid silent overwrite
+- Gemini analysis can be requested through the authenticated server proxy; the API key remains server-side
+- Browser operational modules remain usable offline; cloud sync requires the deployed backend and an authenticated workspace
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
