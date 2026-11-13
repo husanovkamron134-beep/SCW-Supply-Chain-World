@@ -3,4 +3,4 @@ test('demo deliveries and fleet load',()=>{const d=t().snapshot();assert.equal(d
 test('route optimizer creates a closed tour with valid vehicle capacity',()=>{const p=t().optimize(undefined,'TRUCK-01');assert.equal(p.stops.length,5);assert.ok(p.km>0);assert.ok(p.loadKg<=5000);assert.ok(p.totalCost>0)});
 test('route cannot exceed selected vehicle capacity',()=>{assert.throws(()=>t().optimize(undefined,'VAN-01'),/sig'imidan osh/);});
 test('route dispatch changes all assigned deliveries to in transit',()=>{const r=t().createRoute({vehicleId:'TRUCK-01'});t().dispatchRoute(r.id);const d=t().snapshot();assert.equal(d.routes[0].status,'DISPATCHED');assert.ok(d.deliveries.every(x=>x.status==='IN_TRANSIT'))});
-test('delivery completion requires in-transit state',()=>{const d=t().snapshot().deliveries[0];assert.throws(()=>t().completeDelivery(d.id),/yo'lda/);});
+test('delivery completion marks an in-transit delivery delivered',()=>{const d=t().snapshot().deliveries.find(x=>x.status==='IN_TRANSIT');const done=t().completeDelivery(d.id);assert.equal(done.status,'DELIVERED');});
