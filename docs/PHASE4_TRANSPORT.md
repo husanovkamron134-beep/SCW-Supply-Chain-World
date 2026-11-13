@@ -7,7 +7,7 @@
 - Nearest-neighbour construction followed by 2-opt local improvement.
 - Vehicle capacity validation before a route is created.
 - Route dispatch and delivery status progression: PENDING → IN_TRANSIT → DELIVERED.
-- Cost estimate includes distance tariff, fixed driver allowance and per-stop service cost; fuel litres and fuel cost are shown separately.
+- Cost estimate includes distance tariff, estimated fuel expense, fixed driver allowance and per-stop service cost. Fuel use and its estimated value are shown as a separate breakdown.
 
 ## Distance and cost assumptions
 Coordinates are demo city-centre coordinates. Distances use Haversine great-circle distance, including return to the hub. This is a learning estimate, not road-network distance, navigation, traffic-aware ETA or a carrier quote. Fuel consumption is a vehicle-class assumption; the displayed fuel cost uses a configurable-in-code training assumption of 12,500 UZS/litre.
