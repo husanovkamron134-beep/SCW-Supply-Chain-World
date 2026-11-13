@@ -12,18 +12,22 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Receiving, issue and inter-location transfer transactions
 - Movement ledger with timestamps and references
 - Location utilization and minimum-stock warnings
-- One-time migration from Phase 1 browser inventory data
 
 ## Phase 3 — Procurement and fulfilment
 - Supplier master data and purchase orders (PO)
 - Partial and complete PO receiving, LOT capture and discrepancy notes
-- Customer sales orders (SO)
-- Validated picking against SKU + location + LOT stock
-- Packing and dispatch workflow with carrier/tracking reference
-- Dispatch posts an inventory issue transaction to the Phase 2 audit ledger
+- Customer sales orders (SO), validated picking, packing and dispatch
+- Dispatch posts inventory issue to the Phase 2 movement ledger
+
+## Phase 4 — Transport and route planning
+- Demo fleet with payload capacities and operating assumptions
+- Delivery tasks and vehicle capacity checks
+- Nearest-neighbour route construction with 2-opt improvement
+- Route dispatch and delivery status tracking
+- Estimated distance, fuel use and transport cost breakdown
 
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
 ## Data and limitations
-Data is stored in browser localStorage. This is a single-browser educational prototype, not a multi-user production WMS/ERP. No authentication, server database, EDI, live carrier integration, tax/accounting, or real purchase payments are implemented.
+All data is stored in browser localStorage. This is an educational single-browser prototype, not a production multi-user WMS/TMS. Route distances use straight-line city coordinates, not live road routing or traffic. No authentication, server database, GPS, live carrier integration or payment processing is implemented.
