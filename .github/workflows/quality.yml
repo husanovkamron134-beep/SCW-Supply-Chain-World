@@ -12,9 +12,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Check inventory domain syntax
-        run: node --check src/domain.js
-      - name: Check operations domain syntax
-        run: node --check src/operations.js
+      - name: Check domain syntax
+        run: node --check src/domain.js && node --check src/operations.js && node --check src/transport.js
       - name: Run domain tests
         run: node --test tests/*.test.js
