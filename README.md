@@ -47,6 +47,11 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Separate Three.js supply-chain scene with facility buildings, route corridors and animated demo vehicles
 - Interactive orbit/zoom, playback, reset and simulation-speed controls
 
+## Phase 9 — Advanced warehouse simulation
+- Putaway and picking task generation from receiving stock and new sales orders
+- LOT-tracked inventory transfers through the shared Phase 2 ledger
+- Dispatch staging workflow and interactive 3D rack/forklift training scene
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
