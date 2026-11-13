@@ -26,7 +26,10 @@ async function loadCloudState(){
   if(!ws){setStatus("Ish maydoni topilmadi.","error");return}
   sessionStorage.setItem(WORKSPACE_KEY,ws.id);$("cloudAccountName").textContent=$("cloudAccountName").textContent.split(" · ")[0]+" · "+ws.name;
   const remote=await api("/api/workspaces/"+ws.id+"/state");
+  const previousVersion=Number(sessionStorage.getItem(VERSION_KEY)||0),wasReady=sessionStorage.getItem(READY_KEY)==="1";
   version=remote.version;sessionStorage.setItem(VERSION_KEY,String(version));
+  if(wasReady&&previousVersion===remote.version){ready=true;conflicted=false;$("cloudPull").hidden=true;$("cloudPush").hidden=true;setStatus("Bulut sinxronizatsiyasi faol · server versiyasi "+version,"ok");return}
+  if(wasReady&&previousVersion!==remote.version){conflicted=true;ready=false}
   const local=localSnapshot();
   if(hasData(remote.data)){setStatus("Serverda "+Object.keys(remote.data).length+" ta ma’lumot bo‘limi bor. Qaysi nusxani ishlatishni tanlang: serverdan olish yoki brauzerdagini serverga yuborish.","warn");$("cloudPull").hidden=false;$("cloudPush").hidden=false;ready=false}
   else{setStatus("Yangi ish maydoni. Brauzerdagi demo ma’lumotlarni serverga birinchi marta yuklashingiz mumkin.","warn");$("cloudPull").hidden=true;$("cloudPush").hidden=false;ready=false}
