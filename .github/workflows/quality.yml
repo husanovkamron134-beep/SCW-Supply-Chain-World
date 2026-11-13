@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 20
       - name: Check domain syntax
-        run: node --check src/domain.js && node --check src/operations.js && node --check src/transport.js && node --check src/production.js && node --check src/planning.js && node --check src/network.js && node --check src/digital_twin.js && node --check src/warehouse_sim.js && node --check src/intelligence.js
+        run: node --check src/domain.js && node --check src/operations.js && node --check src/transport.js && node --check src/production.js && node --check src/planning.js && node --check src/network.js && node --check src/digital_twin.js && node --check src/warehouse_sim.js && node --check src/intelligence.js && node --check src/cloud_sync.js
       - name: Run domain tests
         run: node --test tests/*.test.js
 
