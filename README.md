@@ -38,6 +38,11 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Reorder point and suggested purchase quantity using lead time, on-hand stock and open purchase orders
 - User-approved purchase order creation through the procurement module
 
+## Phase 7 — Supply chain network and digital twin
+- Directed network of suppliers, factory, central warehouse, distribution centres and customers
+- Edge capacity, lead time, cost and reliability assumptions
+- Baseline-versus-disruption scenario simulation with service level and cost impact
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
