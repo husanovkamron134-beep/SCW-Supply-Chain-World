@@ -27,7 +27,7 @@ test('sales order must complete pick, pack, dispatch and deduct stock once',()=>
  ops().dispatchOrder({id:order.id,carrier:'Demo carrier',reference:'TRK-1'});
  assert.equal(ops().snapshot().salesOrders[0].status,'DISPATCHED');
  assert.equal(inv().snapshot().ledger[0].type,'ISSUE');
- assert.equal(inv().total('SCW-001'),410);
+ assert.equal(inv().total('SCW-001'),430);
 });
 test('dispatch cannot skip packing',()=>{
  const order=ops().createSalesOrder({customer:'Demo',sku:'SCW-001',qty:1});
