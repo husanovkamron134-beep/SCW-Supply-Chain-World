@@ -1,0 +1,22 @@
+name: SCW quality checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  inventory-domain-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check domain module syntax
+        run: node --check src/domain.js
+      - name: Run inventory domain tests
+        run: node --test tests/domain.test.js
