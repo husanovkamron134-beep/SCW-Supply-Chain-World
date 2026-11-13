@@ -16,16 +16,16 @@ async function api(path,options){const response=await fetch(url(path),{...option
 function showAuth(){ $("cloudModal").classList.add("open"); $("cloudModal").setAttribute("aria-hidden","false");}
 function hideAuth(){ $("cloudModal").classList.remove("open"); $("cloudModal").setAttribute("aria-hidden","true");}
 function setAuthenticated(user,ws){sessionStorage.setItem(TOKEN_KEY,user.access_token);if(ws)sessionStorage.setItem(WORKSPACE_KEY,ws.id);version=0;sessionStorage.setItem(VERSION_KEY,"0");sessionStorage.removeItem(READY_KEY);ready=false;renderAccount(user.user||user,ws);loadCloudState();}
-function renderAccount(user,ws){const box=$("cloudAccount");if(!box)return;box.hidden=false;$("cloudAuthForm").hidden=true;$("cloudAccountName").textContent=(user.email||"Hisob")+(ws?" · "+ws.name:"");$("cloudActions").hidden=false;$("cloudAi").hidden=false;$("cloudOpen").textContent="Bulut: ulangan"}
+function renderAccount(user,ws){const box=$("cloudAccount");if(!box)return;box.hidden=false;$("cloudAuthForm").hidden=true;$("cloudAccountName").textContent=(user.email||"Hisob")+(ws?" · "+ws.name:"");$("cloudActions").hidden=false;$("cloudMembers").hidden=false;$("cloudAi").hidden=false;$("cloudOpen").textContent="Bulut: ulangan"}
 function renderLoggedOut(){sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(WORKSPACE_KEY);sessionStorage.removeItem(VERSION_KEY);sessionStorage.removeItem(READY_KEY);version=0;ready=false;conflicted=false;$("cloudAccount").hidden=true;$("cloudAuthForm").hidden=false;$("cloudActions").hidden=true;$("cloudAi").hidden=true;$("cloudOpen").textContent="Kirish / Bulut";setStatus("API manzilini kiriting va hisobga kiring.","info")}
-async function loadCloudState(){
+async function loadMembers(){try{const rows=await api("/api/workspaces/"+workspace()+"/members"),list=$("cloudMemberList");list.replaceChildren();rows.forEach(row=>{const item=document.createElement("div");item.className="cloud-status";item.style.margin="0";item.textContent=row.email+" · "+row.role;list.appendChild(item)})}catch(e){setStatus("A’zolar ro‘yxati: "+e.message,"error")}}\nasync function addMember(){const email=$("cloudMemberEmail").value.trim(),role=$("cloudMemberRole").value;if(!email){setStatus("A’zo emailini kiriting.","error");return}try{await api("/api/workspaces/"+workspace()+"/members",{method:"POST",body:JSON.stringify({email,role})});$("cloudMemberEmail").value="";setStatus("Foydalanuvchi ish maydoniga qo‘shildi.","ok");await loadMembers()}catch(e){setStatus("A’zo qo‘shilmadi: "+e.message,"error")}}\nasync function loadCloudState(){
  try{
   const workspaces=await api("/api/workspaces");
   if(!workspace()&&workspaces.length)sessionStorage.setItem(WORKSPACE_KEY,workspaces[0].id);
   const ws=workspaces.find(x=>x.id===workspace())||workspaces[0];
   if(!ws){setStatus("Ish maydoni topilmadi.","error");return}
   sessionStorage.setItem(WORKSPACE_KEY,ws.id);$("cloudAccountName").textContent=$("cloudAccountName").textContent.split(" · ")[0]+" · "+ws.name;
-  const remote=await api("/api/workspaces/"+ws.id+"/state");
+  const remote=await api("/api/workspaces/"+ws.id+"/state");await loadMembers();
   const previousVersion=Number(sessionStorage.getItem(VERSION_KEY)||0),wasReady=sessionStorage.getItem(READY_KEY)==="1";
   version=remote.version;sessionStorage.setItem(VERSION_KEY,String(version));
   if(wasReady&&previousVersion===remote.version){ready=true;conflicted=false;$("cloudPull").hidden=true;$("cloudPush").hidden=true;setStatus("Bulut sinxronizatsiyasi faol · server versiyasi "+version,"ok");return}
@@ -69,7 +69,7 @@ function init(){
  $("cloudPush").addEventListener("click",pushToServer);
  $("cloudSync").addEventListener("click",syncNow);
  $("cloudLogout").addEventListener("click",()=>{renderLoggedOut();setStatus("Hisobdan chiqildi.","info")});
- $("cloudAiRun").addEventListener("click",runAI);
+ $("cloudAiRun").addEventListener("click",runAI);$("cloudAddMember").addEventListener("click",addMember);
  $("cloudApiBase").addEventListener("change",()=>{apiBase=$("cloudApiBase").value.trim().replace(/\/$/,"");localStorage.setItem(API_KEY,apiBase)});
  $("cloudModal").addEventListener("click",e=>{if(e.target===$("cloudModal"))hideAuth()});
  const original=Storage.prototype.setItem;
