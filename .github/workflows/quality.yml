@@ -13,6 +13,6 @@ jobs:
         with:
           node-version: 20
       - name: Check domain syntax
-        run: node --check src/domain.js && node --check src/operations.js && node --check src/transport.js
+        run: node --check src/domain.js && node --check src/operations.js && node --check src/transport.js && node --check src/production.js
       - name: Run domain tests
         run: node --test tests/*.test.js
