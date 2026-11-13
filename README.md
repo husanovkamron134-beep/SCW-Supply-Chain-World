@@ -26,7 +26,7 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Route dispatch and delivery status tracking
 - Estimated distance, fuel use and transport cost breakdown
 
-## Run
+## Phase 5 — Production planning and execution\n- Demo BOM and component requirements for finished goods\n- Production orders with work-centre capacity checks and estimated time/cost\n- Raw materials consumed from the shared inventory lot ledger at production start\n- Finished goods received into the same inventory ledger at completion\n\n## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
 ## Data and limitations
