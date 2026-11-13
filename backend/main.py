@@ -190,6 +190,8 @@ def create_app(database_url: str | None = None, jwt_secret: str | None = None) -
 
     @app.post("/api/auth/login")
     def login(body: LoginIn, db: Session = Depends(db_session)):
+        if not secret or len(secret) < 32:
+            raise HTTPException(503, "Server JWT secret sozlanmagan.")
         user = db.scalar(select(User).where(User.email == body.email.strip().lower()))
         if not user or not PASSWORD_HASHER.verify(body.password, user.password_hash):
             raise HTTPException(401, "Email yoki parol noto'g'ri.")
