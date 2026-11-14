@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09111f"><meta name="description" content="SCW — Bullwhip effekti: ta’minot zanjiri o‘quv o‘yini (Beer Distribution Game)">
+<title>SCW — Bullwhip o‘yini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#09111f;--panel:#101b2d;--line:#26374e;--muted:#91a2b9;--text:#edf4ff;--blue:#56a8ff;--cyan:#52d6d0;--gold:#f0bd67;--green:#61d6a5;--red:#ff777e}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 65% -15%,#18375a 0,transparent 42%),var(--bg);color:var(--text);font-family:"DM Sans",sans-serif}
+.app{max-width:1100px;margin:auto;padding:18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#5fb8ff,#2460b7);display:grid;place-items:center;font:700 17px "Space Grotesk";box-shadow:0 8px 25px #2563a755}
+.brand h1{font:700 18px "Space Grotesk";margin:0}
+.brand small,.muted{color:var(--muted);font-size:12px}
+.head{margin:3px 2px 15px}
+.eyebrow{color:var(--cyan);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+.head h2{font:700 clamp(22px,3vw,30px) "Space Grotesk";margin:5px 0}
+.head p{margin:0;color:var(--muted);font-size:12px}
+.panel,.metric{background:linear-gradient(160deg,#122036,#0e1929);border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 35px #0002}
+.panel{padding:15px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.panel h3{font:600 14px "Space Grotesk";margin:0}
+.sub{font-size:10px;color:var(--muted)}
+.btn{border:1px solid #315174;background:#183252;color:#eaf4ff;padding:10px 13px;border-radius:10px;cursor:pointer;font-weight:700;text-decoration:none;font-size:14px;font-family:inherit}
+.btn.primary{background:linear-gradient(135deg,#2675c7,#2359a4);border-color:#438bd1}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:14px}
+.metric{padding:14px}
+.metric small{color:var(--muted)}
+.metric strong{display:block;font:700 24px "Space Grotesk";margin:8px 0 3px}
+.good{color:var(--green);font-size:11px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.card{padding:14px;border-radius:14px;background:#101e31;border:1px solid #243750}
+.card h4{margin:0 0 7px;font:600 13px "Space Grotesk"}
+.card p{margin:0;color:#9fb0c6;font-size:11px;line-height:1.6}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:300px;font-size:11px}
+th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #26374d}
+th{color:#8297b1}td{color:#d5e2f1}
+.field{display:grid;gap:6px;margin:10px 0}
+.field label{font-size:11px;color:#a9bbd0}
+.field input{width:100%;accent-color:#55aaff;background:#0a1523;border:1px solid #33465e;color:white;border-radius:9px;padding:10px;font-size:14px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#183c39;border:1px solid #3c8b76;color:#d8fff0;padding:10px 15px;border-radius:10px;font-size:12px;opacity:0;transition:.25s;z-index:9;max-width:92vw}
+.toast.show{opacity:1}
+@media(max-width:650px){.app{padding:10px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:11px}.metric strong{font-size:21px}.two{grid-template-columns:1fr}.panel{padding:12px}}
+</style>
+</head>
+<body><div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><h1>SUPPLY CHAIN WORLD</h1><small>Logistika va ombor boshqaruvi laboratoriyasi</small></div></div><a class="btn" href="index.html">← SCW platformasi</a></header>
+<section class="head"><div class="eyebrow">SUPPLY CHAIN GAME</div><h2>Bullwhip effekti simulyatori</h2><p>Talab o‘zgarishi zanjir bo‘ylab qanday kuchayishini o‘zingiz boshdan kechiring.</p></section>
+<main id="bullwhipApp"></main>
+</div><div class="toast" id="toast"></div>
+<script>function notify(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2600)}</script>
+<script src="src/bullwhip.js"></script>
+<script src="src/bullwhip_ui.js"></script>
+<script>renderBullwhip();</script>
+</body>
+</html>

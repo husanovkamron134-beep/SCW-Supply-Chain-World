@@ -3,9 +3,34 @@
 Interaktiv Beer Distribution Game: 4 bosqichli ta’minot zanjirida (Chakana sotuvchi → Ulgurji sotuvchi → Distribyutor → Zavod) talabning bir martalik o‘zgarishi buyurtmalar tebranishini qanday kuchaytirishini ko‘rsatadi.
 
 ## Fayllar
+- `bullwhip.html` — mustaqil sahifa (SCW uslubida). Brauzerda ochish kifoya; `index.html`ni o‘zgartirish shart emas.
 - `src/bullwhip.js` — mexanika (`window.SCWBullwhip`): `newGame`, `play`, `autoPlay`, `summary`, `benchmark`.
 - `src/bullwhip_ui.js` — interfeys (`window.renderBullwhip`), `#bullwhipApp` ichiga chiziladi.
 - `tests/bullwhip.test.js` — mexanika testlari (`node --test tests/*.test.js`).
+
+## Ishga tushirish
+`bullwhip.html` faylini oching. Sahifa `src/bullwhip.js` va `src/bullwhip_ui.js` ni yuklaydi.
+
+## Asosiy ilovaga (`index.html`) yon menyu orqali ulash
+Bu to‘rt o‘zgartirish bullwhip o‘yinini SCW yon menyusiga qo‘shadi. Har biri `index.html` ichida bir marta uchraydigan joyga qo‘yiladi.
+
+1. Yon menyuda `<button class="nav" data-page="academy">` oldiga qo‘shing:
+   ```html
+   <button class="nav" data-page="bullwhip">⟲ &nbsp; Bullwhip o‘yini</button>
+   ```
+2. `<section class="section" id="academy">` oldiga qo‘shing:
+   ```html
+   <section class="section" id="bullwhip"><div class="head"><div><div class="eyebrow">SUPPLY CHAIN GAME</div><h2>Bullwhip effekti simulyatori</h2><p>Talab o‘zgarishi zanjir bo‘ylab qanday kuchayishini o‘zingiz boshdan kechiring.</p></div></div><div id="bullwhipApp"></div></section>
+   ```
+3. `<script src="src/cloud_sync.js"></script>` dan keyin qo‘shing:
+   ```html
+   <script src="src/bullwhip.js"></script>
+   <script src="src/bullwhip_ui.js"></script>
+   ```
+4. Sahifa almashtirish qismida (`document.querySelectorAll(".nav")...` bloki oxirida) `if(b.dataset.page==="intelligence")runIntelligence()` dan keyin qo‘shing:
+   ```js
+   ;if(b.dataset.page==="bullwhip")renderBullwhip()
+   ```
 
 ## Qoidalar
 - Buyurtma 2 raundda yetkazib beruvchiga yetadi, jo‘natma 2 raundda qaytadi.
