@@ -117,13 +117,13 @@ def create_app(database_url: str | None = None, jwt_secret: str | None = None) -
     Base.metadata.create_all(engine)
     secret = jwt_secret or JWT_SECRET
 
-    app = FastAPI(title="SCW Multi-user API", version="0.11.0")
+    app = FastAPI(title="SCW Multi-user API", version="0.14.0")
     allowed = [x.strip() for x in os.getenv("SCW_CORS_ORIGINS", "*").split(",") if x.strip()]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed,
         allow_credentials=allowed != ["*"],
-        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
     )
 
@@ -312,6 +312,12 @@ def create_app(database_url: str | None = None, jwt_secret: str | None = None) -
                           action="ai.analysis", detail=f"model={model}"))
         db.commit()
         return {"model": model, "answer": answer}
+
+    try:
+        from competition import install as install_competition
+    except ImportError:  # paket sifatida ishga tushirilganda
+        from .competition import install as install_competition
+    install_competition(app, db_session, current_user, token_for, PASSWORD_HASHER, User, engine)
 
     return app
 

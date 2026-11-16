@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09111f"><meta name="description" content="SCW — Musobaqa: talabalar, jamoalar, case topshiriqlar va baholash">
+<title>SCW — Musobaqa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#09111f;--panel:#101b2d;--line:#26374e;--muted:#91a2b9;--text:#edf4ff;--blue:#56a8ff;--cyan:#52d6d0;--gold:#f0bd67;--green:#61d6a5;--red:#ff777e}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 65% -15%,#18375a 0,transparent 42%),var(--bg);color:var(--text);font-family:"DM Sans",sans-serif}
+.app{max-width:1200px;margin:auto;padding:18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#5fb8ff,#2460b7);display:grid;place-items:center;font:700 17px "Space Grotesk";box-shadow:0 8px 25px #2563a755}
+.brand h1{font:700 18px "Space Grotesk";margin:0}
+.brand small,.muted{color:var(--muted);font-size:12px}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.head{margin:3px 2px 15px}
+.eyebrow{color:var(--cyan);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+.head h2{font:700 clamp(22px,3vw,30px) "Space Grotesk";margin:5px 0}
+.head p{margin:0;color:var(--muted);font-size:12px}
+.panel,.metric{background:linear-gradient(160deg,#122036,#0e1929);border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 35px #0002}
+.panel{padding:15px;min-width:0;margin-bottom:13px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.panel h3{font:600 14px "Space Grotesk";margin:0}
+.sub{font-size:10px;color:var(--muted)}
+.btn{border:1px solid #315174;background:#183252;color:#eaf4ff;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:700;text-decoration:none;font-size:13px;font-family:inherit}
+.btn.primary{background:linear-gradient(135deg,#2675c7,#2359a4);border-color:#438bd1}
+.btn.danger{background:#4a2330;border-color:#9b4d57}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:14px}
+.metric{padding:14px}
+.metric small{color:var(--muted)}
+.metric strong{display:block;font:700 22px "Space Grotesk";margin:8px 0 3px;overflow-wrap:anywhere}
+.good{color:var(--green);font-size:11px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.card{padding:14px;border-radius:14px;background:#101e31;border:1px solid #243750;margin-bottom:10px}
+.card h4{margin:0 0 7px;font:600 13px "Space Grotesk"}
+.card p,.card li{color:#b6c6da;font-size:12px;line-height:1.6;margin:3px 0}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:420px;font-size:12px}
+th,td{text-align:left;padding:9px;border-bottom:1px solid #26374d;vertical-align:top}
+th{color:#8297b1;font-weight:600}td{color:#d5e2f1}
+.field{display:grid;gap:6px;margin:10px 0}
+.field label{font-size:11px;color:#a9bbd0}
+input,select,textarea{width:100%;background:#0a1523;border:1px solid #33465e;color:white;border-radius:9px;padding:9px;font-size:13px;font-family:inherit}
+td input,td select{padding:6px;width:auto;min-width:70px}
+textarea{min-height:110px;resize:vertical}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{background:#101e31;border:1px solid #243750;color:#aebed0;padding:8px 13px;border-radius:99px;cursor:pointer;font-size:13px;font-family:inherit}
+.tab.on{background:#1b3453;color:white;border-color:#438bd1}
+.badge{display:inline-block;border-radius:99px;padding:3px 9px;font-size:10px;font-weight:700;background:#193c36;color:#83e0b8}
+.badge.warn{background:#44391b;color:#f2d49b}.badge.bad{background:#4a2330;color:#ffc0c5}.badge.info{background:#1b3453;color:#9dd6ff}
+.code{font:700 26px "Space Grotesk";letter-spacing:5px;color:var(--gold)}
+.problem{color:#ffc0c5;font-size:12px;margin:4px 0}
+.ok{color:var(--green)}.bad{color:var(--red)}
+pre.ans{white-space:pre-wrap;background:#0a1523;border:1px solid #33465e;border-radius:9px;padding:10px;font:12px/1.5 inherit;max-height:260px;overflow:auto;margin:6px 0}
+details summary{cursor:pointer;color:var(--blue);font-size:12px;margin:6px 0}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#183c39;border:1px solid #3c8b76;color:#d8fff0;padding:10px 15px;border-radius:10px;font-size:12px;opacity:0;transition:.25s;z-index:9;max-width:92vw}
+.toast.show{opacity:1}.toast.err{background:#4a2330;border-color:#9b4d57;color:#ffd7db}
+@media(max-width:700px){.app{padding:10px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}.panel{padding:12px}}
+</style>
+</head>
+<body><div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><h1>SUPPLY CHAIN WORLD</h1><small>Musobaqa va baholash tizimi</small></div></div>
+<div class="row"><a class="btn" href="index.html">← SCW platformasi</a><a class="btn" href="bullwhip.html">Bullwhip o‘yini</a><span id="who" class="muted"></span><button class="btn" id="logoutBtn" style="display:none" data-act="logout">Chiqish</button></div></header>
+<main id="root"></main>
+</div><div class="toast" id="toast"></div>
+<script src="src/competition_ui.js"></script>
+</body>
+</html>
