@@ -73,6 +73,12 @@ SCW is a browser-first supply chain and warehouse learning platform.
 - Gemini analysis can be requested through the authenticated server proxy; the API key remains server-side
 - Browser operational modules remain usable offline; cloud sync requires the deployed backend and an authenticated workspace
 
+## Phase 14 — Musobaqa va baholash tizimi
+- O'qituvchi/talaba hisoblari, sinf kodi, 2–4 teng jamoa va 5 rol (server bilan)
+- Individual case topshiriqlar: 100 ballik rubrika, tasdiqlash yoki fikr bilan qaytarish
+- Har raund operatsion qarorlar va KPI simulyatsiyasi; jamoaviy va individual reyting (Case×0.5 + Qarorlar×0.5)
+- `competition.html`, `backend/competition*.py` (docs/PHASE14_COMPETITION.md)
+
 ## Run
 Open `index.html` in a modern browser. An internet connection is required for the 3D and font CDN resources.
 
