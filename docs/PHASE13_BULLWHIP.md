@@ -4,7 +4,7 @@ Interaktiv Beer Distribution Game: 4 bosqichli ta’minot zanjirida (Chakana sot
 
 ## Fayllar
 - `bullwhip.html` — mustaqil sahifa (SCW uslubida). Brauzerda ochish kifoya; `index.html`ni o‘zgartirish shart emas.
-- `src/bullwhip.js` — mexanika (`window.SCWBullwhip`): `newGame`, `play`, `autoPlay`, `summary`, `benchmark`.
+- `src/bullwhip.js` — mexanika (`window.SCWBullwhip`): `newGame`, `play`, `autoPlay`, `summary`, `benchmark`, `presets`, `resultCode`, `replay`, `classReport`.
 - `src/bullwhip_ui.js` — interfeys (`window.renderBullwhip`), `#bullwhipApp` ichiga chiziladi.
 - `tests/bullwhip.test.js` — mexanika testlari (`node --test tests/*.test.js`).
 
@@ -38,6 +38,13 @@ Bu to‘rt o‘zgartirish bullwhip o‘yinini SCW yon menyusiga qo‘shadi. Har 
 - Talab 4 dona/raund; 4–7-raundlar orasida bir marta +2…+9 ga o‘sadi. Ssenariy kodi (seed) bir xil bo‘lsa, talab o‘zgarishi ham bir xil bo‘ladi.
 - O‘yinchi bitta rolni boshqaradi; qolgan rollar avtomatik qoida bo‘yicha buyurtma beradi (prognoz + zaxira tuzatishi + yo‘ldagi yukni qisman hisobga olish).
 - Yakunda: buyurtmalar grafigi, bosqichlar bo‘yicha tebranish (σ) va talabga nisbati, xarajat, avtomatik rejim bilan taqqoslash, muhokama savollari, CSV eksport.
+
+## Sinf rejimi (20 o‘quvchi)
+- **Yakka rejim:** har bir o‘quvchi o‘z telefonida o‘ynaydi (1 rol, qolganlari avtomatik). 20 ta tayyor ssenariy (`presets`) bor — har bir o‘quvchiga o‘z raqami bo‘yicha ssenariy bering; talab o‘zgarishi hammada har xil bo‘ladi.
+- **Guruh rejimi:** 4 kishi bitta qurilmada (4 rol), har bir rol uchun «qurilmani uzating» ekrani bor — boshqalar raqamlarni ko‘rmaydi. 20 o‘quvchi = 5 guruh × 4.
+- **Natija kodi:** o‘yin tugagach `SCW1~ism~ssenariy~raundlar~rejim~rol~buyurtmalar~nazorat` ko‘rinishidagi kod beriladi; o‘quvchi uni o‘qituvchiga yuboradi.
+- **O‘qituvchi paneli:** kodlar ro‘yxati qo‘yiladi, panel har bir o‘yinni qayta o‘ynab xarajatni o‘zi hisoblaydi (kodni qo‘lda o‘zgartirsa, nazorat belgisi mos kelmaydi). Reyting avtomatik qoidadan farq bo‘yicha (turli ssenariylar adolatli taqqoslanadi); sinf bo‘yicha o‘rtacha bullwhip kuchayishi ko‘rsatiladi.
+- Cheklov: nazorat belgisi — tasodifiy xatoni aniqlaydi, qasddan soxtalashtirishdan to‘liq himoya qilmaydi (kod ichidagi buyurtmalarni qayta yozib, belgisini ham hisoblash mumkin). Sinfda har kimga alohida ssenariy berish ko‘chirishni qiyinlashtiradi.
 
 ## Cheklovlar
 Bu o‘quv modeli: real ta’minot zanjiri ma’lumotlari ishlatilmaydi, ma’lumotlar saqlanmaydi (sahifa yangilansa o‘yin tugaydi). Avtomatik qoida parametrlari (`FORECAST_SMOOTHING`, `STOCK_ADJUST`, `SUPPLY_LINE_ADJUST`) o‘quv maqsadida tanlangan.
