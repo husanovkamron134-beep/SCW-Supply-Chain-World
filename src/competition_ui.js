@@ -5,7 +5,8 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s===null||s===undefined?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const store={get(k){try{return window.localStorage.getItem(k)}catch(e){return null}},set(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}};
 const sess={get(k){try{return window.sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{v===null?window.sessionStorage.removeItem(k):window.sessionStorage.setItem(k,v)}catch(e){}}};
-const S={base:store.get("scw-comp-base")||"",token:sess.get("scw-comp-token")||"",me:null,list:[],cid:null,tab:"assign",
+const DEFAULT_API="https://scw-supply-chain-world.onrender.com";
+const S={base:store.get("scw-comp-base")||DEFAULT_API,token:sess.get("scw-comp-token")||"",me:null,list:[],cid:null,tab:"assign",
  ov:null,tasks:[],decs:[],teams:[],studs:[],fin:null,round:null,review:null,my:null,authMode:"login"};
 const ROLE_FIELD={procurement:"order_qty",supplier:"supplier",production:"production_qty",warehouse:"safety_stock",transport:"mode"};
 const ROLE_NAMES={procurement:"Procurement Manager",supplier:"Supplier Manager",production:"Production Manager",warehouse:"Warehouse Manager",transport:"Transport Manager"};
@@ -63,11 +64,11 @@ function badge(map,key){const m=map[key]||[key,"info"];return "<span class=\"bad
 function viewAuth(){
  const reg=S.authMode==="register";
  return "<div class=\"panel\" style=\"max-width:520px;margin:20px auto\"><div class=\"panel-head\"><h3>"+(reg?"Ro‘yxatdan o‘tish":"Tizimga kirish")+"</h3><span class=\"sub\">SCW MUSOBAQA</span></div>"+
-  "<div class=\"field\"><label>Backend API manzili</label><input id=\"apiBase\" placeholder=\"https://scw-api.example.com\" value=\""+esc(S.base)+"\"></div>"+
-  (reg?"<div class=\"field\"><label>Siz kimsiz?</label><select id=\"kind\"><option value=\"student\">Talaba</option><option value=\"teacher\">O‘qituvchi</option></select></div><div class=\"field\"><label>To‘liq ism</label><input id=\"fullName\" maxlength=\"100\"></div>":"")+
+  "<details><summary>Server manzili (odatda o‘zgartirish shart emas)</summary><div class=\"field\"><input id=\"apiBase\" placeholder=\"https://scw-api.example.com\" value=\""+esc(S.base)+"\"></div></details>"+
+  (reg?"<div class=\"field\"><label>Siz kimsiz?</label><select id=\"kind\" data-change=\"kind\"><option value=\"student\">Talaba</option><option value=\"teacher\">O‘qituvchi</option></select></div><div class=\"field\"><label>To‘liq ism</label><input id=\"fullName\" maxlength=\"100\"></div>":"")+
   "<div class=\"field\"><label>Email</label><input id=\"email\" type=\"email\" autocomplete=\"username\"></div>"+
   "<div class=\"field\"><label>Parol (kamida 10 belgi)</label><input id=\"password\" type=\"password\" autocomplete=\"current-password\"></div>"+
-  (reg?"<div class=\"field\" id=\"inviteBox\" style=\"display:none\"><label>O‘qituvchi taklif kodi (agar server talab qilsa)</label><input id=\"invite\"></div>":"")+
+  (reg?"<div class=\"field\" id=\"inviteBox\" style=\"display:none\"><label>O‘qituvchi taklif kodi (faqat o‘qituvchilar uchun)</label><input id=\"invite\"></div>":"")+
   "<div class=\"row\"><button class=\"btn primary\" data-act=\""+(reg?"register":"login")+"\">"+(reg?"Ro‘yxatdan o‘tish":"Kirish")+"</button><button class=\"btn\" data-act=\"authMode\">"+(reg?"Hisobim bor":"Yangi hisob")+"</button></div></div>";
 }
 function viewHome(){
@@ -256,6 +257,7 @@ const ACT={
  },
 };
 const CHANGE={
+ kind(id,value){const b=$("inviteBox");if(b)b.style.display=value==="teacher"?"":"none"},
  async setTeam(id,value){await api("PATCH",P("/enrollments/"+id),{set_team:true,team_id:value||null});await reload();render()},
  async setRole(id,value){await api("PATCH",P("/enrollments/"+id),{set_role:true,role:value||null});await reload();render()},
 };
