@@ -101,7 +101,92 @@ def make_case(role: str, seed: str) -> dict[str, Any]:
     if role not in ROLES:
         raise ValueError("Noma'lum rol.")
     rng = random.Random(f"case:{seed}:{role}")
-    return globals()[f"_case_{role}"](rng)
+    return _attach_fields(role, globals()[f"_case_{role}"](rng))
+
+
+def _attach_fields(role: str, case: dict[str, Any]) -> dict[str, Any]:
+    """Avtomatik tekshiriladigan javob maydonlari (jami 100 ball). Tayyor javoblar case['reference']['answers'] da."""
+    ref, data = case["reference"], case["data"]
+    sup = ["A", "B", "C"]
+    # (kalit, sarlavha, tur, ball, to'g'ri javob, variantlar)
+    if role == "procurement":
+        best = next(x for x in ref["suppliers"] if x["name"] == ref["best_supplier"])
+        spec = [("net_requirement", "Sof xarid miqdori (dona)", "number", 25, ref["net_requirement"], None),
+                ("best_supplier", "Eng maqbul yetkazib beruvchi", "choice", 25, ref["best_supplier"], sup),
+                ("best_order_qty", "Tanlangan yetkazib beruvchi uchun buyurtma miqdori (dona)", "number", 25, best["order_qty"], None),
+                ("best_total_cost", "Tanlangan variantning jami xarajati", "number", 25, best["total_cost"], None)]
+    elif role == "supplier":
+        best = next(x for x in ref["scores"] if x["name"] == ref["best_supplier"])
+        spec = [("score_a", "A yetkazib beruvchining umumiy bali", "number", 25, ref["scores"][0]["score"], None),
+                ("best_supplier", "Eng yaxshi yetkazib beruvchi", "choice", 25, ref["best_supplier"], sup),
+                ("best_risk", "Tanlangan yetkazib beruvchining xavf darajasi", "choice", 25, best["risk"], ["yuqori", "o'rtacha", "past"]),
+                ("annual_saving", "5% chegirmadan yillik tejam", "number", 25, ref["annual_saving_at_discount"], None)]
+    elif role == "production":
+        spec = [("units_to_start", "Ishga tushiriladigan birliklar (dona)", "number", 25, ref["units_to_start"], None),
+                ("material_shortage", "Material yetishmovchiligi (birlik)", "number", 25, ref["material_shortage"], None),
+                ("overtime_units", "Qo'shimcha smena hajmi (dona)", "number", 25, ref["overtime_units"], None),
+                ("total_cost", "Jami xarajat", "number", 25, ref["total_cost"], None)]
+    elif role == "warehouse":
+        spec = [("atp", "Available-to-Promise (ATP)", "number", 20, ref["atp"], None),
+                ("rop", "Reorder Point (ROP)", "number", 20, ref["rop"], None),
+                ("inventory_position", "Inventory Position", "number", 20, ref["inventory_position"], None),
+                ("reorder_needed", "Yangi buyurtma kerakmi?", "choice", 20, "ha" if ref["reorder_needed"] else "yo'q", ["ha", "yo'q"]),
+                ("monthly_holding_cost", "Oylik saqlash xarajati", "number", 20, ref["monthly_holding_cost"], None)]
+    elif role == "transport":
+        best = next(x for x in ref["options"] if x["vehicle"] == ref["best_vehicle"])
+        van = ref["options"][0]
+        spec = [("trips_van", f"{van['vehicle']} bilan kerakli qatnovlar soni", "number", 25, van["trips"], None),
+                ("best_vehicle", "Eng maqbul transport turi", "choice", 25, ref["best_vehicle"], [v["name"] for v in data["vehicles"]]),
+                ("best_transport_cost", "Tanlangan transportning qatnov xarajati", "number", 25, best["transport_cost"], None),
+                ("best_expected_total", "Tanlangan transportning kutilayotgan jami xarajati (jarima bilan)", "number", 25, best["expected_total"], None)]
+    else:
+        raise ValueError("Noma'lum rol.")
+    case["fields"] = [{"key": k, "label": lab, "type": t, "points": pts, **({"options": opts} if opts else {})} for k, lab, t, pts, _, opts in spec]
+    case["reference"] = {**ref, "answers": {k: v for k, _, _, _, v, _ in spec}}
+    case["rubric"] = [{"criterion": lab, "max": pts} for _, lab, _, pts, _, _ in spec]
+    return case
+
+
+def check_answers(content: dict[str, Any], answers: Any) -> dict[str, Any]:
+    """Talaba javoblarini tekshiradi (shakl). Xato bo'lsa ValueError. Tozalangan javoblarni qaytaradi."""
+    if not isinstance(answers, dict):
+        raise ValueError("Javoblar noto'g'ri shaklda.")
+    clean: dict[str, Any] = {}
+    for f in content["fields"]:
+        if f["key"] not in answers or answers[f["key"]] in (None, ""):
+            raise ValueError(f"Barcha maydonlarni to'ldiring: '{f['label']}' bo'sh.")
+        v = answers[f["key"]]
+        if f["type"] == "number":
+            if isinstance(v, bool):
+                raise ValueError(f"'{f['label']}' raqam bo'lishi kerak.")
+            try:
+                num = float(str(v).replace(",", ".").replace(" ", "")) if isinstance(v, str) else float(v)
+            except (TypeError, ValueError):
+                raise ValueError(f"'{f['label']}' raqam bo'lishi kerak.")
+            if not math.isfinite(num) or abs(num) > 1e12:
+                raise ValueError(f"'{f['label']}' qiymati noto'g'ri.")
+            clean[f["key"]] = num
+        else:
+            if v not in f["options"]:
+                raise ValueError(f"'{f['label']}' uchun variantlardan birini tanlang.")
+            clean[f["key"]] = v
+    return clean
+
+
+def grade_case(content: dict[str, Any], answers: dict[str, Any], correct: dict[str, Any]) -> tuple[float, dict[str, float], str]:
+    """Raqamli maydon: 1% (yoki 0.5) ichida — to'liq ball, 5% ichida — yarim ball. Tanlov: aniq mos kelsa to'liq ball."""
+    total, criteria, notes = 0.0, {}, []
+    for f in content["fields"]:
+        given, ref = answers[f["key"]], correct[f["key"]]
+        if f["type"] == "number":
+            diff = abs(given - ref)
+            pts = f["points"] if diff <= max(0.5, 0.01 * abs(ref)) else f["points"] / 2 if diff <= max(1.0, 0.05 * abs(ref)) else 0.0
+        else:
+            pts = f["points"] if given == ref else 0.0
+        criteria[f["label"]] = _r2(pts)
+        total += pts
+        notes.append(f"{f['label']}: " + ("to'g'ri" if pts == f["points"] else f"{_r2(pts)}/{f['points']} ball (to'g'ri javob: {ref})"))
+    return _r2(total), criteria, "Avtomatik tekshiruv. " + "; ".join(notes)
 
 
 def _case_procurement(rng):
@@ -361,9 +446,108 @@ def average(values: list[float]) -> float | None:
     return sum(values) / len(values) if values else None
 
 
-def individual_score(case_avg: float | None, decision_avg: float | None) -> float | None:
-    """Individual Score = Case × 0.5 + Decision × 0.5. Ikkala komponent ham yo'q bo'lsa baho ko'rsatilmaydi (None).
-    Bitta komponent yo'q bo'lsa, u 0 hisoblanadi (formulaga so'zma-so'z amal qilinadi)."""
-    if case_avg is None and decision_avg is None:
+W_CASE, W_DECISION, W_BULLWHIP = 0.4, 0.4, 0.2
+
+
+def individual_score(case_avg: float | None, decision_avg: float | None, bullwhip: float | None = None) -> float | None:
+    """Individual Score = Case × 0.4 + Qarorlar × 0.4 + Bullwhip × 0.2. Hech bir komponent yo'q bo'lsa baho ko'rsatilmaydi (None).
+    Qaysidir komponent yo'q bo'lsa, u 0 hisoblanadi (formulaga so'zma-so'z amal qilinadi)."""
+    if case_avg is None and decision_avg is None and bullwhip is None:
         return None
-    return _r2((case_avg or 0.0) * 0.5 + (decision_avg or 0.0) * 0.5)
+    return _r2((case_avg or 0.0) * W_CASE + (decision_avg or 0.0) * W_DECISION + (bullwhip or 0.0) * W_BULLWHIP)
+
+
+# ---------------------------------------------------------------- bullwhip (src/bullwhip.js ning Python nusxasi: server natijani qayta o'ynab tekshiradi)
+BW_ROUNDS, BW_ROLES = 12, 4
+_M32 = 0xFFFFFFFF
+_BW_HOLD, _BW_BACK, _BW_BASE, _BW_INV, _BW_PIPE, _BW_MAX = 0.5, 1, 4, 12, 4, 1000
+_BW_FS, _BW_SA, _BW_SL = 0.3, 0.3, 0.15
+
+
+def _bw_hash(text: str) -> int:
+    h = 2166136261
+    for ch in text:
+        h ^= ord(ch)
+        h = (h * 16777619) & _M32
+    return h
+
+
+def _bw_rng(seed: str):
+    state = [_bw_hash(seed)]
+
+    def nxt() -> float:
+        a = (state[0] + 0x6D2B79F5) & _M32
+        state[0] = a
+        t = ((a ^ (a >> 15)) * (1 | a)) & _M32
+        t = ((t + (((t ^ (t >> 7)) * (61 | t)) & _M32)) ^ t) & _M32
+        return ((t ^ (t >> 14)) & _M32) / 4294967296
+    return nxt
+
+
+def bullwhip_scenario(comp_seed: str, student_id: str) -> dict[str, Any]:
+    import hashlib
+    dg = hashlib.sha1(f"bw:{comp_seed}:{student_id}".encode()).hexdigest()
+    return {"seed": "bw-" + dg[:12], "rounds": BW_ROUNDS, "role_index": int(dg[12:14], 16) % BW_ROLES}
+
+
+def _bw_play(seed: str, rounds: int, human: int | None, orders: list[int] | None, watch: int | None = None, rec: list[int] | None = None) -> list[float]:
+    rng = _bw_rng(seed)
+    shock, step = 4 + math.floor(rng() * 4), 2 + math.floor(rng() * 8)
+    roles = [{"inv": _BW_INV, "back": 0, "ship_in": [_BW_PIPE, _BW_PIPE], "order_in": [_BW_PIPE, _BW_PIPE], "cost": 0.0, "incoming": 0} for _ in range(4)]
+    fc = [float(_BW_BASE)] * 4
+
+    def begin(rnd: int) -> None:
+        demand = _BW_BASE if rnd < shock else _BW_BASE + step
+        shipped = []
+        for i, r in enumerate(roles):
+            r["inv"] += r["ship_in"].pop(0)
+            r["incoming"] = demand if i == 0 else r["order_in"].pop(0)
+            need = r["incoming"] + r["back"]
+            ship = min(r["inv"], need)
+            r["back"], r["inv"] = need - ship, r["inv"] - ship
+            shipped.append(ship)
+            r["cost"] += r["inv"] * _BW_HOLD + r["back"] * _BW_BACK
+            fc[i] += _BW_FS * (r["incoming"] - fc[i])
+        for i in range(1, 4):
+            roles[i - 1]["ship_in"].append(shipped[i])
+
+    def policy(i: int) -> int:
+        r = roles[i]
+        line = sum(r["ship_in"]) + (sum(roles[i + 1]["order_in"]) if i < 3 else 0)
+        q = fc[i] + _BW_SA * (_BW_INV - (r["inv"] - r["back"])) + _BW_SL * (fc[i] * 4 - line)
+        return max(0, min(_BW_MAX, math.floor(q + 0.5)))
+
+    begin(1)
+    for rnd in range(1, rounds + 1):
+        qty = [orders[rnd - 1] if human is not None and i == human else policy(i) for i in range(4)]
+        if rec is not None and watch is not None:
+            rec.append(qty[watch])
+        for i, q in enumerate(qty):
+            if i == 3:
+                roles[3]["ship_in"].append(q)
+            else:
+                roles[i + 1]["order_in"].append(q)
+        if rnd < rounds:
+            begin(rnd + 1)
+    return [r["cost"] for r in roles]
+
+
+def bullwhip_policy_orders(seed: str, rounds: int, role_index: int) -> list[int]:
+    """Avtomatik qoida shu rol uchun beradigan buyurtmalar (sinov va taqqoslash uchun)."""
+    rec: list[int] = []
+    _bw_play(seed, rounds, None, None, role_index, rec)
+    return rec
+
+
+def bullwhip_grade(seed: str, rounds: int, role_index: int, orders: Any) -> dict[str, float]:
+    """Talabaning buyurtmalarini qayta o'ynab xarajatini hisoblaydi va avtomatik qoida (benchmark) bilan solishtiradi.
+    Ball = 100 × min(1, benchmark / xarajat): avtomatik qoidadan yomon bo'lmasa 100."""
+    if not isinstance(orders, list) or len(orders) != rounds:
+        raise ValueError(f"Aynan {rounds} ta buyurtma kerak.")
+    for q in orders:
+        if isinstance(q, bool) or not isinstance(q, int) or not 0 <= q <= _BW_MAX:
+            raise ValueError(f"Buyurtma 0–{_BW_MAX} oralig'ida butun son bo'lishi kerak.")
+    cost = _bw_play(seed, rounds, role_index, orders)[role_index]
+    bench = _bw_play(seed, rounds, None, None)[role_index]
+    score = 100.0 if cost <= bench or cost <= 0 else 100.0 * bench / cost
+    return {"cost": _r2(cost), "bench_cost": _r2(bench), "score": _r2(score)}
