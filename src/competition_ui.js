@@ -7,7 +7,7 @@ const store={get(k){try{return window.localStorage.getItem(k)}catch(e){return nu
 const sess={get(k){try{return window.sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{v===null?window.sessionStorage.removeItem(k):window.sessionStorage.setItem(k,v)}catch(e){}}};
 const DEFAULT_API="https://scw-supply-chain-world.onrender.com";
 const S={base:store.get("scw-comp-base")||DEFAULT_API,token:sess.get("scw-comp-token")||"",me:null,list:[],cid:null,tab:"assign",
- ov:null,tasks:[],decs:[],teams:[],studs:[],fin:null,round:null,review:null,my:null,authMode:"login"};
+ ov:null,tasks:[],decs:[],teams:[],studs:[],fin:null,round:null,review:null,my:null,authMode:"login",bw:null};
 const ROLE_FIELD={procurement:"order_qty",supplier:"supplier",production:"production_qty",warehouse:"safety_stock",transport:"mode"};
 const ROLE_NAMES={procurement:"Procurement Manager",supplier:"Supplier Manager",production:"Production Manager",warehouse:"Warehouse Manager",transport:"Transport Manager"};
 const FIELD_LABEL={order_qty:"Xarid buyurtma miqdori (dona)",supplier:"Yetkazib beruvchi",production_qty:"Ishlab chiqarish miqdori (dona)",safety_stock:"Xavfsizlik zaxirasi (dona)",mode:"Transport turi"};
@@ -97,9 +97,9 @@ function reviewPanel(){
  const c=t.content;
  return "<div class=\"panel\"><div class=\"panel-head\"><h3>"+esc(t.student)+" — "+esc(ROLE_NAMES[t.role])+"</h3>"+badge(TASK_ST,t.status)+"</div>"+
   "<div class=\"card\"><h4>"+esc(c.title)+"</h4>"+c.scenario.map(x=>"<p>"+esc(x)+"</p>").join("")+"<details><summary>Ma’lumotlar</summary>"+kv(c.data)+"</details><ol>"+c.questions.map(q=>"<li>"+esc(q)+"</li>").join("")+"</ol></div>"+
-  "<h4>Talaba javobi</h4>"+(t.answer?"<pre class=\"ans\">"+esc(t.answer)+"</pre>":"<p class=\"muted\">Hali javob topshirilmagan.</p>")+
+  "<h4>Talaba javobi</h4>"+(t.answer?"<pre class=\"ans\">"+esc(t.answer)+"</pre>":"<p class=\"muted\">Hali javob topshirilmagan.</p>")+(t.status==="APPROVED"&&t.feedback?"<p class=\"muted\">"+esc(t.feedback)+"</p>":"")+
   "<details><summary>Tayyor javob (faqat o‘qituvchiga)</summary>"+kv(c.reference)+"</details>"+
-  (t.status==="SUBMITTED"||t.status==="APPROVED"&&S.ov.status!=="FINISHED"?"<h4>Baholash (100 ball)</h4><div class=\"two\">"+c.rubric.map((r,i)=>"<div class=\"field\"><label>"+esc(r.criterion)+" (0–"+r.max+")</label><input type=\"number\" min=\"0\" max=\""+r.max+"\" step=\"0.5\" id=\"crit"+i+"\" value=\""+(t.criteria&&t.criteria[r.criterion]!==undefined?esc(t.criteria[r.criterion]):"")+"\"></div>").join("")+"</div>"+
+  ((t.status==="SUBMITTED"||t.status==="APPROVED")&&S.ov.status!=="FINISHED"?"<h4>Qo‘lda o‘zgartirish (avtomatik ball o‘rniga, 100 ball)</h4><div class=\"two\">"+c.rubric.map((r,i)=>"<div class=\"field\"><label>"+esc(r.criterion)+" (0–"+r.max+")</label><input type=\"number\" min=\"0\" max=\""+r.max+"\" step=\"0.5\" id=\"crit"+i+"\" value=\""+(t.criteria&&t.criteria[r.criterion]!==undefined?esc(t.criteria[r.criterion]):"")+"\"></div>").join("")+"</div>"+
    "<div class=\"field\"><label>Yoki umumiy ball (0–100) — mezonlar kiritilsa, yig‘indi olinadi</label><input id=\"totalScore\" type=\"number\" min=\"0\" max=\"100\" step=\"0.5\" value=\""+(t.score===null?"":esc(t.score))+"\"></div>"+
    "<div class=\"field\"><label>Fikr-mulohaza (qaytarishda majburiy)</label><textarea id=\"fb\">"+esc(t.feedback)+"</textarea></div>"+
    "<div class=\"row\"><button class=\"btn primary\" data-act=\"approve\" data-id=\""+esc(t.id)+"\">✓ Tasdiqlash</button><button class=\"btn danger\" data-act=\"return\" data-id=\""+esc(t.id)+"\">↩ Qayta ishlashga qaytarish</button></div>":"")+"</div>";
@@ -107,7 +107,7 @@ function reviewPanel(){
 function tTasks(){
  if(S.ov.status==="SETUP")return "<div class=\"panel\"><p class=\"muted\">Topshiriqlar musobaqa boshlangach tayinlanadi.</p></div>";
  const rows=S.tasks.map(t=>"<tr><td>"+esc(t.student)+"</td><td>"+esc(ROLE_NAMES[t.role])+"</td><td>"+badge(TASK_ST,t.status)+"</td><td>"+(t.status==="APPROVED"?num(t.score):"—")+"</td><td><button class=\"btn\" data-act=\"review\" data-id=\""+esc(t.id)+"\">Ko‘rish</button></td></tr>").join("");
- return "<div class=\"panel\"><div class=\"panel-head\"><h3>Individual case topshiriqlar</h3><span class=\"sub\">"+S.tasks.filter(t=>t.status==="SUBMITTED").length+" ta tekshiruv kutmoqda</span></div><div class=\"table-wrap\"><table><thead><tr><th>Talaba</th><th>Rol</th><th>Holat</th><th>Ball</th><th></th></tr></thead><tbody>"+rows+"</tbody></table></div></div>"+reviewPanel();
+ return "<div class=\"panel\"><div class=\"panel-head\"><h3>Individual case topshiriqlar</h3><span class=\"sub\">AVTOMATIK BAHOLANADI · "+S.tasks.filter(t=>t.status==="ASSIGNED"||t.status==="RETURNED").length+" ta hali topshirmagan</span></div><div class=\"table-wrap\"><table><thead><tr><th>Talaba</th><th>Rol</th><th>Holat</th><th>Ball</th><th></th></tr></thead><tbody>"+rows+"</tbody></table></div></div>"+reviewPanel();
 }
 function tRounds(){
  const o=S.ov;
@@ -116,28 +116,33 @@ function tRounds(){
  const rounds=[...new Set(S.decs.map(d=>d.round))].sort((a,b)=>a-b);
  const list=S.decs.filter(d=>d.round===S.round);
  const rows=list.map(d=>"<tr><td>"+esc(d.student)+"</td><td>"+esc(d.team)+"</td><td>"+esc(d.role)+"</td><td>"+(d.submitted?esc(JSON.stringify(d.payload)):"<span class=\"bad\">topshirmagan</span>")+(d.applied?" <span class=\"badge\">qo‘llandi</span>":"")+"</td><td>"+num(d.auto_score)+"</td><td><input type=\"number\" min=\"0\" max=\"100\" step=\"0.5\" id=\"ds"+esc(d.id)+"\" value=\""+(d.score===null?"":esc(d.score))+"\"> <button class=\"btn\" data-act=\"grade\" data-id=\""+esc(d.id)+"\">Saqlash</button></td></tr>").join("");
- return "<div class=\"panel\"><div class=\"panel-head\"><h3>"+(next?"Joriy raund: "+o.current_round+" / "+o.rounds_total:"Barcha raundlar yakunlangan")+"</h3>"+(o.status==="RUNNING"&&next?"<button class=\"btn primary\" data-act=\"resolve\">▶ Raundni yakunlash va hisoblash</button>":"")+"</div><p class=\"muted\">Talabalar joriy raund uchun qaror yuboradi. Topshirmagan jamoa roli uchun oldingi (yoki standart) qaror qo‘llanadi, topshirmagan talaba 0 ball oladi. Bir rolda bir nechta talaba bo‘lsa, birinchi topshirgan talabaning qarori qo‘llanadi, boshqalari ham alohida baholanadi.</p></div>"+
-  "<div class=\"panel\"><div class=\"panel-head\"><h3>Operatsion qarorlarni baholash</h3><div class=\"row\">"+rounds.map(r=>"<button class=\"tab"+(r===S.round?" on":"")+"\" data-act=\"round\" data-id=\""+r+"\">"+r+"-raund</button>").join("")+(o.status==="RUNNING"?"<button class=\"btn\" data-act=\"acceptAuto\">✓ Avtomatik ballarni qabul qilish (hammasi)</button>":"")+"</div></div>"+
+ return "<div class=\"panel\"><div class=\"panel-head\"><h3>"+(next?"Joriy raund: "+o.current_round+" / "+o.rounds_total:"Barcha raundlar yakunlangan")+"</h3>"+(o.status==="RUNNING"&&next?"<button class=\"btn\" data-act=\"resolve\">⏩ Majburan yakunlash (topshirmaganlar 0 ball)</button>":"")+"</div><p class=\"muted\">Raund avtomatik hisoblanadi: barcha talabalar qaror yuborishi bilan jamoa KPI lari chiqadi va qarorlar o‘zi baholanadi. Kutib qolsangiz, «Majburan yakunlash» tugmasi bor: topshirmagan jamoa roli uchun oldingi (yoki standart) qaror qo‘llanadi, topshirmagan talaba 0 ball oladi. Bir rolda bir nechta talaba bo‘lsa, birinchi topshirgan talabaning qarori qo‘llanadi, boshqalari ham alohida baholanadi.</p></div>"+
+  "<div class=\"panel\"><div class=\"panel-head\"><h3>Operatsion qarorlarni baholash</h3><div class=\"row\">"+rounds.map(r=>"<button class=\"tab"+(r===S.round?" on":"")+"\" data-act=\"round\" data-id=\""+r+"\">"+r+"-raund</button>").join("")+""+"</div></div>"+
   (rows?"<div class=\"table-wrap\"><table><thead><tr><th>Talaba</th><th>Jamoa</th><th>Rol</th><th>Qaror</th><th>Avto-ball</th><th>Yakuniy ball (0–100)</th></tr></thead><tbody>"+rows+"</tbody></table></div>":"<p class=\"muted\">Hali yakunlangan raund yo‘q.</p>")+"</div>";
 }
 function teamTable(){
  if(!S.teams.length)return "<p class=\"muted\">Natija yo‘q.</p>";
- return "<div class=\"table-wrap\"><table><thead><tr><th>#</th><th>Jamoa</th><th>Ball</th><th>Service level %</th><th>OTIF %</th><th>Mijoz qoniqishi</th><th>Xarajat</th><th>Foyda</th><th>Raund</th></tr></thead><tbody>"+S.teams.map(t=>"<tr><td>"+(t.rank||"—")+"</td><td>"+esc(t.name)+"</td><td><b>"+num(t.team_score)+"</b></td><td>"+num(t.avg_service_level_pct)+"</td><td>"+num(t.avg_otif_pct)+"</td><td>"+num(t.avg_customer_satisfaction)+"</td><td>"+num(t.total_cost)+"</td><td>"+num(t.total_profit)+"</td><td>"+t.rounds_played+"</td></tr>").join("")+"</tbody></table></div>";
+ return "<div class=\"table-wrap\"><table><thead><tr><th>#</th><th>Jamoa</th><th>Umumiy KPI (%)</th><th>Service level %</th><th>OTIF %</th><th>Mijoz qoniqishi</th><th>Xarajat</th><th>Foyda</th><th>Raund</th></tr></thead><tbody>"+S.teams.map(t=>"<tr><td>"+(t.rank===1&&S.winnerShown?"🏆 ":"")+(t.rank||"—")+"</td><td>"+esc(t.name)+"</td><td><b>"+num(t.team_score)+(t.team_score===null?"":"%")+"</b></td><td>"+num(t.avg_service_level_pct)+"</td><td>"+num(t.avg_otif_pct)+"</td><td>"+num(t.avg_customer_satisfaction)+"</td><td>"+num(t.total_cost)+"</td><td>"+num(t.total_profit)+"</td><td>"+t.rounds_played+"</td></tr>").join("")+"</tbody></table></div>";
 }
 function studTable(){
  if(!S.studs.length)return "<p class=\"muted\">Natija yo‘q.</p>";
- return "<div class=\"table-wrap\"><table><thead><tr><th>#</th><th>Talaba</th><th>Jamoa</th><th>Rol</th><th>Case o‘rtacha</th><th>Qarorlar o‘rtacha</th><th>Individual baho</th></tr></thead><tbody>"+S.studs.map(s=>"<tr><td>"+(s.rank||"—")+"</td><td>"+esc(s.name)+"</td><td>"+esc(s.team||"—")+"</td><td>"+esc(s.role||"—")+"</td><td>"+num(s.case_average)+"</td><td>"+num(s.decision_average)+"</td><td><b>"+num(s.individual_score)+"</b>"+(s.individual_score!==null&&!s.complete?" <span class=\"badge warn\">oraliq</span>":"")+"</td></tr>").join("")+"</tbody></table></div><p class=\"muted\" style=\"margin-top:8px\">Individual baho = Case o‘rtacha × 0.5 + Qarorlar o‘rtacha × 0.5. Jamoaning yuqori natijasi talabaga avtomatik yuqori individual baho bermaydi.</p>";
+ return "<div class=\"table-wrap\"><table><thead><tr><th>#</th><th>Talaba</th><th>Jamoa</th><th>Rol</th><th>Case o‘rtacha</th><th>Qarorlar o‘rtacha</th><th>Bullwhip</th><th>Individual baho</th></tr></thead><tbody>"+S.studs.map(s=>"<tr><td>"+(s.rank||"—")+"</td><td>"+esc(s.name)+"</td><td>"+esc(s.team||"—")+"</td><td>"+esc(s.role||"—")+"</td><td>"+num(s.case_average)+"</td><td>"+num(s.decision_average)+"</td><td>"+num(s.bullwhip_score)+"</td><td><b>"+num(s.individual_score)+"</b>"+(s.individual_score!==null&&!s.complete?" <span class=\"badge warn\">oraliq</span>":"")+"</td></tr>").join("")+"</tbody></table></div><p class=\"muted\" style=\"margin-top:8px\">Individual baho = Case × 0.4 + Qarorlar × 0.4 + Bullwhip × 0.2. Jamoaning yuqori natijasi talabaga avtomatik yuqori individual baho bermaydi.</p>";
+}
+function winnerBanner(){
+ const t=S.teams&&S.teams[0];if(!t||t.rank!==1)return "";
+ return "<div class=\"panel\" style=\"border-color:#ffd166\"><div class=\"panel-head\"><h3>🏆 G‘olib kompaniya: "+esc(t.name)+"</h3><span class=\"sub\">YAKUNIY NATIJA</span></div><div class=\"metrics\" style=\"grid-template-columns:repeat(4,minmax(0,1fr))\"><div class=\"metric\"><small>Umumiy KPI</small><strong>"+num(t.team_score)+"%</strong></div><div class=\"metric\"><small>Service level</small><strong>"+num(t.avg_service_level_pct)+"%</strong></div><div class=\"metric\"><small>OTIF</small><strong>"+num(t.avg_otif_pct)+"%</strong></div><div class=\"metric\"><small>Mijoz qoniqishi</small><strong>"+num(t.avg_customer_satisfaction)+"%</strong></div></div>"+(S.teams.length>1?"<p class=\"muted\" style=\"margin-top:8px\">Boshqa jamoalar: "+S.teams.slice(1).map(x=>esc(x.name)+" — "+num(x.team_score)+"%").join(" · ")+"</p>":"")+"</div>";
 }
 function tResults(){
  if(S.ov.status==="SETUP")return "<div class=\"panel\"><p class=\"muted\">Natijalar musobaqa boshlangach ko‘rinadi.</p></div>";
- return "<div class=\"panel\"><div class=\"panel-head\"><h3>Jamoaviy natija (KPI)</h3><span class=\"sub\">JAMOALAR REYTINGI</span></div>"+teamTable()+"</div><div class=\"panel\"><div class=\"panel-head\"><h3>Individual natija</h3><span class=\"sub\">TALABALAR REYTINGI</span></div>"+studTable()+"</div>";
+ S.winnerShown=S.ov.status==="FINISHED";
+ return (S.winnerShown?winnerBanner():"")+"<div class=\"panel\"><div class=\"panel-head\"><h3>Jamoaviy natija (KPI)</h3><span class=\"sub\">JAMOALAR REYTINGI</span></div>"+teamTable()+"</div><div class=\"panel\"><div class=\"panel-head\"><h3>Individual natija</h3><span class=\"sub\">TALABALAR REYTINGI</span></div>"+studTable()+"</div>";
 }
 function tFinal(){
  const o=S.ov;
- if(o.status==="FINISHED")return "<div class=\"panel\"><h3>✅ Musobaqa yakunlangan</h3><p class=\"muted\">Natijalar qayd etilgan, o‘zgartirib bo‘lmaydi. Talabalar endi umumiy reytingni ko‘ra oladi.</p></div>";
+ if(o.status==="FINISHED")return "<div class=\"panel\"><h3>✅ Musobaqa yakunlangan</h3><p class=\"muted\">Natijalar qayd etilgan, o‘zgartirib bo‘lmaydi. G‘olib «Natijalar» bo‘limida.</p></div>";
  if(o.status==="SETUP")return "<div class=\"panel\"><p class=\"muted\">Avval musobaqani boshlang.</p></div>";
- const f=S.fin||{ready:false,blockers:[]};
- return "<div class=\"panel\"><div class=\"panel-head\"><h3>Yakunlash shartlari</h3>"+(f.ready?"<span class=\"badge\">Tayyor</span>":"<span class=\"badge bad\">Bloklangan</span>")+"</div>"+(f.blockers.length?f.blockers.map(b=>"<div class=\"problem\">• "+esc(b)+"</div>").join(""):"<p class=\"ok\">Barcha shartlar bajarilgan.</p>")+"<div class=\"row\" style=\"margin-top:12px\"><button class=\"btn primary\" data-act=\"finalize\""+(f.ready?"":" disabled")+">🏁 Musobaqani yakunlash</button><button class=\"btn\" data-act=\"recheck\">↻ Qayta tekshirish</button></div></div>";
+ const f=S.fin||{ready:false,blockers:[],can_force:false};
+ return "<div class=\"panel\"><div class=\"panel-head\"><h3>Yakunlash</h3>"+(f.ready?"<span class=\"badge\">Tayyor</span>":"<span class=\"badge warn\">Kutilmoqda</span>")+"</div><p class=\"muted\">Musobaqa o‘zi yakunlanadi: barcha raundlar tugab, har bir talaba case va Bullwhip o‘yinini topshirishi bilan g‘olib e‘lon qilinadi.</p>"+(f.blockers.length?f.blockers.map(b=>"<div class=\"problem\">• "+esc(b)+"</div>").join(""):"<p class=\"ok\">Barcha shartlar bajarilgan.</p>")+"<div class=\"row\" style=\"margin-top:12px\">"+(f.ready?"<button class=\"btn primary\" data-act=\"finalize\">🏁 Yakunlash</button>":"")+(f.can_force&&!f.ready?"<button class=\"btn danger\" data-act=\"finalizeForce\">🏁 Majburan yakunlash (topshirmaganlar 0 ball)</button>":"")+"<button class=\"btn\" data-act=\"recheck\">↻ Qayta tekshirish</button></div></div>";
 }
 function viewTeacher(){
  const o=S.ov;
@@ -148,15 +153,35 @@ function viewTeacher(){
 }
 
 /* ----- talaba ----- */
+function fieldInput(f){
+ if(f.type==="choice")return "<select data-field=\""+esc(f.key)+"\"><option value=\"\">— tanlang —</option>"+f.options.map(o=>"<option value=\""+esc(o)+"\">"+esc(o)+"</option>").join("")+"</select>";
+ return "<input data-field=\""+esc(f.key)+"\" inputmode=\"decimal\" placeholder=\"raqam\">";
+}
 function taskCard(){
  const t=S.my.task;
  if(!t)return "<div class=\"panel\"><div class=\"panel-head\"><h3>Individual case topshirig‘i</h3></div><p class=\"muted\">Topshiriq musobaqa boshlanganda tayinlanadi.</p></div>";
- const c=t.content,canEdit=t.status==="ASSIGNED"||t.status==="RETURNED";
+ const c=t.content,canEdit=t.status==="ASSIGNED"||t.status==="RETURNED",auto=!!c.fields;
  return "<div class=\"panel\"><div class=\"panel-head\"><h3>Individual case: "+esc(c.title)+"</h3>"+badge(TASK_ST,t.status)+"</div>"+c.scenario.map(x=>"<p class=\"muted\">"+esc(x)+"</p>").join("")+"<details open><summary>Ma’lumotlar</summary>"+kv(c.data)+"</details><ol>"+c.questions.map(q=>"<li class=\"muted\">"+esc(q)+"</li>").join("")+"</ol>"+
-  "<details><summary>Baholash mezonlari (100 ball)</summary>"+kv(c.rubric)+"</details>"+
   (t.status==="APPROVED"?"<div class=\"card\"><h4>Sizning balingiz: "+num(t.score)+" / 100</h4>"+(t.feedback?"<p>"+esc(t.feedback)+"</p>":"")+(t.criteria?kv(t.criteria):"")+"</div>":"")+
   (t.status==="RETURNED"?"<div class=\"card\"><h4>Qayta ishlash uchun qaytarildi</h4><p>"+esc(t.feedback)+"</p></div>":"")+
-  (canEdit?"<div class=\"field\"><label>Javobingiz (hisob-kitob va asoslash)</label><textarea id=\"answer\" maxlength=\"20000\">"+esc(t.answer)+"</textarea></div><button class=\"btn primary\" data-act=\"submitTask\">Javobni topshirish</button>":"<h4>Topshirilgan javob</h4><pre class=\"ans\">"+esc(t.answer)+"</pre>")+"</div>";
+  (canEdit&&auto?"<h4>Javoblar (avtomatik tekshiriladi, bir marta topshiriladi)</h4><div class=\"two\">"+c.fields.map(f=>"<div class=\"field\"><label>"+esc(f.label)+" · "+f.points+" ball</label>"+fieldInput(f)+"</div>").join("")+"</div><p class=\"muted\">Kasr sonlarni nuqta yoki vergul bilan yozing. 1% gacha farq to‘liq ball, 5% gacha farq yarim ball beradi.</p><button class=\"btn primary\" data-act=\"submitTask\">Javoblarni topshirish</button>":"")+
+  (canEdit&&!auto?"<div class=\"field\"><label>Javobingiz (hisob-kitob va asoslash)</label><textarea id=\"answer\" maxlength=\"20000\">"+esc(t.answer)+"</textarea></div><button class=\"btn primary\" data-act=\"submitTask\">Javobni topshirish</button>":"")+
+  (!canEdit&&!auto?"<h4>Topshirilgan javob</h4><pre class=\"ans\">"+esc(t.answer)+"</pre>":"")+"</div>";
+}
+function bullwhipCard(){
+ const b=S.my.bullwhip,W=window.SCWBullwhip;
+ if(!b||S.my.competition.status==="SETUP")return "";
+ const head="<div class=\"panel\"><div class=\"panel-head\"><h3>Bullwhip o‘yini</h3><span class=\"sub\">BAHONING 20%</span></div>";
+ if(b.done)return head+"<div class=\"metrics\" style=\"grid-template-columns:repeat(3,minmax(0,1fr))\"><div class=\"metric\"><small>Sizning xarajatingiz</small><strong>"+num(b.result.cost)+"</strong></div><div class=\"metric\"><small>Avtomatik qoida</small><strong>"+num(b.result.bench_cost)+"</strong></div><div class=\"metric\"><small>Ball</small><strong>"+num(b.result.score)+"</strong></div></div><p class=\"muted\" style=\"margin-top:8px\">Ball = 100 × avtomatik qoida xarajati / sizning xarajatingiz (avtomatik qoidadan yomon bo‘lmasangiz 100).</p></div>";
+ if(S.my.competition.status!=="RUNNING")return "";
+ if(!W)return head+"<p class=\"bad\">O‘yin moduli yuklanmadi (src/bullwhip.js). Sahifani yangilang.</p></div>";
+ const role=W.constants.ROLES[b.role_index];
+ if(!S.bw)return head+"<p class=\"muted\">Siz zanjirda <b>"+esc(role)+"</b> rolidasiz. "+b.rounds+" raund davomida har raundda buyurtma berasiz; boshqa bosqichlar avtomatik. Talab o‘zgarishi har bir talabada har xil. Natija avtomatik yuboriladi. Sahifani yangilasangiz o‘yin boshidan boshlanadi.</p><button class=\"btn primary\" data-act=\"bwStart\">▶ O‘yinni boshlash</button></div>";
+ const g=S.bw.game,r=g.roles[b.role_index];
+ if(g.finished)return head+"<p class=\"ok\">O‘yin tugadi. Xarajatingiz: "+num(r.cost)+".</p><button class=\"btn primary\" data-act=\"bwSend\">Natijani yuborish</button></div>";
+ const pipe=r.shipIn.reduce((x,y)=>x+y,0);
+ const last=r.orders.slice(-6).join(", ")||"—";
+ return head+"<div class=\"metrics\" style=\"grid-template-columns:repeat(4,minmax(0,1fr))\"><div class=\"metric\"><small>Raund</small><strong>"+g.round+" / "+g.rounds+"</strong></div><div class=\"metric\"><small>Kelgan buyurtma</small><strong>"+r.incoming+"</strong></div><div class=\"metric\"><small>Omborda</small><strong>"+r.inventory+"</strong></div><div class=\"metric\"><small>Yetkazilmagan</small><strong>"+r.backlog+"</strong></div></div><p class=\"muted\" style=\"margin-top:8px\">Rol: "+esc(role)+" · yo‘lda: "+pipe+" · xarajat: "+num(r.cost)+" · oxirgi buyurtmalaringiz: "+esc(last)+"</p><div class=\"row\"><input id=\"bwQty\" type=\"number\" min=\"0\" max=\"1000\" step=\"1\" placeholder=\"Buyurtma (dona)\" style=\"width:180px\"><button class=\"btn primary\" data-act=\"bwOrder\">Buyurtma berish</button></div></div>";
 }
 function decisionCard(){
  const m=S.my,cur=m.current_round;
@@ -178,12 +203,12 @@ function viewStudent(){
  const myDecs=m.my_decisions.map(d=>"<tr><td>"+d.round+"</td><td>"+(d.submitted?esc(JSON.stringify(d.payload)):"<span class=\"bad\">topshirilmagan</span>")+"</td><td>"+(d.score===null?"—":num(d.score))+"</td><td>"+esc(d.feedback)+"</td></tr>").join("");
  return "<div class=\"row\" style=\"margin-bottom:10px\"><button class=\"btn\" data-act=\"home\">← Musobaqalar</button><button class=\"btn\" data-act=\"reload\">↻ Yangilash</button></div>"+
   "<div class=\"head\"><div class=\"eyebrow\">TALABA</div><h2>"+esc(m.competition.title)+"</h2><p>"+badge(STATUS,m.competition.status)+"</p></div>"+
-  "<div class=\"metrics\"><div class=\"metric\"><small>Jamoa</small><strong>"+esc(m.team||"—")+"</strong></div><div class=\"metric\"><small>Rolim</small><strong style=\"font-size:16px\">"+esc(m.role_name||"—")+"</strong></div><div class=\"metric\"><small>Individual baho</small><strong>"+(res&&res.individual_score!==null?num(res.individual_score):"—")+"</strong><span class=\"good\">"+(res&&res.individual_score!==null&&!res.complete?"oraliq":"Case×0.5 + Qarorlar×0.5")+"</span></div><div class=\"metric\"><small>Raund</small><strong>"+(m.competition.current_round?Math.min(m.competition.current_round,m.competition.rounds_total):0)+" / "+m.competition.rounds_total+"</strong></div></div>"+
+  "<div class=\"metrics\"><div class=\"metric\"><small>Jamoa</small><strong>"+esc(m.team||"—")+"</strong></div><div class=\"metric\"><small>Rolim</small><strong style=\"font-size:16px\">"+esc(m.role_name||"—")+"</strong></div><div class=\"metric\"><small>Individual baho</small><strong>"+(res&&res.individual_score!==null?num(res.individual_score):"—")+"</strong><span class=\"good\">"+(res&&res.individual_score!==null&&!res.complete?"oraliq":"Case×0.4 + Qaror×0.4 + Bullwhip×0.2")+"</span></div><div class=\"metric\"><small>Raund</small><strong>"+(m.competition.current_round?Math.min(m.competition.current_round,m.competition.rounds_total):0)+" / "+m.competition.rounds_total+"</strong></div></div>"+
   (m.teammates.length?"<div class=\"panel\"><div class=\"panel-head\"><h3>Jamoa a’zolari</h3></div><div class=\"row\">"+m.teammates.map(x=>"<span class=\"badge info\">"+esc(x.name)+" · "+esc(x.role)+"</span>").join("")+"</div></div>":"")+
-  decisionCard()+taskCard()+
-  (res?"<div class=\"panel\"><div class=\"panel-head\"><h3>Mening natijam</h3><span class=\"sub\">INDIVIDUAL</span></div><div class=\"metrics\" style=\"grid-template-columns:repeat(3,minmax(0,1fr))\"><div class=\"metric\"><small>Case o‘rtacha</small><strong>"+num(res.case_average)+"</strong></div><div class=\"metric\"><small>Qarorlar o‘rtacha</small><strong>"+num(res.decision_average)+"</strong></div><div class=\"metric\"><small>Yakuniy individual</small><strong>"+num(res.individual_score)+"</strong></div></div>"+(myDecs?"<div class=\"table-wrap\"><table><thead><tr><th>Raund</th><th>Qaror</th><th>Ball</th><th>Izoh</th></tr></thead><tbody>"+myDecs+"</tbody></table></div>":"")+"</div>":"")+
+  decisionCard()+taskCard()+bullwhipCard()+
+  (res?"<div class=\"panel\"><div class=\"panel-head\"><h3>Mening natijam</h3><span class=\"sub\">INDIVIDUAL</span></div><div class=\"metrics\" style=\"grid-template-columns:repeat(4,minmax(0,1fr))\"><div class=\"metric\"><small>Case o‘rtacha</small><strong>"+num(res.case_average)+"</strong></div><div class=\"metric\"><small>Qarorlar o‘rtacha</small><strong>"+num(res.decision_average)+"</strong></div><div class=\"metric\"><small>Bullwhip</small><strong>"+num(res.bullwhip_score)+"</strong></div><div class=\"metric\"><small>Yakuniy individual</small><strong>"+num(res.individual_score)+"</strong></div></div>"+(myDecs?"<div class=\"table-wrap\"><table><thead><tr><th>Raund</th><th>Qaror</th><th>Ball</th><th>Izoh</th></tr></thead><tbody>"+myDecs+"</tbody></table></div>":"")+"</div>":"")+
   "<div class=\"panel\"><div class=\"panel-head\"><h3>Jamoa KPI tarixi</h3><span class=\"sub\">JAMOAVIY NATIJA</span></div>"+(hist?"<div class=\"table-wrap\"><table><thead><tr><th>Raund</th><th>Talab</th><th>Yetkazildi</th><th>Service %</th><th>OTIF %</th><th>Qoniqish</th><th>Xarajat</th><th>Ball</th></tr></thead><tbody>"+hist+"</tbody></table></div>":"<p class=\"muted\">Hali natija yo‘q.</p>")+"</div>"+
-  "<div class=\"panel\"><div class=\"panel-head\"><h3>Jamoalar reytingi</h3></div>"+teamTable()+"</div>"+
+  (m.competition.status==="FINISHED"?(S.winnerShown=true,winnerBanner()):"")+"<div class=\"panel\"><div class=\"panel-head\"><h3>Jamoalar reytingi</h3></div>"+teamTable()+"</div>"+
   (m.competition.status==="FINISHED"?"<div class=\"panel\"><div class=\"panel-head\"><h3>Talabalar reytingi</h3></div>"+studTable()+"</div>":"");
 }
 
@@ -220,7 +245,7 @@ const ACT={
  },
  logout(){S.token="";S.me=null;S.cid=null;sess.set("scw-comp-token",null);render()},
  async home(){S.cid=null;S.ov=null;S.my=null;S.review=null;await loadMe();render()},
- async open(id){S.cid=id;S.tab="assign";S.round=null;S.review=null;S.ov=null;S.my=null;await reload();if(S.me.kind==="teacher"&&S.ov.status!=="SETUP")S.tab="tasks";render()},
+ async open(id){S.bw=null;S.cid=id;S.tab="assign";S.round=null;S.review=null;S.ov=null;S.my=null;await reload();if(S.me.kind==="teacher"&&S.ov.status!=="SETUP")S.tab="tasks";render()},
  async reload(){await reload();render()},
  async createComp(){
   const c=await api("POST","/api/comp/competitions",{title:val("newTitle"),rounds_total:Number(val("newRounds"))});
@@ -248,12 +273,35 @@ const ACT={
  round(id){S.round=Number(id);render()},
  async grade(id){const v=val("ds"+id);if(v==="")throw Error("Ballni kiriting (0–100).");await api("PATCH",P("/decisions/"+id),{score:Number(v)});toast("Saqlandi");await reload();render()},
  async acceptAuto(){const r=await api("POST",P("/decisions/accept-auto"),{});toast(r.graded+" ta qaror baholandi");await reload();render()},
- async finalize(){if(!window.confirm("Musobaqani yakunlaysizmi? Keyin hech narsani o‘zgartirib bo‘lmaydi."))return;await api("POST",P("/finalize"));toast("Musobaqa yakunlandi");S.tab="results";await reload();render()},
- async submitTask(){const a=val("answer").trim();if(!a)throw Error("Javobni yozing.");await api("PUT",P("/task"),{answer:a});toast("Javob topshirildi");await reload();render()},
+ async finalize(){if(!window.confirm("Musobaqani yakunlaysizmi? Keyin hech narsani o‘zgartirib bo‘lmaydi."))return;await api("POST",P("/finalize"),{});toast("Musobaqa yakunlandi");S.tab="results";await reload();render()},
+ async finalizeForce(){if(!window.confirm("Topshirmagan talabalarning case va Bullwhip qismi 0 ball hisoblanadi. Musobaqani majburan yakunlaysizmi? Keyin hech narsani o‘zgartirib bo‘lmaydi."))return;await api("POST",P("/finalize"),{force:true});toast("Musobaqa yakunlandi");S.tab="results";await reload();render()},
+ async submitTask(){
+  const c=S.my.task.content;
+  if(c.fields){
+   const answers={};
+   c.fields.forEach(f=>{const el=document.querySelector("[data-field=\""+f.key+"\"]");answers[f.key]=el?el.value.trim():""});
+   if(c.fields.some(f=>answers[f.key]===""))throw Error("Barcha maydonlarni to‘ldiring.");
+   const r=await api("PUT",P("/task"),{answers});toast("Topshirildi. Ball: "+num(r.score)+" / 100");
+  }else{const a=val("answer").trim();if(!a)throw Error("Javobni yozing.");await api("PUT",P("/task"),{answer:a});toast("Javob topshirildi")}
+  await reload();render();
+ },
+ bwStart(){const b=S.my.bullwhip;S.bw={game:window.SCWBullwhip.newGame({seed:b.seed,rounds:b.rounds,humanRoles:[b.role_index]})};render()},
+ async bwOrder(){
+  const b=S.my.bullwhip,g=S.bw.game,raw=val("bwQty");
+  if(raw==="")throw Error("Buyurtma miqdorini kiriting.");
+  window.SCWBullwhip.play(g,Number(raw));
+  if(g.finished)await ACT.bwSend();else render();
+ },
+ async bwSend(){
+  const b=S.my.bullwhip,g=S.bw.game;
+  render();
+  const r=await api("POST",P("/bullwhip"),{orders:Array.from(g.roles[b.role_index].orders)});
+  toast("Bullwhip natijasi yuborildi. Ball: "+num(r.score));S.bw=null;await reload();render();
+ },
  async submitDecision(){
   const f=ROLE_FIELD[S.my.role],raw=val("decValue");
   const v=f==="supplier"||f==="mode"?raw:(raw===""?NaN:Number(raw));
-  await api("POST",P("/decision"),{payload:{[f]:v}});toast("Qaror yuborildi");await reload();render();
+  const dr=await api("POST",P("/decision"),{payload:{[f]:v}});toast(dr.round_resolved?"Qaror yuborildi. Raund hisoblandi!":"Qaror yuborildi");await reload();render();
  },
 };
 const CHANGE={

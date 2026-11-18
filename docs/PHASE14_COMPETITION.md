@@ -11,12 +11,12 @@ Ishga tushirish: `backend/` serverini deploy qiling, `competition.html` sahifasi
 - Holatlar: SETUP → RUNNING → FINISHED. Topshiriq: ASSIGNED → SUBMITTED → RETURNED/APPROVED.
 - Case: har rolga o'z generatori (seed bo'yicha deterministik), javob kaliti faqat o'qituvchiga. Rubrika 4×25. Qaytarishda fikr-mulohaza majburiy.
 - Raund: har rol o'z maydoniga qaror yuboradi (xarid miqdori / yetkazib beruvchi / ishlab chiqarish / xavfsizlik zaxirasi / transport turi). Topshirmagan rol uchun oldingi qaror qo'llanadi, talaba 0 oladi. KPI: service level, OTIF, xarajat, zaxira, qoniqish, foyda; raund bali = 0.30 service + 0.20 OTIF + 0.25 xarajat + 0.10 zaxira + 0.15 qoniqish.
-- Individual baho = Case o'rtacha × 0.5 + Qarorlar o'rtacha × 0.5. Ikkalasi ham yo'q bo'lsa ko'rsatilmaydi; bittasi yo'q bo'lsa komponent 0 deb hisoblanib "oraliq" belgisi qo'yiladi.
+- Individual baho = Case × 0.4 + Qarorlar × 0.4 + Bullwhip × 0.2 (vaznlar `competition_logic.py` dagi `W_CASE/W_DECISION/W_BULLWHIP`). Hech biri yo'q bo'lsa ko'rsatilmaydi; qaysidir komponent yo'q bo'lsa 0 deb hisoblanib "oraliq" belgisi qo'yiladi.
 - Jamoaviy va individual reytinglar alohida. Talaba FINISHED gacha faqat o'z natijasini ko'radi.
 - Yakunlash faqat: taqsimot to'g'ri, barcha case tasdiqlangan, barcha raundlar hisoblangan, barcha qarorlar baholangan bo'lsa mumkin.
 
 ## API (`/api/comp`)
-`POST register` · `GET me` · `POST/GET competitions` · `GET competitions/{id}` · `POST .../auto-assign` · `PATCH .../enrollments/{eid}` · `POST .../start` · `GET .../tasks` · `POST .../tasks/{tid}/review` · `POST join` · `GET .../me` · `PUT .../task` · `POST .../decision` · `POST .../rounds/resolve` · `GET .../decisions` · `PATCH .../decisions/{did}` · `POST .../decisions/accept-auto` · `GET .../finalization` · `POST .../finalize` · `GET .../results/teams` · `GET .../results/students`
+`POST register` · `GET me` · `POST/GET competitions` · `GET competitions/{id}` · `POST .../auto-assign` · `PATCH .../enrollments/{eid}` · `POST .../start` · `GET .../tasks` · `POST .../tasks/{tid}/review` · `POST join` · `GET .../me` · `PUT .../task` · `POST .../decision` · `POST .../rounds/resolve` · `GET .../decisions` · `PATCH .../decisions/{did}` · `POST .../decisions/accept-auto` · `GET/POST .../bullwhip` · `GET .../finalization` · `POST .../finalize` · `GET .../results/teams` · `GET .../results/students`
 
 Kirish: mavjud `/api/auth/login` (JWT).
 
@@ -30,3 +30,10 @@ Kirish: mavjud `/api/auth/login` (JWT).
 
 ## Testlar
 `cd backend && pytest` — 15/16/17/18/19/20 talaba taqsimoti, 20 virtual talabali to'liq hayot sikli, ruxsatlar, yakunlash bloklari, formula, KPI determinizmi.
+
+## To'liq avtomatik rejim (o'qituvchi faqat yaratadi, taqsimlaydi va boshlaydi)
+- **Case topshiriqlar avtomatik baholanadi.** Har bir topshiriqda 4–5 ta javob maydoni bor (raqam yoki tanlov, jami 100 ball); talaba bir marta topshiradi, tizim tayyor javob bilan solishtiradi: raqamda 1% (yoki ±0.5) gacha farq — to'liq ball, 5% gacha — yarim ball. Natija darrov ko'rinadi (to'g'ri javoblar bilan). O'qituvchi xohlasa bahoni qo'lda o'zgartirishi yoki «qaytarishi» mumkin.
+- **Raund avtomatik hisoblanadi:** barcha talabalar qaror yuborishi bilan jamoalar KPI lari hisoblanadi va qarorlarga avtomatik ball qo'yiladi. O'qituvchida «majburan yakunlash» tugmasi bor (topshirmagan — 0 ball).
+- **Bullwhip o'yini musobaqa ichida:** har bir talabaga serverdan alohida ssenariy (`seed`) va rol beriladi, talaba brauzerda o'ynaydi, buyurtmalar serverga yuboriladi. Server o'yinni qayta o'ynab xarajatni o'zi hisoblaydi (`competition_logic.py` dagi `bullwhip_grade`, `src/bullwhip.js` ning Python nusxasi; testlarda JS bilan solishtirilgan). Ball = 100 × avtomatik qoida xarajati / talaba xarajati (100 dan oshmaydi). Natija bir marta yuboriladi.
+- **Avtomatik yakunlash:** barcha raundlar tugab, har bir talaba case va Bullwhip'ni topshirishi bilan musobaqa o'zi yakunlanadi, g'olib jamoa (umumiy KPI %, service level %, OTIF %, mijoz qoniqishi) va eng yaxshi talaba qayd etiladi. Kimdir topshirmasa: o'qituvchi «Majburan yakunlash» (`POST .../finalize` `{"force": true}`) bosadi, topshirilmagan qismlar 0 ball bo'ladi.
+- Cheklov: Bullwhip ssenariysi deterministik, shuning uchun talaba brauzerda bir necha marta sinab ko'rib, eng yaxshisini yuborishi mumkin; serverda faqat birinchi yuborilgan natija hisoblanadi.
