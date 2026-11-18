@@ -5,6 +5,7 @@ Sof mantiq: competition_logic.py.
 """
 from __future__ import annotations
 
+import json
 import os
 import secrets
 from datetime import datetime, timezone
@@ -131,6 +132,17 @@ class RoundResult(CompBase):
     kpi: Mapped[Any] = mapped_column(JSON)
 
 
+class BullwhipResult(CompBase):
+    __tablename__ = "comp_bullwhip"
+    enrollment_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    competition_id: Mapped[str] = mapped_column(String(36), index=True)
+    orders: Mapped[Any] = mapped_column(JSON)
+    cost: Mapped[float] = mapped_column(Float)
+    bench_cost: Mapped[float] = mapped_column(Float)
+    score: Mapped[float] = mapped_column(Float)
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 # ---------------------------------------------------------------- kirish ma'lumotlari
 class CompRegisterIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -168,7 +180,18 @@ class EnrollmentPatch(BaseModel):
 
 class AnswerIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    answer: str = Field(min_length=1, max_length=20000)
+    answer: str = Field(default="", max_length=20000)  # eski (matnli) topshiriqlar uchun
+    answers: dict[str, Any] | None = None  # avtomatik tekshiriladigan maydonlar
+
+
+class BullwhipIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    orders: list[Any]
+
+
+class FinalizeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    force: bool = False  # topshirmaganlar 0 ball bilan yakunlash
 
 
 class ReviewIn(BaseModel):
@@ -272,8 +295,9 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
                 "status": t.status, "content": t.content, "answer": t.answer, "score": t.score, "criteria": t.criteria,
                 "feedback": t.feedback, "submitted_at": t.submitted_at}
 
-    def results_students(db: Session, comp: Competition) -> list[dict[str, Any]]:
+    def results_students(db: Session, comp: Competition, fill: bool = False) -> list[dict[str, Any]]:
         enrs = enrollments_of(db, comp.id)
+        bws = {b.enrollment_id: b for b in db.scalars(select(BullwhipResult).where(BullwhipResult.competition_id == comp.id))}
         nm = names_of(db, [e.student_id for e in enrs])
         teams = {t.id: t.name for t in teams_of(db, comp.id)}
         tasks = {t.enrollment_id: t for t in db.scalars(select(CaseTask).where(CaseTask.competition_id == comp.id))}
@@ -286,12 +310,19 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
             case_vals = [t.score] if t and t.status == "APPROVED" and t.score is not None else []
             dec_vals = [d.score for d in decs.get(e.id, []) if d.score is not None]
             case_avg, dec_avg = L.average(case_vals), L.average(dec_vals)
+            bw = bws.get(e.id)
+            bw_score = bw.score if bw else None
+            if fill:  # majburan yakunlash: topshirilmagan komponent 0 ball
+                case_avg = 0.0 if case_avg is None else case_avg
+                dec_avg = 0.0 if dec_avg is None else dec_avg
+                bw_score = 0.0 if bw_score is None else bw_score
             rows.append({"enrollment_id": e.id, "student_id": e.student_id, "name": nm.get(e.student_id, {}).get("name", "?"),
                          "team": teams.get(e.team_id or "", None), "role": L.ROLE_NAMES.get(e.role or "", None),
                          "case_average": None if case_avg is None else round(case_avg, 2),
                          "decision_average": None if dec_avg is None else round(dec_avg, 2),
-                         "individual_score": L.individual_score(case_avg, dec_avg),
-                         "complete": case_avg is not None and dec_avg is not None})
+                         "bullwhip_score": None if bw_score is None else round(bw_score, 2),
+                         "individual_score": L.individual_score(case_avg, dec_avg, bw_score),
+                         "complete": case_avg is not None and dec_avg is not None and bw_score is not None})
         rows.sort(key=lambda r: (r["individual_score"] is None, -(r["individual_score"] or 0), r["name"]))
         rank = 0
         for r in rows:
@@ -320,10 +351,12 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
             r["rank"] = i if r["team_score"] is not None else None
         return rows
 
-    def finalization_blockers(db: Session, comp: Competition) -> list[str]:
+    def finalization_blockers(db: Session, comp: Competition, force: bool = False) -> list[str]:
         out: list[str] = []
         if comp.status != "RUNNING":
             return ["Musobaqa boshlanmagan yoki allaqachon yakunlangan."]
+        if force:  # faqat raundlar tugashi shart; topshirilmaganlar 0 ball bilan hisoblanadi
+            return [f"Barcha raundlar yakunlanmagan: {comp.current_round - 1} / {comp.rounds_total}."] if comp.current_round <= comp.rounds_total else []
         enrs = enrollments_of(db, comp.id)
         nm = names_of(db, [e.student_id for e in enrs])
         who = lambda ids: ", ".join(nm.get(i, {}).get("name", "?") for i in ids[:5]) + (" ..." if len(ids) > 5 else "")
@@ -344,10 +377,78 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
         ungraded = [d for d in db.scalars(select(Decision).where(Decision.competition_id == comp.id)) if d.score is None]
         if ungraded:
             out.append(f"Baholanmagan operatsion qarorlar: {len(ungraded)} ta.")
+        no_bw = {b.enrollment_id for b in db.scalars(select(BullwhipResult).where(BullwhipResult.competition_id == comp.id))}
+        missing_bw = [e.student_id for e in enrs if e.id not in no_bw]
+        if missing_bw:
+            out.append(f"Bullwhip o'yinini tugatmagan talabalar: {len(missing_bw)} ta ({who(missing_bw)}).")
         incomplete = [r["student_id"] for r in results_students(db, comp) if not r["complete"]]
-        if incomplete:
+        if incomplete and not missing_bw and not pending and not no_task:
             out.append(f"Individual baho hisoblash uchun ma'lumot yetarli emas: {who(incomplete)}.")
         return out
+
+    def finalize_now(db: Session, comp: Competition, force: bool = False) -> None:
+        teams, studs = results_teams(db, comp), results_students(db, comp, fill=force)
+        top = next((t for t in teams if t["rank"] == 1), None)
+        top_s = next((x for x in studs if x["rank"] == 1), None)
+        winner = top and {"team": top["name"], "team_score": top["team_score"], "service_level_pct": top["avg_service_level_pct"],
+                          "otif_pct": top["avg_otif_pct"], "customer_satisfaction": top["avg_customer_satisfaction"]}
+        comp.final = {"teams": [{k: v for k, v in t.items() if k != "rounds"} for t in teams], "students": studs,
+                      "winner": winner, "top_student": top_s and {"name": top_s["name"], "individual_score": top_s["individual_score"]},
+                      "forced": force, "finalized_at": _now().isoformat()}
+        comp.status = "FINISHED"
+
+    def try_autofinalize(db: Session, comp: Competition) -> bool:
+        """Raundlar tugagan va barcha topshiriqlar bajarilgan bo'lsa, musobaqa o'zi yakunlanadi."""
+        if comp.status == "RUNNING" and comp.current_round > comp.rounds_total and not finalization_blockers(db, comp):
+            finalize_now(db, comp)
+            return True
+        return False
+
+    def bullwhip_view(db: Session, comp: Competition, enr: Enrollment) -> dict[str, Any] | None:
+        if comp.status == "SETUP":
+            return None
+        sc = L.bullwhip_scenario(comp.seed, enr.student_id)
+        res = db.get(BullwhipResult, enr.id)
+        return {**sc, "done": res is not None,
+                "result": res and {"cost": res.cost, "bench_cost": res.bench_cost, "score": res.score}}
+
+    def do_resolve(db: Session, comp: Competition) -> dict[str, Any]:
+        cid, r = comp.id, comp.current_round
+        plan = comp.plan[r - 1]
+        enrs = enrollments_of(db, cid)
+        existing = {d.enrollment_id: d for d in db.scalars(select(Decision).where(Decision.competition_id == cid, Decision.round == r))}
+        out = []
+        for team in teams_of(db, cid):
+            ts = db.get(TeamState, team.id)
+            members = [e for e in enrs if e.team_id == team.id]
+            applied = L.default_decisions(plan["forecast"], ts.last_applied)
+            chosen: dict[str, Decision] = {}
+            for role in L.ROLES:
+                for e in members:
+                    d = existing.get(e.id)
+                    if e.role == role and d and d.submitted:
+                        chosen[role] = d
+                        applied[L.DECISION_FIELDS[role]] = d.payload[L.DECISION_FIELDS[role]]
+                        break
+            before = dict(ts.state)
+            new_state, kpi = L.simulate_round(before, applied, plan)
+            for e in members:
+                d = existing.get(e.id)
+                if not d:
+                    d = Decision(competition_id=cid, enrollment_id=e.id, team_id=team.id, role=e.role, round=r)
+                    db.add(d)
+                d.resolved = True
+                d.applied = chosen.get(e.role) is d if d.submitted else False
+                d.auto_score = L.auto_score(e.role, d.payload, before, applied, plan["forecast"]) if d.submitted else 0.0
+                d.score = d.auto_score  # avtomatik ball; o'qituvchi xohlasa o'zgartiradi
+            ts.state, ts.last_applied = new_state, applied
+            db.add(RoundResult(competition_id=cid, team_id=team.id, round=r, applied=applied, kpi=kpi))
+            out.append({"team": team.name, "kpi": kpi})
+        comp.current_round = r + 1
+        db.flush()
+        try_autofinalize(db, comp)
+        return {"resolved_round": r, "next_round": comp.current_round if comp.current_round <= comp.rounds_total else None,
+                "teams": out, "finished": comp.status == "FINISHED"}
 
     # ------------------------------------------------------------ ro'yxatdan o'tish
     @app.post("/api/comp/register", status_code=201)
@@ -558,8 +659,9 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
                 "task": task_public(task) if task else None, "current_round": current,
                 "my_decisions": [{"round": d.round, "payload": d.payload, "submitted": d.submitted, "score": d.score,
                                   "feedback": d.feedback} for d in decs if d.resolved],
-                "my_result": mine_res and {k: mine_res[k] for k in ("case_average", "decision_average", "individual_score", "complete", "rank")},
-                "options": {"suppliers": L.SUPPLIERS, "modes": L.MODES}}
+                "my_result": mine_res and {k: mine_res[k] for k in ("case_average", "decision_average", "bullwhip_score", "individual_score", "complete", "rank")},
+                "options": {"suppliers": L.SUPPLIERS, "modes": L.MODES}, "bullwhip": bullwhip_view(db, comp, enr) if enr.role else None,
+                "winner": (comp.final or {}).get("winner") if comp.status == "FINISHED" else None}
 
     @app.put("/api/comp/competitions/{cid}/task")
     def submit_task(cid: str, body: AnswerIn, user=Depends(current_user), db: Session = Depends(db_session)):
@@ -569,10 +671,48 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
         if not task:
             raise HTTPException(404, "Sizga hali topshiriq tayinlanmagan (musobaqa boshlanmagan).")
         if task.status not in {"ASSIGNED", "RETURNED"}:
-            raise HTTPException(409, "Javob topshirilgan; o'qituvchi tekshirishini kuting yoki qaytarilishini kuting.")
-        task.answer, task.status, task.submitted_at = body.answer, "SUBMITTED", _now()
+            raise HTTPException(409, "Javob allaqachon topshirilgan." if task.status == "APPROVED" else "Javob topshirilgan; o'qituvchi tekshirishini kuting.")
+        if task.content.get("fields"):  # avtomatik tekshiriladigan topshiriq
+            if body.answers is None:
+                raise HTTPException(422, "Barcha maydonlarni to'ldiring.")
+            try:
+                clean = L.check_answers(task.content, body.answers)
+            except ValueError as exc:
+                raise HTTPException(422, str(exc))
+            score, criteria, feedback = L.grade_case(task.content, clean, task.content["reference"]["answers"])
+            task.answer = json.dumps(clean, ensure_ascii=False)
+            task.status, task.score, task.criteria, task.feedback = "APPROVED", score, criteria, feedback
+            task.submitted_at = task.reviewed_at = _now()
+            try_autofinalize(db, comp)
+        else:  # eski, matnli topshiriq: o'qituvchi qo'lda baholaydi
+            if not body.answer.strip():
+                raise HTTPException(422, "Javobni yozing.")
+            task.answer, task.status, task.submitted_at = body.answer, "SUBMITTED", _now()
         db.commit()
         return task_public(task)
+
+    @app.get("/api/comp/competitions/{cid}/bullwhip")
+    def bullwhip_info(cid: str, user=Depends(current_user), db: Session = Depends(db_session)):
+        comp, enr = student_enrollment(cid, user, db)
+        return bullwhip_view(db, comp, enr)
+
+    @app.post("/api/comp/competitions/{cid}/bullwhip")
+    def submit_bullwhip(cid: str, body: BullwhipIn, user=Depends(current_user), db: Session = Depends(db_session)):
+        comp, enr = student_enrollment(cid, user, db)
+        if comp.status != "RUNNING":
+            raise HTTPException(409, "Bullwhip natijasini faqat musobaqa davomida yuborish mumkin.")
+        if db.get(BullwhipResult, enr.id):
+            raise HTTPException(409, "Bullwhip natijasi allaqachon yuborilgan.")
+        sc = L.bullwhip_scenario(comp.seed, enr.student_id)
+        try:
+            res = L.bullwhip_grade(sc["seed"], sc["rounds"], sc["role_index"], body.orders)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        db.add(BullwhipResult(enrollment_id=enr.id, competition_id=cid, orders=body.orders, cost=res["cost"], bench_cost=res["bench_cost"], score=res["score"]))
+        db.flush()
+        try_autofinalize(db, comp)
+        db.commit()
+        return res
 
     @app.post("/api/comp/competitions/{cid}/decision")
     def submit_decision(cid: str, body: DecisionIn, user=Depends(current_user), db: Session = Depends(db_session)):
@@ -588,8 +728,14 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
             d = Decision(competition_id=cid, enrollment_id=enr.id, team_id=enr.team_id, role=enr.role, round=comp.current_round)
             db.add(d)
         d.payload, d.submitted = payload, True
+        db.flush()
+        rnd = comp.current_round
+        submitted = {x.enrollment_id for x in db.scalars(select(Decision).where(Decision.competition_id == cid, Decision.round == rnd, Decision.submitted.is_(True)))}
+        auto = all(e.id in submitted for e in enrollments_of(db, cid))  # hamma yuborgan -> raund o'zi hisoblanadi
+        if auto:
+            do_resolve(db, comp)
         db.commit()
-        return {"round": d.round, "payload": d.payload}
+        return {"round": rnd, "payload": d.payload, "round_resolved": auto}
 
     # ------------------------------------------------------------ raundlar va qarorlar baholash
     @app.post("/api/comp/competitions/{cid}/rounds/resolve")
@@ -599,39 +745,9 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
             raise HTTPException(409, "Musobaqa davom etmayapti.")
         if comp.current_round > comp.rounds_total:
             raise HTTPException(409, "Barcha raundlar yakunlangan.")
-        r = comp.current_round
-        plan = comp.plan[r - 1]
-        enrs = enrollments_of(db, cid)
-        existing = {d.enrollment_id: d for d in db.scalars(select(Decision).where(Decision.competition_id == cid, Decision.round == r))}
-        out = []
-        for team in teams_of(db, cid):
-            ts = db.get(TeamState, team.id)
-            members = [e for e in enrs if e.team_id == team.id]
-            applied = L.default_decisions(plan["forecast"], ts.last_applied)
-            chosen: dict[str, Decision] = {}
-            for role in L.ROLES:
-                for e in members:
-                    d = existing.get(e.id)
-                    if e.role == role and d and d.submitted:
-                        chosen[role] = d
-                        applied[L.DECISION_FIELDS[role]] = d.payload[L.DECISION_FIELDS[role]]
-                        break
-            before = dict(ts.state)
-            new_state, kpi = L.simulate_round(before, applied, plan)
-            for e in members:
-                d = existing.get(e.id)
-                if not d:
-                    d = Decision(competition_id=cid, enrollment_id=e.id, team_id=team.id, role=e.role, round=r)
-                    db.add(d)
-                d.resolved = True
-                d.applied = chosen.get(e.role) is d if d.submitted else False
-                d.auto_score = L.auto_score(e.role, d.payload, before, applied, plan["forecast"]) if d.submitted else 0.0
-            ts.state, ts.last_applied = new_state, applied
-            db.add(RoundResult(competition_id=cid, team_id=team.id, round=r, applied=applied, kpi=kpi))
-            out.append({"team": team.name, "kpi": kpi})
-        comp.current_round = r + 1
+        res = do_resolve(db, comp)
         db.commit()
-        return {"resolved_round": r, "next_round": comp.current_round if comp.current_round <= comp.rounds_total else None, "teams": out}
+        return res
 
     @app.get("/api/comp/competitions/{cid}/decisions")
     def list_decisions(cid: str, round: int | None = None, user=Depends(current_user), db: Session = Depends(db_session)):
@@ -678,17 +794,16 @@ def install(app, db_session, current_user, token_for, hasher, user_model, engine
     def finalization(cid: str, user=Depends(current_user), db: Session = Depends(db_session)):
         comp = teacher_comp(cid, user, db)
         blockers = finalization_blockers(db, comp)
-        return {"ready": not blockers, "blockers": blockers}
+        return {"ready": not blockers, "blockers": blockers, "can_force": not finalization_blockers(db, comp, True)}
 
     @app.post("/api/comp/competitions/{cid}/finalize")
-    def finalize(cid: str, user=Depends(current_user), db: Session = Depends(db_session)):
+    def finalize(cid: str, body: FinalizeIn | None = None, user=Depends(current_user), db: Session = Depends(db_session)):
         comp = teacher_comp(cid, user, db)
-        blockers = finalization_blockers(db, comp)
+        force = bool(body and body.force)
+        blockers = finalization_blockers(db, comp, force)
         if blockers:
             raise HTTPException(409, {"message": "Musobaqani yakunlash bloklandi.", "blockers": blockers})
-        comp.final = {"teams": [{k: v for k, v in t.items() if k != "rounds"} for t in results_teams(db, comp)],
-                      "students": results_students(db, comp), "finalized_at": _now().isoformat()}
-        comp.status = "FINISHED"
+        finalize_now(db, comp, force)
         db.commit()
         return {"status": comp.status, "final": comp.final}
 
