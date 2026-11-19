@@ -1,81 +1,285 @@
 <!doctype html>
 <html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>SCW Industrial Mega Warehouse</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111e;color:#e8f2fb;font-family:Inter,Arial,sans-serif}.app{height:100%;display:flex;flex-direction:column}.top{height:72px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:#0b1725;border-bottom:1px solid #263c51;z-index:3}.brand{display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#56b9ff,#2467a5);display:grid;place-items:center;font-weight:900}.brand strong{display:block;font-size:14px;letter-spacing:.07em}.brand small{color:#91a8bc}.btn{border:1px solid #38536d;border-radius:12px;background:#13283d;color:#e8f2fb;padding:10px 14px;font-weight:700}.main{position:relative;flex:1;min-height:0}canvas{width:100%;height:100%;display:block}.hud{position:absolute;top:12px;left:14px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}.chip{background:#0b1a2bdc;border:1px solid #38536d;border-radius:22px;padding:9px 13px;font-size:12px;color:#b6c9d9}.chip b{color:white;margin-left:6px}.panel{position:absolute;right:14px;top:14px;width:min(330px,calc(100% - 28px));max-height:calc(100% - 28px);overflow:auto;background:#0b1928f2;border:1px solid #38536d;border-radius:18px;padding:15px;backdrop-filter:blur(12px)}.eyebrow{color:#61d7ce;font-size:11px;letter-spacing:.16em;font-weight:900;margin:5px 0 9px}.panel h1{font-size:21px;margin:0 0 7px}.muted{font-size:12px;color:#91a8bc;line-height:1.5}.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:14px 0}.stat{background:#11263a;border:1px solid #2d455c;border-radius:12px;padding:10px}.stat small{display:block;color:#91a8bc}.stat strong{display:block;font-size:18px;margin-top:4px}.zones{display:grid;grid-template-columns:1fr 1fr;gap:6px}.zone{background:#11263a;color:#dce9f4;border:1px solid #2d455c;border-radius:10px;padding:9px;text-align:left;font-size:11px;min-height:48px}.zone b{display:block;color:#8cc9f6;margin-bottom:3px}.zone.selected{border-color:#5cbcff;background:#173b59}.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.controls .wide{grid-column:1/-1}.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}.notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}.notice.show{opacity:1}@media(max-width:700px){.top{height:62px;padding:8px 10px}.brand strong{font-size:11px}.brand small{font-size:10px}.pill{display:none}.panel{top:auto;bottom:8px;left:8px;right:8px;width:auto;max-height:43%;padding:11px;border-radius:15px}.panel h1{font-size:17px}.stats{grid-template-columns:repeat(4,1fr);margin:9px 0}.stat{padding:7px}.stat strong{font-size:14px}.zones{grid-template-columns:repeat(3,1fr)}.zone{padding:7px;min-height:42px;font-size:10px}.help{display:none}.hud{top:8px;left:8px}.chip{padding:7px 9px;font-size:10px}}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111e;color:#e8f2fb;font-family:Inter,Arial,sans-serif}
+.app{height:100%;display:flex;flex-direction:column}
+.top{height:72px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px;background:#0b1725;border-bottom:1px solid #263c51;z-index:3}
+.brand{display:flex;gap:12px;align-items:center;min-width:0}
+.logo{width:44px;height:44px;flex:none;border-radius:12px;background:linear-gradient(135deg,#56b9ff,#2467a5);display:grid;place-items:center;font-weight:900}
+.brand strong{display:block;font-size:14px;letter-spacing:.07em}
+.brand small{color:#91a8bc}
+.btn{border:1px solid #38536d;border-radius:12px;background:#13283d;color:#e8f2fb;padding:10px 14px;font-weight:700;cursor:pointer}
+.btn:active{background:#1c3b57}
+.main{position:relative;flex:1;min-height:0}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;top:12px;left:14px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.chip{background:#0b1a2bdc;border:1px solid #38536d;border-radius:22px;padding:9px 13px;font-size:12px;color:#b6c9d9}
+.chip b{color:#fff;margin-left:6px}
+.panel{position:absolute;right:14px;top:14px;width:min(330px,calc(100% - 28px));max-height:calc(100% - 28px);overflow:auto;background:#0b1928f2;border:1px solid #38536d;border-radius:18px;padding:15px;backdrop-filter:blur(12px)}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.eyebrow{color:#61d7ce;font-size:11px;letter-spacing:.16em;font-weight:900;margin:5px 0 9px}
+.panel h1{font-size:21px;margin:0 0 7px}
+.muted{font-size:12px;color:#91a8bc;line-height:1.5}
+.tg{flex:none;border:1px solid #38536d;border-radius:10px;background:#13283d;color:#cfe3f3;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.panel.collapsed .body{display:none}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:14px 0}
+.stat{background:#11263a;border:1px solid #2d455c;border-radius:12px;padding:10px}
+.stat small{display:block;color:#91a8bc}
+.stat strong{display:block;font-size:18px;margin-top:4px}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.zone{background:#11263a;color:#dce9f4;border:1px solid #2d455c;border-radius:10px;padding:9px;text-align:left;font-size:11px;min-height:48px;cursor:pointer}
+.zone b{display:block;color:#8cc9f6;margin-bottom:3px}
+.zone.selected{border-color:#5cbcff;background:#173b59}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.controls .wide{grid-column:1/-1}
+.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
+.notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
+.notice.show{opacity:1}
+@media(max-width:700px){
+.top{height:58px;padding:8px 10px}
+.brand strong{font-size:11px}.brand small{display:none}.logo{width:38px;height:38px}
+.btn{padding:8px 10px;font-size:12px}
+.hud{top:8px;left:8px}.chip{padding:7px 9px;font-size:10px}.chip:nth-child(n+2){display:none}
+.panel{top:auto;bottom:8px;left:8px;right:8px;width:auto;max-height:52%;padding:11px;border-radius:15px}
+.eyebrow{margin:2px 0 5px;font-size:10px}
+.panel h1{font-size:16px;margin:0 0 4px}
+.stats{grid-template-columns:repeat(4,1fr);margin:9px 0}.stat{padding:7px}.stat strong{font-size:14px}
+.zones{grid-template-columns:repeat(3,1fr)}.zone{padding:7px;min-height:42px;font-size:10px}
+.help{display:none}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
-<body><div class="app"><header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><button class="btn" id="reset">Kamerani tiklash</button></header>
-<main class="main"><canvas id="scene"></canvas><div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLAHUV <b>PROCESS FLOW</b></div></div>
-<aside class="panel"><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">Oqimga asoslangan 12 zonali logistika markazi.</div><div class="stats"><div class="stat"><small>Maydon</small><strong>24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Qator</small><strong>3 qanot</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div><div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div><div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn wide" id="labels">Yorliqlar: ON</button></div></aside><div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div></main></div>
-<script src="src/core/industrial_layout.js"></script><script type="module">
-import * as THREE from "three";import{OrbitControls}from"three/addons/controls/OrbitControls.js";
+<body><div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><button class="btn" id="reset">Kamerani tiklash</button></header>
+<main class="main"><canvas id="scene"></canvas>
+<div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLAHUV <b>PROCESS FLOW</b></div></div>
+<aside class="panel" id="panel">
+<div class="sheet-head"><div><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">Oqimga asoslangan 12 zonali logistika markazi.</div></div><button class="tg" id="toggle">Zonalar ▲</button></div>
+<div class="body"><div class="stats"><div class="stat"><small>Maydon</small><strong id="area">24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Qator</small><strong>3 qanot</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
+<div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
+<div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn wide" id="labels">Yorliqlar: ON</button></div></div>
+</aside>
+<div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div></main></div>
+<script src="src/core/industrial_layout.js"></script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
+
 const L=window.SCWIndustrialLayout;if(!L)throw Error("Industrial layout missing");
-const canvas=document.querySelector("#scene"),mobile=innerWidth<=700,renderer=new THREE.WebGLRenderer({canvas,antialias:!mobile,powerPreference:mobile?"low-power":"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.15:1.6));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x071421);scene.fog=new THREE.Fog(0x071421,145,290);
-const camera=new THREE.PerspectiveCamera(48,1,.1,500),controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,3,0);controls.minDistance=18;controls.maxDistance=230;controls.maxPolarAngle=Math.PI*.48;
-function home(){camera.position.set(mobile?150:118,mobile?172:112,mobile?190:142);controls.target.set(0,2,0);controls.update()}home();
-scene.add(new THREE.HemisphereLight(0xc5e5ff,0x26384b,2));const sun=new THREE.DirectionalLight(0xffe8c6,2.4);sun.position.set(-65,110,70);sun.castShadow=!mobile;sun.shadow.mapSize.set(mobile?512:2048,mobile?512:2048);scene.add(sun);const fill=new THREE.DirectionalLight(0x5b9dff,1.1);fill.position.set(85,45,-85);scene.add(fill);
-const mat=(c,r=.7,m=.1,em=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m,emissive:em?c:0,emissiveIntensity:em?.3:0});
-const floorMat=mat(0x27394a,.95),wallMat=mat(0x24394c,.8,.25),steel=mat(0x71889b,.55,.65),rackBlue=mat(0x28618a,.48,.5),rackOrange=mat(0xe19a3e,.55,.25),palletMat=mat(0x9a7955),boxMats=[mat(0xbba27b),mat(0x8da9b9),mat(0x91a78b),mat(0xc5a46f)],belt=mat(0x344c60,.65,.5),roller=mat(0xa6b6c2,.35,.75),yellow=mat(0xe8b64e,.5,.3),glass=mat(0x47738b,.25,.45);
-function box(w,h,d,m,x,y,z,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=!mobile;o.receiveShadow=true;parent.add(o);return o}
-function cyl(rad,len,m,x,y,z,parent=scene){const o=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,len,10),m);o.rotation.x=Math.PI/2;o.position.set(x,y,z);parent.add(o);return o}
-box(160,.7,150,floorMat,0,-.45,0);
-for(let x=-80;x<=80;x+=20){box(.35,15,.35,steel,x,7.5,-75);box(.35,15,.35,steel,x,7.5,75)}
-for(let z=-70;z<=70;z+=20){box(.35,15,.35,steel,-80,7.5,z);box(.35,15,.35,steel,80,7.5,z);box(160,.25,.3,steel,0,14.2,z)}
-// roof trusses, translucent roof strips and industrial lighting
-for(let z=-60;z<=60;z+=20){box(.35,.4,160,steel,0,14.8,z);for(let x=-60;x<=60;x+=20)box(.25,.25,.25,steel,x,14.9,z)}
-for(let x=-60;x<=60;x+=30){box(.18,.18,130,steel,x,14.95,0);for(let z=-50;z<=50;z+=25){box(4,.16,1,glass,x,14.2,z);box(3.4,.04,.65,mat(0xd8efff,.2,.05,1),x,14.05,z)}}
-// floor aisles and zone pads
-const zoneMeshes=new Map(),zoneLabels=[];const palette={receiving:0x315d78,inspection:0x665b37,returns:0x59445f,storage:0x31536d,automated_storage:0x344c77,replenishment:0x41645b,picking:0x52613b,sorting:0x62523a,packing:0x66513d,staging:0x3c5e69,dispatch:0x315e64,control:0x514a70};
-function label(t,x,z){const c=document.createElement("canvas");c.width=512;c.height=128;const q=c.getContext("2d");q.fillStyle="#071421";q.strokeStyle="#5aaee9";q.lineWidth=5;q.beginPath();q.roundRect(4,4,504,120,18);q.fill();q.stroke();q.fillStyle="#eef7ff";q.font="bold 36px Arial";q.textAlign="center";q.fillText(t,256,78);const tx=new THREE.CanvasTexture(c),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false}));sp.position.set(x,7,z);sp.scale.set(14,3.5,1);scene.add(sp);zoneLabels.push(sp)}
-for(const z of L.zones){const m=mat(palette[z.kind]||0x34516a,.9,.05);m.transparent=true;m.opacity=.55;const p=box(z.width,.08,z.depth,m,z.x,.03,z.z);zoneMeshes.set(z.id,p);const edge=mat(0x8db5ce,.65,.3);box(z.width,.08,.2,edge,z.x,.12,z.minZ);box(z.width,.08,.2,edge,z.x,.12,z.maxZ);box(.2,.08,z.depth,edge,z.minX,.12,z.z);box(.2,.08,z.depth,edge,z.maxX,.12,z.z);label(z.code+"  "+z.name.toUpperCase(),z.x,z.z)}
-// Industrial pallet rack: repeated bays, load levels, bracing and stored pallets
-function rack(x,z,bays=5,levels=5,scale=1){const g=new THREE.Group(),w=bays*2.35*scale,d=2.2*scale,h=levels*2.05*scale;for(const xx of [-w/2,w/2])for(const zz of [-d/2,d/2])box(.16*scale,h,.16*scale,rackBlue,xx,h/2,zz,g);for(let lv=1;lv<=levels;lv++){const y=lv*2.05*scale;box(w,.16*scale,.18*scale,rackOrange,0,y,-d/2,g);box(w,.16*scale,.18*scale,rackOrange,0,y,d/2,g);for(let b=0;b<bays;b++){const px=-w/2+(b+.5)*w/bays;box(w/bays-.16,.82*scale,d*.72,boxMats[(b+lv)%4],px,y+.55*scale,0,g);box(w/bays-.3,.08,d*.78,palletMat,px,y+.13,0,g)}}g.position.set(x,.12,z);scene.add(g);return g}
-function rackRun(x,z0,bays=15,levels=5,bayPitch=2.05){const g=new THREE.Group(),len=bays*bayPitch,d=2.25,h=levels*2.05;for(const xx of [-d/2,d/2]){for(let b=0;b<=bays;b++){const zz=b*bayPitch;box(.14,h,.14,rackBlue,xx,h/2,zz,g);if(b<bays){for(let lv=1;lv<=levels;lv++){const y=lv*2.05;box(.18,.14,bayPitch-.12,rackOrange,xx,y,zz+bayPitch/2,g);box(.9,.78,bayPitch-.24,boxMats[(b+lv)%4],xx*.38,y+.48,zz+bayPitch/2,g);box(1,.08,bayPitch-.2,palletMat,xx*.38,y+.12,zz+bayPitch/2,g)}}}}for(let lv=1;lv<=levels;lv++)box(d,.12,.12,steel,0,lv*2.05,0,g);g.position.set(x,.12,z0);scene.add(g);return g}
-function rackAisles(xPositions,z0,bays,levels){for(const x of xPositions)rackRun(x,z0,bays,levels)}
-// Dense industrial pallet storage: seven parallel runs per manual-storage zone.
-// Each run has 15 bays, multiple load levels, visible pallet loads and clear MHE aisles.
-rackAisles([-74,-67,-60,-53,-46,-39,-32],-30,15,5);
-rackAisles([-74,-67,-60,-53,-46,-39,-32],20,15,4);
-// High-bay AS/RS: six tall rack runs with a deliberately wide central stacker-crane aisle.
-rackAisles([-16,-11,-5,5,11,16],-30,15,8);
-// AGV travel paths: visible dashed floor lanes with safety edge
-const lane=mat(0x3b718b,.8,.15),dash=mat(0xe4b64f,.65,.25);for(const z of [-32,10,53]){box(150,.035,3,lane,0,.08,z);for(let x=-72;x<=72;x+=8)box(3,.04,.14,dash,x,.12,z)}
-// Inbound dock doors, dock levellers, trailers
-for(const x of [-68,-56,-44]){box(8,5,.35,steel,x,2.5,-69.4);box(7,4,.18,mat(0x101d2a),x,2.5,-69);box(7,.3,2, yellow,x,-.05,-72)}
-function truck(x,z,color){const g=new THREE.Group();box(10,3.6,4.2,mat(0x8a9aa7),0,2,0,g);box(3.2,3.2,3.8,mat(color),6.2,1.8,0,g);for(const xx of [-3,0,5.5,7])for(const zz of [-1.6,1.6])cyl(.58,.25,mat(0x121a22),xx,.58,zz,g);g.position.set(x,.1,z);scene.add(g)}
-truck(-67,-78,0x4c86ad);truck(-45,-78,0x638e7a);truck(68,78,0x9a765b);
-// Inbound pallets and QC benches
-for(let i=0;i<8;i++){box(1.5,.16,1.3,palletMat,-70+(i%4)*7,.15,-57+Math.floor(i/4)*9);box(1.25,.9,1.1,boxMats[i%4],-70+(i%4)*7,.7,-57+Math.floor(i/4)*9)}
-function bench(x,z){box(4,.2,1.5,steel,x,1,z);box(1.5,.9,.08,glass,x,1.65,z-.6);box(.1,1,.1,steel,x-1.7,.5,z);box(.1,1,.1,steel,x+1.7,.5,z)}
+const $=s=>document.querySelector(s);
+const W=L.BUILDING.width,D=L.BUILDING.depth,H=L.BUILDING.wallHeight,hw=W/2,hd=D/2;
+const canvas=$("#scene"),mobile=innerWidth<=700;
+
+/* ---------- renderer / scene / camera ---------- */
+const renderer=new THREE.WebGLRenderer({canvas,antialias:!mobile,powerPreference:mobile?"low-power":"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.5:1.6));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x071421);scene.fog=new THREE.Fog(0x071421,600,1600);
+const camera=new THREE.PerspectiveCamera(mobile?58:48,1,1,3000);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.minDistance=12;controls.maxDistance=1100;controls.maxPolarAngle=Math.PI*.48;
+
+scene.add(new THREE.HemisphereLight(0xc5e5ff,0x26384b,2));
+const sun=new THREE.DirectionalLight(0xffe8c6,2.4);sun.position.set(-65,110,70);sun.castShadow=!mobile;
+sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-130,right:130,top:130,bottom:-130,near:1,far:400});sun.shadow.bias=-.0005;
+scene.add(sun);
+const fill=new THREE.DirectionalLight(0x5b9dff,1.1);fill.position.set(85,45,-85);scene.add(fill);
+
+/* ---------- materials ---------- */
+const mat=(c,r=.7,m=.1,em=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m,emissive:em?c:0,emissiveIntensity:em?.35:0});
+const floorMat=mat(0x27394a,.95),jointMat=mat(0x31485c,.95,0),asphalt=mat(0x16202a,.98,0),
+wallMat=mat(0x2b4358,.8,.25),doorMat=mat(0x0e1a26,.9,.1),steel=mat(0x71889b,.55,.65),
+rackBlue=mat(0x28618a,.48,.5),rackOrange=mat(0xe19a3e,.55,.25),palletMat=mat(0x9a7955,.9,0),
+boxMats=[mat(0xbba27b,.9,0),mat(0x8da9b9,.9,0),mat(0x91a78b,.9,0),mat(0xc5a46f,.9,0)],
+belt=mat(0x344c60,.65,.5),roller=mat(0xa6b6c2,.35,.75),yellow=mat(0xe8b64e,.5,.3),
+glass=mat(0x47738b,.25,.45),lane=mat(0x3b718b,.8,.15),dash=mat(0xe4b64f,.65,.25),
+lamp=mat(0xd8efff,.2,.05,1),screen=mat(0x59b8ff,.3,.1,1),cartMat=mat(0x54758a,.7,.3),
+truckBody=mat(0x8a9aa7,.6,.3),cabA=mat(0x4c86ad,.5,.3),cabB=mat(0x638e7a,.5,.3),tire=mat(0x121a22,.9,0),
+edgeMat=mat(0x8db5ce,.65,.3);
+const wallGlass=new THREE.MeshStandardMaterial({color:0x7fb2d6,roughness:.2,metalness:.2,transparent:true,opacity:.09,side:THREE.DoubleSide,depthWrite:false});
+
+/* ---------- static geometry batching: one merged mesh per material ---------- */
+const batches=new Map();let T=null;
+function put(m,g){if(T)g.applyMatrix4(T);let a=batches.get(m);if(!a){a=[];batches.set(m,a)}a.push(g)}
+function B(w,h,d,m,x,y,z){const g=new THREE.BoxGeometry(w,h,d);g.translate(x,y,z);put(m,g)}
+function C(r,len,m,x,y,z){const g=new THREE.CylinderGeometry(r,r,len,8);g.rotateX(Math.PI/2);g.translate(x,y,z);put(m,g)}
+function withT(x,y,z,ry,fn){T=new THREE.Matrix4().makeRotationY(ry);T.setPosition(x,y,z);fn();T=null}
+function flush(){for(const [m,list] of batches){const o=new THREE.Mesh(mergeGeometries(list,false),m);o.castShadow=!mobile&&!m.transparent;o.receiveShadow=true;scene.add(o);list.forEach(g=>g.dispose())}batches.clear()}
+function mesh(w,h,d,m,x,y,z,parent){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=!mobile;o.receiveShadow=true;parent.add(o);return o}
+
+/* ---------- building shell ---------- */
+B(W,.7,D,floorMat,0,-.45,0);
+for(let x=-hw+10;x<hw;x+=10)B(.12,.03,D,jointMat,x,-.08,0);
+for(let z=-hd+10;z<hd;z+=10)B(W,.03,.12,jointMat,0,-.08,z);
+B(W,.5,18,asphalt,0,-.35,-hd-9);B(W,.5,18,asphalt,0,-.35,hd+9);           // truck yards
+B(W,1.4,.5,wallMat,0,.7,-hd);B(W,1.4,.5,wallMat,0,.7,hd);                // low solid walls
+B(.5,1.4,D,wallMat,-hw,.7,0);B(.5,1.4,D,wallMat,hw,.7,0);
+const gh=H-1.4,gy=1.4+gh/2;                                              // translucent upper shell
+B(W,gh,.1,wallGlass,0,gy,-hd);B(W,gh,.1,wallGlass,0,gy,hd);B(.1,gh,D,wallGlass,-hw,gy,0);B(.1,gh,D,wallGlass,hw,gy,0);
+for(let x=-hw;x<=hw;x+=20){B(.4,H,.4,steel,x,H/2,-hd);B(.4,H,.4,steel,x,H/2,hd)}
+for(let z=-75;z<=75;z+=25){B(.4,H,.4,steel,-hw,H/2,z);B(.4,H,.4,steel,hw,H/2,z)}
+// roof frame: main beams run along X (one per bay), purlins along Z — all inside the building footprint
+for(let z=-75;z<=75;z+=25)B(W,.45,.35,steel,0,H-.3,z);
+for(let x=-hw;x<=hw;x+=20)B(.25,.25,D,steel,x,H-.05,0);
+for(let x=-60;x<=60;x+=30)for(let z=-50;z<=50;z+=25){B(3.4,.1,.6,lamp,x,H-1.3,z);B(.08,1,.08,steel,x,H-.75,z)}
+
+/* ---------- zones: floor pads, borders, labels ---------- */
+const palette={receiving:0x2f6f94,inspection:0x8a7a2f,returns:0x7a4f86,storage:0x2c5f86,automated_storage:0x2f4fa0,replenishment:0x2f7a62,picking:0x5f7a2f,sorting:0x8a6a2f,packing:0x8f5f3a,staging:0x2f7f8a,dispatch:0x2a8a7a,control:0x5f55a5};
+const roles={INBOUND:"Yuk mashinasidan pallet tushiriladi va qabul qilinadi",QUALITY:"Mahsulot sifati va miqdori tekshiriladi",RETURNS:"Qaytarilgan mahsulotlar ko‘rib chiqiladi",RESERVE:"Asosiy pallet saqlash — stellaj qatorlari",HIGH_BAY:"Avtomatik baland saqlash — stacker kran",REPLENISHMENT:"Terish zonasi zaxiradan to‘ldiriladi",PICKING:"Buyurtma bo‘yicha mahsulot yig‘iladi",SORTING:"Konveyerda yo‘nalish bo‘yicha saralanadi",PACKING:"Qadoqlash va yorliq yopishtirish",OUTBOUND:"Jo‘natishga tayyor yuklar to‘planadi",DISPATCH:"Yuk mashinasiga ortish va jo‘natish",CONTROL:"Butun ombor monitoringi va boshqaruvi"};
+const zones=[...L.zones].sort((a,b)=>a.priority-b.priority);
+const pads=new Map(),labels=[];
+function makeLabel(z){
+  const c=document.createElement("canvas");c.width=512;c.height=200;const q=c.getContext("2d");
+  q.fillStyle="rgba(7,20,33,.94)";q.strokeStyle="#5aaee9";q.lineWidth=6;q.beginPath();q.roundRect(6,6,500,188,26);q.fill();q.stroke();
+  q.textAlign="center";q.fillStyle="#7fd0ff";q.font="bold 76px Arial";q.fillText(z.code,256,88);
+  q.fillStyle="#eef7ff";q.font="bold 38px Arial";q.fillText(z.name.toUpperCase(),256,150);
+  const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false,depthWrite:false}));
+  sp.position.set(z.x,H+6,z.z);sp.scale.set(mobile?19:15,mobile?7.4:5.86,1);sp.renderOrder=10;scene.add(sp);labels.push(sp);
+}
+for(const z of zones){
+  const pm=new THREE.MeshStandardMaterial({color:palette[z.kind]||0x34516a,roughness:.9,metalness:.05,transparent:true,opacity:.6});
+  const pad=new THREE.Mesh(new THREE.BoxGeometry(z.width,.06,z.depth),pm);pad.position.set(z.x,0,z.z);pad.receiveShadow=true;scene.add(pad);pads.set(z.id,pad);
+  B(z.width,.05,.3,edgeMat,z.x,.05,z.minZ);B(z.width,.05,.3,edgeMat,z.x,.05,z.maxZ);B(.3,.05,z.depth,edgeMat,z.minX,.05,z.z);B(.3,.05,z.depth,edgeMat,z.maxX,.05,z.z);
+  makeLabel(z);
+}
+
+/* ---------- AGV / forklift lanes on the floor ---------- */
+for(const z of [-32,10,53]){B(150,.035,3,lane,0,.08,z);for(let x=-72;x<=72;x+=8)B(3,.04,.14,dash,x,.12,z)}
+for(const x of [-25,28.5]){B(3,.035,140,lane,x,.08,0);for(let z=-68;z<=68;z+=8)B(.14,.04,3,dash,x,.12,z)}
+
+/* ---------- storage racks (merged: thousands of boxes, one draw call per material) ---------- */
+function rackRun(x,z0,bays,levels,pitch=2.05){
+  const d=2.25,h=levels*2.05,len=bays*pitch;
+  for(const sx of [-1,1]){
+    const xx=x+sx*d/2;
+    for(let b=0;b<=bays;b++)B(.14,h,.14,rackBlue,xx,.12+h/2,z0+b*pitch);
+    for(let lv=1;lv<=levels;lv++){
+      const y=.12+lv*2.05;B(.18,.14,len,rackOrange,xx,y,z0+len/2);
+      for(let b=0;b<bays;b++){
+        if(Math.abs(Math.floor(x*3+b*7+lv*13+sx*5))%9===0)continue;           // some empty slots
+        const pz=z0+b*pitch+pitch/2;
+        B(.9,.78,pitch-.24,boxMats[(b+lv)%4],x+sx*d*.19,y+.48,pz);B(1,.08,pitch-.2,palletMat,x+sx*d*.19,y+.12,pz);
+      }
+    }
+  }
+  for(let lv=1;lv<=levels;lv++){const y=.12+lv*2.05;B(d,.12,.12,steel,x,y,z0);B(d,.12,.12,steel,x,y,z0+len)}
+}
+const reserveX=[-75,-68,-61,-54,-47,-40,-33];
+for(const x of reserveX){rackRun(x,-30,15,5);rackRun(x,20,15,4)}   // Z03 Reserve + Z05 Picking
+for(const x of [-16,-11,-5,5,11,16])rackRun(x,-30,15,6);            // Z04 High-Bay (crane aisle in the middle)
+for(let i=0;i<6;i++){const ax=-71.5+i*7;B(1.6,.5,1.1,cartMat,ax,.45,18.2);B(1.1,.8,.9,boxMats[i%4],ax,1.1,18.2)} // pick carts at aisle heads
+
+/* ---------- docks: doors on the walls, levellers, trucks ---------- */
+for(const x of [-68,-56,-44]){B(7,4.6,.4,doorMat,x,2.3,-hd+.1);B(7.6,.3,.5,steel,x,4.75,-hd+.1);B(7,.15,3,yellow,x,.1,-hd+1.7)}
+for(const x of [-10,0,10]){B(7,4.6,.4,doorMat,x,2.3,hd-.1);B(7.6,.3,.5,steel,x,4.75,hd-.1);B(7,.15,3,yellow,x,.1,hd-1.7)}
+function truck(x,z,ry,cab){withT(x,.1,z,ry,()=>{B(10,3.6,4.2,truckBody,0,2,0);B(3.2,3.2,3.8,cab,6.2,1.8,0);for(const xx of [-3,0,5.5,7])for(const zz of [-1.6,1.6])C(.58,.25,tire,xx,.58,zz)})}
+truck(-68,-hd-6,Math.PI/2,cabA);truck(-44,-hd-6,Math.PI/2,cabB);   // inbound: backed to the dock, cab away from the wall
+truck(-10,hd+6,-Math.PI/2,cabB);truck(10,hd+6,-Math.PI/2,cabA);    // dispatch
+
+/* ---------- Z01 inbound staging, Z02 QC benches, Z11 returns, Z06 replenishment ---------- */
+function bench(x,z,y0=0){B(4,.2,1.5,steel,x,y0+1,z);B(1.5,.9,.08,glass,x,y0+1.65,z-.6);B(.1,1,.1,steel,x-1.7,y0+.5,z);B(.1,1,.1,steel,x+1.7,y0+.5,z)}
+for(let i=0;i<8;i++){const px=-70+(i%4)*7,pz=-57+Math.floor(i/4)*9;B(1.5,.16,1.3,palletMat,px,.15,pz);B(1.25,.9,1.1,boxMats[i%4],px,.7,pz)}
 for(const x of [-10,0,10])bench(x,-54);
-// returns inspection/quarantine lanes
-for(const x of [45,55,65]){box(2,.12,20,yellow,x,.15,-51);for(const z of [-58,-51,-44]){box(1.5,.15,1.2,palletMat,x,.25,z);box(1.2,.7,1,boxMats[2],x,.75,z)}}
-// replenishment carts and pick faces
-for(const x of [45,55,65])for(const z of [-25,-13,-1]){box(2,.5,1.3,mat(0x54758a),x,.45,z);box(1.2,.8,1,boxMats[1],x,1,z)}
-// High bay crane rails, mast and shuttle
-box(1,.15,45,steel,-2,.18,-13);box(1,.15,45,steel,2,.18,-13);const crane=new THREE.Group();box(.3,14,.3,rackOrange,-1,7,0,crane);box(.3,14,.3,rackOrange,1,7,0,crane);box(3,.4,1,steel,0,13.8,0,crane);const lift=new THREE.Group();box(2,.35,2,glass,0,0,0,lift);box(1.6,.7,1.6,rackOrange,0,.5,0,lift);crane.add(lift);scene.add(crane);
-// sorting cross-belt and diverter branches
-function conveyor(x,z,len,angle=0){const g=new THREE.Group();box(len,.55,2,belt,0,.55,0,g);for(let xx=-len/2+1;xx<len/2;xx+=2.2)cyl(.16,1.85,roller,xx,.85,0,g);g.position.set(x,.1,z);g.rotation.y=angle;scene.add(g);return g}
-const mainBelt=conveyor(0,34,30),branchA=conveyor(-10,43,17,Math.PI/2),branchB=conveyor(10,43,17,Math.PI/2),packFeed=conveyor(55,34,25);
-for(const x of [-10,0,10]){bench(x,34);box(1.2,.8,1,boxMats[0],x,1.35,38)}
-// packing cells with benches, carton stacks and scan arches
-for(const x of [43,55,67]){bench(x,39);for(let i=0;i<3;i++)box(.9,.8,.8,boxMats[i],x+i*1.2,1.5,45);box(.12,2.8,.12,yellow,x-2,1.4,29);box(.12,2.8,.12,yellow,x+2,1.4,29);box(4.2,.12,.12,yellow,x,2.8,29)}
-// outbound staging lanes and dispatch doors
-for(const x of [-69,-57,-45]){box(7,.08,18,lane,x,.08,65);for(const z of [59,65,71]){box(1.5,.15,1.3,palletMat,x,.2,z);box(1.25,.9,1.1,boxMats[1],x,.8,z)}}
-for(const x of [-10,0,10]){box(7,5,.35,steel,x,2.5,69.5);box(6,4,.18,mat(0x101d2a),x,2.5,69.2);box(6,.2,2,yellow,x,.1,72)}
-// control centre mezzanine and operator desks
-box(28,.6,16,steel,55,5.5,64);for(const x of [47,55,63]){bench(x,61);box(1.8,1.2,.12,glass,x,7,57)}
-// Forklifts and autonomous mobile robots, slow loop paths confined to aisles
-function vehicle(x,z,color){const g=new THREE.Group();box(2.2,.8,1.2,mat(color),0,.8,0,g);box(1,.9,.9,glass,-.2,1.6,0,g);box(.12,3,.14,steel,1,1.6,-.4,g);box(.12,3,.14,steel,1,1.6,.4,g);box(1.4,.12,.14,yellow,1.7,.2,-.28,g);box(1.4,.12,.14,yellow,1.7,.2,.28,g);g.position.set(x,.1,z);scene.add(g);return g}
-const forklifts=[vehicle(-55,-18,0xe3a63f),vehicle(-54,36,0x4c9b88),vehicle(55,-15,0xd9a83d)];
-const agvs=[];for(let i=0;i<5;i++){const g=new THREE.Group();box(1.6,.45,1.2,mat(0x367e9f),0,.45,0,g);box(.7,.3,.7,mat(0xd4e0e8),0,.85,0,g);g.position.set(-68+i*9,.1,10);scene.add(g);agvs.push(g)}
-// panel and zone selection
-const list=document.querySelector("#zoneList"),selectedClass="selected";let selected=null;for(const z of L.zones){const b=document.createElement("button");b.className="zone";b.innerHTML="<b>"+z.code+"</b>"+z.name;b.onclick=()=>selectZone(z.id);list.appendChild(b)}
-function selectZone(id){const z=L.getZone(id);if(!z)return;selected=id;document.querySelector("#zoneTitle").textContent=z.code+" · "+z.name;document.querySelector("#zoneDesc").textContent="X "+z.x+" · Z "+z.z+" | "+z.width+" × "+z.depth+" m · "+z.kind;for(const el of list.children)el.classList.toggle("selected",el.querySelector("b").textContent===z.code);for(const [k,m]of zoneMeshes){m.material.opacity=k===id?.78:.3;m.material.emissive.setHex(k===id?0x203d52:0)}controls.target.set(z.x,2,z.z);controls.update()}
-const notice=document.querySelector("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
-document.querySelector("#reset").onclick=home;document.querySelector("#fit").onclick=home;document.querySelector("#top").onclick=()=>{camera.position.set(0,215,.1);controls.target.set(0,0,0);controls.update()};let showLabels=true;document.querySelector("#labels").onclick=()=>{showLabels=!showLabels;zoneLabels.forEach(x=>x.visible=showLabels);document.querySelector("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF")};
-function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener("resize",resize);resize();
-let t=0,last=0;function animate(ms){requestAnimationFrame(animate);const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;crane.position.set(0,0,-13+Math.sin(t*.28)*14);lift.position.y=1+Math.abs(Math.sin(t*.65))*7;forklifts.forEach((v,i)=>{v.position.x=[-55,-54,55][i]+Math.sin(t*.18+i)*2;v.position.z=[-18,36,-15][i]+Math.cos(t*.18+i)*3});agvs.forEach((v,i)=>{const a=t*.16+i*1.25;v.position.x=Math.cos(a)*67;v.position.z=Math.sin(a)*48;v.rotation.y=-a});controls.update();renderer.render(scene,camera)}requestAnimationFrame(animate);
-const check=L.validate();document.querySelector("#zoneDesc").textContent=check.valid?"12 zona · sanoat oqimi · geometriya tekshirildi":"Layout xatosi: "+check.errors.join(", ");
+for(const x of [45,55,65]){B(2,.12,20,yellow,x,.12,-51);for(const z of [-58,-51,-44]){B(1.5,.15,1.2,palletMat,x,.25,z);B(1.2,.7,1,boxMats[2],x,.75,z)}}
+for(const x of [45,55,65])for(const z of [-25,-13,-1]){B(2,.5,1.3,cartMat,x,.45,z);B(1.2,.8,1,boxMats[1],x,1,z)}
+
+/* ---------- Z07 sorting + Z08 packing: conveyors ---------- */
+function conveyor(x,z,len,ry=0){withT(x,.1,z,ry,()=>{B(len,.55,2,belt,0,.55,0);B(len,.25,.12,steel,0,.95,-1.05);B(len,.25,.12,steel,0,.95,1.05);for(let xx=-len/2+1;xx<len/2;xx+=2.2)C(.14,1.8,roller,xx,.88,0)})}
+conveyor(0,34,30);conveyor(-10,42.5,16,Math.PI/2);conveyor(10,42.5,16,Math.PI/2);conveyor(55,34,25);
+for(const x of [-10,10])B(.3,1.3,2.6,yellow,x,1.2,34.6);                     // diverters
+B(.14,2.8,.14,yellow,-4,1.4,32);B(.14,2.8,.14,yellow,-4,1.4,36);B(.14,.14,4.2,yellow,-4,2.8,34);   // scan arch
+for(const x of [46,55,64]){B(.14,2.8,.14,yellow,x,1.4,32);B(.14,2.8,.14,yellow,x,1.4,36);B(.14,.14,4.2,yellow,x,2.8,34)}
+for(const x of [43,55,67]){bench(x,41);for(let i=0;i<3;i++)B(.9,.8,.8,boxMats[i],x-1.2+i*1.2,.5,45.5)}
+
+/* ---------- Z09 outbound staging ---------- */
+for(const x of [-69,-57,-45]){B(7,.08,18,lane,x,.08,65);for(const z of [59,65,71]){B(1.5,.15,1.3,palletMat,x,.2,z);B(1.25,.9,1.1,boxMats[1],x,.8,z)}}
+
+/* ---------- Z12 control centre: mezzanine on columns with stairs ---------- */
+B(28,.5,16,steel,55,5.25,65);
+for(const dx of [-13.5,13.5])for(const dz of [-7.5,7.5])B(.5,5.2,.5,steel,55+dx,2.6,65+dz);
+B(28,1,.1,glass,55,6.2,57.1);B(.1,1,16,glass,41.1,6.2,65);B(.1,1,16,glass,68.9,6.2,65);
+for(const x of [47,55,63])bench(x,62,5.5);
+B(20,3,.2,screen,55,7.6,72.8);
+for(let i=0;i<10;i++)B(2,.12,1.2,steel,39.6,.4+i*.5,72-i*1.45);
+flush();
+
+/* ---------- animated objects ---------- */
+const crane=new THREE.Group();
+mesh(.3,13,.3,rackOrange,-1,6.6,0,crane);mesh(.3,13,.3,rackOrange,1,6.6,0,crane);mesh(3,.4,1,steel,0,13.1,0,crane);
+const lift=new THREE.Group();mesh(2,.35,2,glass,0,0,0,lift);mesh(1.6,.7,1.6,rackOrange,0,.5,0,lift);crane.add(lift);scene.add(crane);
+{const rails=[];rails.push(mesh(1,.15,42,steel,-2,.18,-13,scene),mesh(1,.15,42,steel,2,.18,-13,scene))}
+
+function vehicle(color){const g=new THREE.Group(),m=mat(color,.6,.3);
+  mesh(2.2,.8,1.2,m,0,.8,0,g);mesh(1,.9,.9,glass,-.2,1.6,0,g);mesh(.12,3,.14,steel,1,1.6,-.4,g);mesh(.12,3,.14,steel,1,1.6,.4,g);
+  mesh(1.4,.12,.14,yellow,1.7,.2,-.28,g);mesh(1.4,.12,.14,yellow,1.7,.2,.28,g);g.position.y=.1;scene.add(g);return g}
+// forklifts stay inside aisles (they travel along Z, between rack runs)
+const forklifts=[
+ {g:vehicle(0xe3a63f),x:-57.5,z0:-15,amp:12,ph:0},
+ {g:vehicle(0x4c9b88),x:-50.5,z0:35,amp:13,ph:1.7},
+ {g:vehicle(0xd9a83d),x:50,z0:-14,amp:15,ph:3.1}];
+// AGVs shuttle along the marked floor lanes
+const agvs=[];[-32,10,53,10,53].forEach((lz,i)=>{const g=new THREE.Group();mesh(1.6,.45,1.2,mat(0x367e9f),0,.45,0,g);mesh(.7,.3,.7,mat(0xd4e0e8),0,.85,0,g);g.position.y=.1;scene.add(g);agvs.push({g,lz,ph:i*1.4})});
+
+const parcels=[];
+function belt$(n,axis,fixed,a,b,speed){for(let i=0;i<n;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.8,.7,.8),boxMats[i%4]);m.castShadow=!mobile;scene.add(m);parcels.push({m,axis,fixed,a,b,speed,off:i/n})}}
+belt$(8,"x",34,-14,14,2.5);belt$(4,"z",-10,35,50,2);belt$(4,"z",10,35,50,2);belt$(8,"x",34,43.5,66.5,2.2);
+
+/* ---------- camera: fit building to any screen, fly between views ---------- */
+let goal=null;
+function fitDist(halfW,halfH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(halfH/t,halfW/(t*camera.aspect))}
+function homePose(){const d=fitDist(112,72)*1.08;return{pos:new THREE.Vector3(.55,.72,.75).normalize().multiplyScalar(d),target:new THREE.Vector3(0,0,0)}}
+function topPose(){const d=fitDist(82,78)*1.05;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
+function fly(p,instant){if(instant){camera.position.copy(p.pos);controls.target.copy(p.target);controls.update();goal=null}else goal=p}
+
+/* ---------- panel + zone selection ---------- */
+const list=$("#zoneList"),panel=$("#panel"),toggle=$("#toggle");
+function syncToggle(){toggle.textContent=panel.classList.contains("collapsed")?"Zonalar ▲":"Yopish ▼"}
+if(mobile)panel.classList.add("collapsed");syncToggle();
+toggle.onclick=()=>{panel.classList.toggle("collapsed");syncToggle()};
+$("#area").textContent=(W*D).toLocaleString("en-US").replace(/,/g," ")+" m²";
+for(const z of zones){const b=document.createElement("button");b.className="zone";b.dataset.id=z.id;b.innerHTML="<b>"+z.code+"</b>"+z.name;b.onclick=()=>selectZone(z.id);list.appendChild(b)}
+const defaultDesc="12 zona · sanoat oqimi · geometriya tekshirildi";
+function selectZone(id){
+  const z=L.getZone(id);if(!z)return;
+  $("#zoneTitle").textContent=z.code+" · "+z.name;
+  $("#zoneDesc").textContent=(roles[z.id]||"")+" · "+z.width+" × "+z.depth+" m";
+  for(const el of list.children)el.classList.toggle("selected",el.dataset.id===z.id);
+  for(const [k,p] of pads){p.material.opacity=k===id?.85:.35;p.material.emissive.setHex(k===id?0x1f4a66:0)}
+  const dist=Math.max(z.width,z.depth)*(mobile?2.1:1.5)+28,dir=new THREE.Vector3(.45,.85,.75).normalize();
+  const tg=new THREE.Vector3(z.x,2,z.z);fly({pos:tg.clone().add(dir.multiplyScalar(dist)),target:tg});
+  if(mobile){panel.classList.add("collapsed");syncToggle()}
+}
+function clearSelection(){
+  $("#zoneTitle").textContent="Industrial Mega Warehouse";$("#zoneDesc").textContent=defaultDesc;
+  for(const el of list.children)el.classList.remove("selected");
+  for(const p of pads.values()){p.material.opacity=.6;p.material.emissive.setHex(0)}
+}
+const notice=$("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
+$("#reset").onclick=()=>{clearSelection();fly(homePose())};
+$("#fit").onclick=()=>{clearSelection();fly(homePose())};
+$("#top").onclick=()=>fly(topPose());
+let showLabels=true;$("#labels").onclick=()=>{showLabels=!showLabels;labels.forEach(s=>s.visible=showLabels);$("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF");notify(showLabels?"Yorliqlar yoqildi":"Yorliqlar o‘chirildi")};
+
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener("resize",()=>{resize();if(!goal)return});
+resize();fly(homePose(),true);
+
+/* ---------- loop ---------- */
+let t=0,last=0;
+function animate(ms){
+  requestAnimationFrame(animate);
+  const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;
+  crane.position.z=-13+Math.sin(t*.28)*14;lift.position.y=1+Math.abs(Math.sin(t*.65))*10;
+  for(const f of forklifts){const a=t*.35+f.ph;f.g.position.set(f.x,.1,f.z0+Math.sin(a)*f.amp);f.g.rotation.y=Math.cos(a)>0?-Math.PI/2:Math.PI/2}
+  for(const v of agvs){const a=t*.18+v.ph;v.g.position.set(68*Math.sin(a),.1,v.lz);v.g.rotation.y=Math.cos(a)>0?0:Math.PI}
+  for(const p of parcels){const u=(t*p.speed/(p.b-p.a)+p.off)%1,v=p.a+(p.b-p.a)*u;if(p.axis==="x")p.m.position.set(v,1.55,p.fixed);else p.m.position.set(p.fixed,1.55,v)}
+  if(goal){camera.position.lerp(goal.pos,.09);controls.target.lerp(goal.target,.09);if(camera.position.distanceTo(goal.pos)<.4&&controls.target.distanceTo(goal.target)<.2)goal=null}
+  controls.update();renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+const check=L.validate();$("#zoneDesc").textContent=check.valid?defaultDesc:"Layout xatosi: "+check.errors.join(", ");
 </script></body></html>
