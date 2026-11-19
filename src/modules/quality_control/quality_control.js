@@ -30,7 +30,7 @@ function recordDecision(data,decision){
  const item={
   id:nextId(),sourceType:data.sourceType,sourceId:data.sourceId,
   purchaseOrderId:data.purchaseOrderId||null,receiptIndex:data.receiptIndex===undefined?null:data.receiptIndex,
-  returnId:data.returnId||null,sku:data.sku,lot:data.lot,qty:data.qty,
+  returnId:data.returnId||null,sku:data.sku,lot:data.lot,location:data.location||null,qty:data.qty,
   decision,reason:String(data.reason||"").trim(),inspector:String(data.inspector||"").trim(),
   at:new Date().toISOString()
  };
@@ -46,7 +46,7 @@ const api={
   input=input||{};
   const decision=validateDecision(input.decision);
   const source=receiptFor(input);
-  const data={sourceType:"INBOUND",sourceId:source.po.id+":"+source.index,purchaseOrderId:source.po.id,receiptIndex:source.index,sku:source.po.sku,lot:source.receipt.lot,qty:source.qty,reason:input.reason,inspector:input.inspector};
+  const data={sourceType:"INBOUND",sourceId:source.po.id+":"+source.index,purchaseOrderId:source.po.id,receiptIndex:source.index,sku:source.po.sku,lot:source.receipt.lot,location:source.receipt.location,qty:source.qty,reason:input.reason,inspector:input.inspector};
   core().emit("quality.inspection.started",data,{source:"QualityControl"});
   return recordDecision(data,decision);
  },
