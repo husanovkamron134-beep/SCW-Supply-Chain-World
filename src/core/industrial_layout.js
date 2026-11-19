@@ -1,7 +1,7 @@
 /* SCW Industrial Mega Warehouse — process-flow layout v1 */
 (function(root){
 "use strict";
-const BUILDING=Object.freeze({id:"SCW-INDUSTRIAL-5XL",name:"SCW Industrial Mega Warehouse",width:160,depth:140,wallHeight:15,floorY:0,coordinateSystem:"X east-west; Z north-south; origin centre"});
+const BUILDING=Object.freeze({id:"SCW-INDUSTRIAL-5XL",name:"SCW Industrial Mega Warehouse",width:160,depth:150,wallHeight:15,floorY:0,coordinateSystem:"X east-west; Z north-south; origin centre"});
 const raw=[
 {id:"INBOUND",code:"Z01",name:"Inbound Receiving",x:-54,z:-51,width:46,depth:28,kind:"receiving",priority:1},
 {id:"QUALITY",code:"Z02",name:"Quality Control",x:0,z:-51,width:34,depth:28,kind:"inspection",priority:2},
