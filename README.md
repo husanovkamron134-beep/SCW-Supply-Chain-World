@@ -84,3 +84,11 @@ Open `index.html` in a modern browser. An internet connection is required for th
 
 ## Data and limitations
 Phase 1–10 browser modules still store operational data in localStorage until Phase 12 connects their adapters to the backend. The Phase 11 API provides multi-user accounts, workspaces and versioned server snapshots but does not yet migrate each module. Route distances use straight-line city coordinates, not live road routing or traffic. No GPS or live carrier integration is implemented.
+
+
+## Phase 17 — inventory-linked Smart Warehouse 3D
+- Standalone `warehouse3d.html` scene linked from the main navigation
+- 3D pallets are generated from Phase 2 inventory balances with SKU, LOT and quantity metadata
+- Forklift pallet transfers post to the authoritative `SCWDomain` movement ledger
+- Inbound demo action records a real inventory receipt; a deterministic AGV route is included
+- Details and manual test steps: `docs/PHASE17_INVENTORY_LINKED_3D_WAREHOUSE.md`
