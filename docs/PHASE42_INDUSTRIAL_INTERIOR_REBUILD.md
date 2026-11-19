@@ -14,3 +14,10 @@
 - Truck/forklift models are simplified low-poly industrial geometry.
 - No real equipment telemetry, physics, or multi-user state is connected.
 - Browser/device visual QA remains required.
+
+
+## Follow-up visual correction
+- Mobile default camera moved lower and closer to eye-level; wider FOV makes the warehouse interior feel less like a plan view.
+- Increased rack bay counts, rack heights and footprint; consolidated the main storage aisles into fewer, larger rack blocks to reduce the scattered miniature-shelf appearance.
+- The top-view control remains available for navigation.
+- This is a source-level visual update; confirm the deployed mobile result on a real device before considering the camera/rack pass complete.
