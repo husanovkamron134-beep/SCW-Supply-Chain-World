@@ -44,7 +44,7 @@
  <div class="ops-kpi"><small>Ochiq vazifalar</small><b id="opsTasks">—</b></div>
 </div>
 <div class="ops-actions"><button class="btn" id="opsStart">Modullarni ishga tushirish</button><button class="btn" id="opsRefresh">Yangilash</button></div>
-<div class="eyebrow">MODUL HOLATI</div><pre class="ops-pre" id="opsModules">Hali ma'lumot yo'q.</pre>
+<div class="muted">Ranglar: ko‘k — kutmoqda · yashil — faol · oltin — ochiq vazifa.</div><div class="eyebrow">MODUL HOLATI</div><pre class="ops-pre" id="opsModules">Hali ma'lumot yo'q.</pre>
 <div class="eyebrow">SO'NGGI HODISALAR</div><pre class="ops-pre" id="opsEvents">Hali hodisa yo'q.</pre>
 </details>
 </aside>
@@ -164,6 +164,16 @@ async function refreshOps(){
   document.querySelector("#opsModules").textContent=snap.core.modules.map(x=>x.id.padEnd(20," ")+" "+x.status).join("\n");
   document.querySelector("#opsEvents").textContent=snap.recentEvents.slice(0,12).map(x=>x.type+" · "+new Date(x.at).toLocaleTimeString()).join("\n")||"Hali hodisa yo'q.";
   status.textContent="Core "+snap.core.version+" · "+snap.core.runningModules+" ta modul ishga tushgan · "+snap.core.registeredModules+" ta ro'yxatdan o'tgan.";
+  const zoneModules={INBOUND:"INBOUND",QUALITY:"QUALITY_CONTROL",RETURNS:"RETURNS",RESERVE:"RESERVE_STORAGE",HIGH_BAY:"HIGH_BAY_ASRS",REPLENISHMENT:"REPLENISHMENT",PICKING:"PICKING",SORTING:"SORTING",PACKING:"PACKING",OUTBOUND:"OUTBOUND_STAGING",DISPATCH:"DISPATCH",CONTROL:"CONTROL_CENTER"};
+  const snapshots={QUALITY:snap.qualityControl,RETURNS:snap.returns,RESERVE:snap.reserveStorage,HIGH_BAY:snap.highBayASRS,REPLENISHMENT:snap.replenishment,PICKING:snap.picking,SORTING:snap.sorting,PACKING:snap.packing,OUTBOUND:snap.outboundStaging,DISPATCH:snap.dispatch};
+  for(const [zoneId,moduleId] of Object.entries(zoneModules)){
+   const mesh=zoneMeshes.get(zoneId),zone=L.getZone(zoneId),module=snap.core.modules.find(x=>x.id===moduleId);
+   if(!mesh||!zone)continue;
+   const data=snapshots[zoneId],metrics=data&&data.metrics||{};
+   const open=metrics.open||metrics.openTasks||metrics.pending||metrics.waitingASRS||0;
+   const color=!module||module.status!=="RUNNING"?(palette[zone.kind]||0x34516a):(open>0?0xf2c46e:0x3f9b78);
+   mesh.material.color.setHex(color);
+  }
  }catch(error){status.textContent="Xatolik: "+error.message}
 }
 document.querySelector("#opsStart").onclick=async()=>{
