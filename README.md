@@ -193,3 +193,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added dispatch tasks gated by completed Outbound Staging.
 - Shipment completion uses the existing Operations Adapter and legacy inventory issue workflow exactly once.
 - Technical contract: `docs/PHASE31_DISPATCH.md`.
+
+
+## Phase 32 — Returns
+- Added customer return intake gated by a previously DISPATCHED sales order.
+- Returned LOT quantities are received once into `RET-01` through the Inventory Adapter.
+- Return quantities are reconciled against QC inspection decisions; accepted / quarantined / rejected stock remains held for a future disposition workflow.
+- Technical contract and manual integration test: `docs/PHASE32_RETURNS.md`.
