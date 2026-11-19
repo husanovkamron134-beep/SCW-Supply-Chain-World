@@ -115,3 +115,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added a layout validator for zone count, footprint bounds and overlap.
 - Existing Three.js scene, inventory, WMS tasks and localStorage behaviour remain unchanged in this phase.
 - Technical plan and validation notes: `docs/PHASE20_MEGA_WAREHOUSE_CORE.md`
+
+
+## Phase 21 — Shared Core Engine foundation
+- Added a standalone module registry, dependency-aware lifecycle, domain event bus and command dispatcher in `src/core/shared_core.js`.
+- Documented the 12-module folder architecture, adapter migration strategy and inter-module workflow contracts.
+- Existing `SCWDomain`, `SCWWarehouse`, `SCWOperations`, inventory storage and 3D pages remain unchanged.
+- Technical contract: `docs/PHASE21_SHARED_CORE_ENGINE.md`.
