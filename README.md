@@ -122,3 +122,11 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Documented the 12-module folder architecture, adapter migration strategy and inter-module workflow contracts.
 - Existing `SCWDomain`, `SCWWarehouse`, `SCWOperations`, inventory storage and 3D pages remain unchanged.
 - Technical contract: `docs/PHASE21_SHARED_CORE_ENGINE.md`.
+
+
+## Phase 22 — legacy adapters and Inbound foundation
+- Added Inventory, WMS and Operations adapters around the existing public APIs.
+- Added the first Core-managed Inbound module with PO receipt, snapshot and command interfaces.
+- PO receiving still posts inventory once through the legacy authoritative workflow; adapters publish events without creating a second ledger.
+- No legacy source, localStorage schema, existing page or production navigation was replaced.
+- Integration contract and manual test: `docs/PHASE22_ADAPTERS_INBOUND.md`.
