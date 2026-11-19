@@ -200,3 +200,14 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Returned LOT quantities are received once into `RET-01` through the Inventory Adapter.
 - Return quantities are reconciled against QC inspection decisions; accepted / quarantined / rejected stock remains held for a future disposition workflow.
 - Technical contract and manual integration test: `docs/PHASE32_RETURNS.md`.
+
+
+## Phase 33 — Control Center
+- Added a read-only operational snapshot across inventory, orders and the warehouse modules.
+- Added a 100-event in-memory event feed; no duplicate operational store is created.
+- Technical contract: `docs/PHASE33_CONTROL_CENTER.md`.
+
+## Phase 34 — Integrated module bootstrap
+- Added explicit dependency-ordered startup and reverse-order shutdown for adapters and all 12 operational modules.
+- Bootstrap checks that every module script has loaded and rolls back modules started in a failed startup attempt.
+- It is not yet wired into the production pages; see `docs/PHASE34_MODULE_BOOTSTRAP.md`.
