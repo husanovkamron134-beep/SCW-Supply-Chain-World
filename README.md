@@ -138,3 +138,11 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Publishes quality events for future Reserve Storage and Returns integration without posting a second inventory movement.
 - QC inspection records are currently in-memory; durable audit persistence is deferred to backend integration.
 - Technical contract and manual integration test: `docs/PHASE23_QUALITY_CONTROL.md`.
+
+
+## Phase 24 — QC-gated Reserve Storage
+- Added Reserve Storage task planning from accepted inbound QC inspections only.
+- Putaway validates LOT source availability and destination capacity, then posts one transfer through the authoritative Inventory Adapter.
+- Reserve task state is persisted separately; no duplicate stock ledger is introduced.
+- The older generic WMS putaway remains QC-unaware and must not be used for production until migrated.
+- Technical contract and manual integration test: `docs/PHASE24_RESERVE_STORAGE.md`.
