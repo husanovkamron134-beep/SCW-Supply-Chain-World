@@ -17,7 +17,7 @@ function request(input){
  const data=inventory().snapshot(),buffer=data.locations.find(x=>x.code==="PICK-01");
  if(!buffer)throw Error("PICK-01 mavjud emas. Avval High-Bay AS/RS modulini ishga tushiring.");
  const used=data.balances.filter(x=>x.location==="PICK-01").reduce((n,x)=>n+x.qty,0);
- const reservedBuffer=state.tasks.filter(t=>t.status==="OPEN"&&t.to==="PICK-01").reduce((n,t)=>n+t.qty,0);
+ const reservedBuffer=state.tasks.filter(t=>(t.status==="OPEN"||t.status==="WAITING_ASRS")&&t.to==="PICK-01").reduce((n,t)=>n+t.qty,0);
  let freeBuffer=Math.max(0,buffer.capacity-used-reservedBuffer),remaining=qty;
  const sources=data.locations.filter(x=>x.type==="storage"&&x.code!=="PICK-01"&&!x.code.startsWith("HBA-"));
  const candidates=[];
@@ -36,14 +36,25 @@ function request(input){
  }
  const waiting=[];
  let highBayAvailable=0;
- data.balances.filter(b=>b.sku===sku&&b.location.startsWith("HBA-")&&b.qty>0&&(!lot||b.lot===lot)).forEach(b=>highBayAvailable+=b.qty);
- if(remaining>0&&highBayAvailable>0&&root.SCWHBASRS){
-  const take=Math.min(remaining,highBayAvailable);
-  try{
-   const asrsTasks=root.SCWHBASRS.createRetrieval({sku,lot:lot||undefined,qty:take,to:"PICK-01"});
-   const task={id:nextId(),kind:"ASRS_RETRIEVAL",orderId,sku,lot:lot||null,qty:take,from:"HIGH_BAY",to:"PICK-01",asrsTaskIds:asrsTasks.map(x=>x.id),status:"WAITING_ASRS",createdAt:new Date().toISOString()};
-   state.tasks.unshift(task);waiting.push(clone(task));remaining-=take;
-  }catch(error){core().emit("replenishment.asrs.error",{sku,qty:take,message:error.message},{source:"Replenishment"})}
+ const highBayLots={};
+ data.balances.filter(b=>b.sku===sku&&b.location.startsWith("HBA-")&&b.qty>0&&(!lot||b.lot===lot)).forEach(b=>{
+  highBayAvailable+=b.qty;highBayLots[b.lot]=(highBayLots[b.lot]||0)+b.qty;
+ });
+ if(remaining>0&&highBayAvailable>0&&freeBuffer>0&&root.SCWHBASRS){
+  let asrsRemaining=Math.min(remaining,highBayAvailable,freeBuffer);
+  const asrsTaskIds=[];let asrsQty=0;
+  for(const highBayLot of Object.keys(highBayLots).sort()){
+   if(asrsRemaining<=0)break;
+   const take=Math.min(asrsRemaining,highBayLots[highBayLot]);
+   try{
+    const tasks=root.SCWHBASRS.createRetrieval({sku,lot:highBayLot,qty:take,to:"PICK-01"});
+    tasks.forEach(task=>asrsTaskIds.push(task.id));asrsQty+=take;asrsRemaining-=take;
+   }catch(error){core().emit("replenishment.asrs.error",{sku,lot:highBayLot,qty:take,message:error.message},{source:"Replenishment"})}
+  }
+  if(asrsQty>0){
+   const task={id:nextId(),kind:"ASRS_RETRIEVAL",orderId,sku,lot:lot||null,qty:asrsQty,from:"HIGH_BAY",to:"PICK-01",asrsTaskIds,status:"WAITING_ASRS",createdAt:new Date().toISOString()};
+   state.tasks.unshift(task);waiting.push(clone(task));remaining-=asrsQty;freeBuffer-=asrsQty;
+  }
  }
  if(created.length||waiting.length)save();
  created.forEach(task=>core().emit("replenishment.task.created",{task},{source:"Replenishment"}));
@@ -60,7 +71,7 @@ function complete(taskId){
  if(!source||source.qty<task.qty)throw Error("Reserve manbasida LOT miqdori yetarli emas.");
  const dest=data.locations.find(x=>x.code==="PICK-01");
  const used=data.balances.filter(x=>x.location==="PICK-01").reduce((n,x)=>n+x.qty,0);
- const reserved=state.tasks.filter(t=>t.status==="OPEN"&&t.to==="PICK-01"&&t.id!==task.id).reduce((n,t)=>n+t.qty,0);
+ const reserved=state.tasks.filter(t=>(t.status==="OPEN"||t.status==="WAITING_ASRS")&&t.to==="PICK-01"&&t.id!==task.id).reduce((n,t)=>n+t.qty,0);
  if(!dest||used+reserved+task.qty>dest.capacity)throw Error("Pick buffer sig'imi yetarli emas.");
  inventory().record({type:"TRANSFER",sku:task.sku,qty:task.qty,lot:task.lot,from:task.from,to:"PICK-01",reference:task.id,note:"Replenishment to pick buffer"});
  task.status="DONE";task.completedAt=new Date().toISOString();save();
@@ -78,7 +89,7 @@ function refresh(){
 }
 function snapshot(){return {tasks:clone(state.tasks),metrics:{open:state.tasks.filter(x=>x.status==="OPEN").length,waitingASRS:state.tasks.filter(x=>x.status==="WAITING_ASRS").length,completed:state.tasks.filter(x=>x.status==="DONE").length}}}
 function start(){
- unsubscribeShortage=core().on("picking.shortage",event=>{try{request(event.payload)}catch(error){core().emit("replenishment.planning.error",{message:error.message,payload:event.payload},{source:"Replenishment"})}});
+ unsubscribeShortage=core().on("picking.shortage",event=>{try{request({sku:event.payload.sku,qty:event.payload.shortage,orderId:event.payload.orderId})}catch(error){core().emit("replenishment.planning.error",{message:error.message,payload:event.payload},{source:"Replenishment"})}});
  core().emit("replenishment.ready",{moduleId:"REPLENISHMENT"},{source:"Replenishment"});
 }
 function stop(){if(unsubscribeShortage){unsubscribeShortage();unsubscribeShortage=null}}
