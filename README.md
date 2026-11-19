@@ -107,3 +107,11 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Dispatch consumes the staged quantities lot-by-lot through the shared inventory ledger.
 - The 3D scene exposes separate putaway and picking task creation controls.
 - This remains a browser-local deterministic simulation; AGV routing is waypoint-based and does not represent real fleet coordination.
+
+
+## Phase 20 — Mega Warehouse 5XL layout foundation
+- Added a side-effect-free 116 × 94 world-space layout configuration with 12 named zones.
+- Added primary service-corridor centre lines and zone lookup / containment helpers.
+- Added a layout validator for zone count, footprint bounds and overlap.
+- Existing Three.js scene, inventory, WMS tasks and localStorage behaviour remain unchanged in this phase.
+- Technical plan and validation notes: `docs/PHASE20_MEGA_WAREHOUSE_CORE.md`
