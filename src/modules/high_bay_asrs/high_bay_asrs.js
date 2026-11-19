@@ -36,12 +36,13 @@ function createPutaway(input){
  const available=(source?source.qty:0)-openReserved(from,sku,lot,"STORE");
  if(available<qty)throw Error("Manba lokatsiyasida AS/RS uchun yetarli zaxira yo'q.");
  const definitions=binDefinitions(),binData=definitions.map(bin=>{
-  const stock=data.balances.filter(x=>x.location===bin.code);
+  const stock=data.balances.filter(x=>x.location===bin.code&&x.qty>0);
   const used=stock.reduce((n,x)=>n+x.qty,0);
   const reserved=state.tasks.filter(t=>t.status==="OPEN"&&t.kind==="STORE"&&t.to===bin.code).reduce((n,t)=>n+t.qty,0);
   const compatible=!stock.length||stock.every(x=>x.sku===sku&&x.lot===lot);
   return {...bin,free:bin.capacity-used-reserved,compatible};
  }).filter(x=>x.compatible&&x.free>0);
+ if(binData.reduce((n,bin)=>n+bin.free,0)<qty)throw Error("High-Bay bo'sh sig'imi yetarli emas.");
  let remaining=qty;const created=[];
  for(const bin of binData){
   if(remaining<=0)break;
@@ -49,7 +50,7 @@ function createPutaway(input){
   const task={id:nextId(),kind:"STORE",sku,lot,qty:take,from,to:bin.code,status:"OPEN",createdAt:new Date().toISOString(),aisle:bin.aisle,level:bin.level,bay:bin.bay};
   state.tasks.unshift(task);created.push(clone(task));remaining-=take;
  }
- if(remaining>0)throw Error("High-Bay bo'sh sig'imi yetarli emas; "+remaining+" dona uchun joy topilmadi.");
+ if(remaining>0)throw Error("High-Bay rejalashtirish xatosi: ajratilmagan miqdor "+remaining+".");
  save();created.forEach(task=>core().emit("asrs.task.created",{task},{source:"HighBayASRS"}));return created;
 }
 function createRetrieval(input){
@@ -58,8 +59,10 @@ function createRetrieval(input){
  if(!sku||!lot||!to||!Number.isInteger(qty)||qty<=0)throw Error("SKU, LOT, manzil va musbat butun miqdor talab qilinadi.");
  const data=balances();
  if(!data.locations.some(x=>x.code===to))throw Error("AS/RS retrieval manzili mavjud emas.");
- let remaining=qty;const created=[];
  const bins=binDefinitions();
+ const totalAvailable=bins.reduce((sum,bin)=>{const stock=getBalance(data,sku,bin.code,lot);return sum+Math.max(0,(stock?stock.qty:0)-openReserved(bin.code,sku,lot,"RETRIEVE"))},0);
+ if(totalAvailable<qty)throw Error("High-Bay zaxirasida so'ralgan LOT miqdori yetarli emas; "+(qty-totalAvailable)+" dona topilmadi.");
+ let remaining=qty;const created=[];
  for(const bin of bins){
   if(remaining<=0)break;
   const stock=getBalance(data,sku,bin.code,lot);
@@ -69,7 +72,7 @@ function createRetrieval(input){
   const task={id:nextId(),kind:"RETRIEVE",sku,lot,qty:take,from:bin.code,to,status:"OPEN",createdAt:new Date().toISOString(),aisle:bin.aisle,level:bin.level,bay:bin.bay};
   state.tasks.unshift(task);created.push(clone(task));remaining-=take;
  }
- if(remaining>0)throw Error("High-Bay zaxirasida so'ralgan LOT miqdori yetarli emas; "+remaining+" dona topilmadi.");
+ if(remaining>0)throw Error("High-Bay retrieval rejalashtirish xatosi: ajratilmagan miqdor "+remaining+".");
  save();created.forEach(task=>core().emit("asrs.task.created",{task},{source:"HighBayASRS"}));return created;
 }
 function complete(taskId){
@@ -84,7 +87,7 @@ function complete(taskId){
  const reserved=state.tasks.filter(t=>t.status==="OPEN"&&t.id!==task.id&&t.to===task.to).reduce((n,t)=>n+t.qty,0);
  if(used+reserved+task.qty>destination.capacity)throw Error("AS/RS manzil sig'imi yetarli emas.");
  const destStock=data.balances.filter(x=>x.location===task.to&&x.qty>0);
- if(destStock.some(x=>x.sku!==task.sku||x.lot!==task.lot))throw Error("Bitta AS/RS binida turli SKU/LOT aralashtirilmaydi.");
+ if(task.to.indexOf("HBA-")===0&&destStock.some(x=>x.sku!==task.sku||x.lot!==task.lot))throw Error("Bitta AS/RS binida turli SKU/LOT aralashtirilmaydi.");
  inventory().record({type:"TRANSFER",sku:task.sku,qty:task.qty,lot:task.lot,from:task.from,to:task.to,reference:task.id,note:task.kind==="STORE"?"High-Bay AS/RS automated putaway":"High-Bay AS/RS retrieval"});
  task.status="DONE";task.completedAt=new Date().toISOString();save();
  core().emit(task.kind==="STORE"?"asrs.putaway.completed":"asrs.retrieval.completed",{task:clone(task)},{source:"HighBayASRS"});
