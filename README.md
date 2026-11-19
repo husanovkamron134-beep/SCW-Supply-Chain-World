@@ -225,3 +225,9 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - The scenario validates inbound → QC → reserve → AS/RS → replenishment → picking → sorting → packing → staging → dispatch → returns → Control Center.
 - CI workflow: `.github/workflows/scw-module-validation.yml`.
 - Test details: `docs/PHASE36_AUTOMATED_VALIDATION.md`.
+
+
+## Phase 37 — Live 3D zone status
+- Connected Control Center module state to the 12 zone floor colors in the isolated 5XL operations preview.
+- Blue/original = not started, green = running, gold = open / waiting work.
+- Technical notes: `docs/PHASE37_LIVE_3D_ZONE_STATUS.md`.
