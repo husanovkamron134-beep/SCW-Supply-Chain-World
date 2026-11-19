@@ -83,9 +83,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobileQuality?1.15:1.
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.shadowMap.enabled=!mobileQuality;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x081421);scene.fog=new THREE.Fog(0x081421,125,235);
-const camera=new THREE.PerspectiveCamera(42,1,.1,360);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.target.set(0,2,0);controls.minDistance=24;controls.maxDistance=190;controls.maxPolarAngle=Math.PI*.49;
-function home(){camera.position.set(43,27,48);controls.target.set(0,3.2,0);controls.update()}home();
+const camera=new THREE.PerspectiveCamera(50,1,.1,360);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.065;controls.target.set(0,3.2,0);controls.minDistance=15;controls.maxDistance=165;controls.maxPolarAngle=Math.PI*.46;
+function home(){camera.position.set(29,13,34);controls.target.set(0,3.5,0);controls.update()}home();
 scene.add(new THREE.HemisphereLight(0xc7e7ff,0x263448,2.0));
 const sun=new THREE.DirectionalLight(0xffedcf,2.6);sun.position.set(-45,95,55);sun.castShadow=!mobileQuality;sun.shadow.mapSize.set(mobileQuality?512:2048,mobileQuality?512:2048);sun.shadow.camera.left=-75;sun.shadow.camera.right=75;sun.shadow.camera.top=75;sun.shadow.camera.bottom=-75;scene.add(sun);
 const fill=new THREE.DirectionalLight(0x5b9dff,1.05);fill.position.set(70,38,-65);scene.add(fill);
@@ -150,14 +150,14 @@ for(const x of highBayRackX)for(const z of highBayRackZ)addRack(x,z,7,3,.9);
 for(const x of reserveRackX)for(const z of (mobileQuality?[8,17]:[8,14,19]))addRack(x,z,4,3,.8);
 // Additional dense, parallel pallet-rack aisles: the warehouse should read as a
 // high-capacity building, not isolated display shelves.
-for(const x of (mobileQuality?[-48,-40,-32]:[-51,-45,-39,-33,-27,-21])){
- for(const z of [-16,-10,-4])addRack(x,z,6,4,.92);
+for(const x of (mobileQuality?[-48,-38,-28]:[-49,-39,-29])){
+ for(const z of [-16,-10,-4])addRack(x,z,7,5,1.45);
 }
-for(const x of (mobileQuality?[-11,-4,4,11]:[-14,-9,-4,1,6,11,16])){
- for(const z of [-16,-10,-4])addRack(x,z,8,4,.95);
+for(const x of (mobileQuality?[-10,0,10]:[-12,-4,4,12])){
+ for(const z of [-16,-10,-4])addRack(x,z,9,5,1.35);
 }
-for(const x of (mobileQuality?[-48,-40,-32]:[-51,-45,-39,-33,-27,-21])){
- for(const z of [8,14,20])addRack(x,z,5,4,.88);
+for(const x of (mobileQuality?[-48,-38,-28]:[-49,-39,-29])){
+ for(const z of [8,14,20])addRack(x,z,7,5,1.4);
 }
 
 // Operational equipment across the remaining nine zones.
