@@ -218,3 +218,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Loads all 12 operational modules and adapters through the documented bootstrap sequence.
 - The existing 3D preview and main navigation remain untouched until browser integration validation.
 - Test instructions: `docs/PHASE35_MEGA_WAREHOUSE_OPS_PREVIEW.md`.
+
+
+## Phase 36 — Automated module validation
+- Added JavaScript syntax checks and a Node VM end-to-end simulation covering all 12 warehouse modules.
+- The scenario validates inbound → QC → reserve → AS/RS → replenishment → picking → sorting → packing → staging → dispatch → returns → Control Center.
+- CI workflow: `.github/workflows/scw-module-validation.yml`.
+- Test details: `docs/PHASE36_AUTOMATED_VALIDATION.md`.
