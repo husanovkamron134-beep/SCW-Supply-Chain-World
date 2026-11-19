@@ -130,3 +130,11 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - PO receiving still posts inventory once through the legacy authoritative workflow; adapters publish events without creating a second ledger.
 - No legacy source, localStorage schema, existing page or production navigation was replaced.
 - Integration contract and manual test: `docs/PHASE22_ADAPTERS_INBOUND.md`.
+
+
+## Phase 23 — Quality Control foundation
+- Added inbound LOT/receipt inspections and returned-goods inspection decisions (accepted, quarantined, rejected).
+- Prevents inspecting more units than the remaining quantity on a specific PO receipt row.
+- Publishes quality events for future Reserve Storage and Returns integration without posting a second inventory movement.
+- QC inspection records are currently in-memory; durable audit persistence is deferred to backend integration.
+- Technical contract and manual integration test: `docs/PHASE23_QUALITY_CONTROL.md`.
