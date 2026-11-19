@@ -134,6 +134,55 @@ for(const x of reserveRackX)for(const z of reserveRackZ)addRack(x,z,5,3,.85);
 const highBayRackX=mobileQuality?[-11,-4,4,11]:[-12,-7,-2,3,8,13],highBayRackZ=mobileQuality?[-15,-5]:[-15,-10,-5];
 for(const x of highBayRackX)for(const z of highBayRackZ)addRack(x,z,7,3,.9);
 for(const x of reserveRackX)for(const z of (mobileQuality?[8,17]:[8,14,19]))addRack(x,z,4,3,.8);
+
+// Operational equipment across the remaining nine zones.
+// Pallet loads, inspection benches, return lanes, packing cells and control desks.
+const palletWood=mat(0x92704d,.9,.08),cartMat=mat(0x4d7185,.52,.48),benchMat=mat(0x64798a,.55,.42),screenMat=mat(0x102b3e,.3,.5,true,.8),laneMat=mat(0x8aa2b4,.8,.2);
+function addPallet(x,z,tier=0){
+ const g=new THREE.Group();scene.add(g);g.position.set(x,.12,z);
+ box(1.55,.16,1.25,palletWood,0,.08,0,g);
+ for(const px of [-.55,0,.55])box(.16,.28,1.12,palletWood,px,.22,0,g);
+ const goods=mat([0xb9a27d,0x8ea8b5,0x9caa87,0xc5a36d][Math.abs(Math.round(x+z+tier))%4],.82,.06);
+ box(1.28,.72,1.02,goods,0,.68,0,g);
+ box(1.32,.08,1.06,mat(0xd7e0e7,.7,.2),0,1.08,0,g);
+ return g;
+}
+function addBench(x,z,w=3){
+ box(w,.18,1.25,benchMat,x,1.05,z);
+ for(const px of [-w/2+.18,w/2-.18])for(const pz of [-.48,.48])box(.12,1,.12,steel,x+px,.5,z+pz);
+ box(w*.78,.08,.72,mat(0x293c4d),x,1.18,z);
+ for(let i=0;i<3;i++)box(.58,.42,.5,mat([0xc49d65,0x8ea7b5,0x83a48e][i],.75,.05),x-w*.28+i*w*.28,1.47,z);
+}
+function addLane(x,z,w=5,d=5){
+ const m=mat(0x8aa2b4,.85,.18);
+ box(w,.035,.09,m,x,.12,z-d/2);box(w,.035,.09,m,x,.12,z+d/2);
+ box(.09,.035,d,m,x-w/2,.12,z);box(.09,.035,d,m,x+w/2,.12,z);
+}
+// Z01 Inbound: marked receiving lanes and pallet loads.
+for(const x of (mobileQuality?[-48,-38,-28]:[-50,-44,-38,-32,-26]))for(const z of [-39,-31]){addLane(x,z,4.8,5.2);addPallet(x,z)}
+// Z02 Quality Control: inspection benches, sample stations and quarantine bay.
+for(const x of [-10,0,10])addBench(x,-35,4.6);
+box(8,.12,5,mat(0x5c4d34,.8,.25),0,.14,-28);
+for(const x of [-2,2])box(.12,1.2,.12,gold,x,.72,-28);
+for(const x of [-2,2])box(1.5,.1,1.5,mat(0x8a5a4d),x,.3,-28);
+// Z11 Returns: return intake pallets and separated inspection lanes.
+for(const x of [29,38,47]){addLane(x,-39,5,5);addPallet(x,-39);addBench(x,-29,3.4)}
+// Z06 Replenishment: transfer carts and forward-pick reserve.
+for(const x of [29,38,47]){addRack(x,-15,3,2,.62);box(2.4,.12,1.4,cartMat,x,.55,-5);for(const px of [-.8,.8]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.12,10),steel);wheel.rotation.z=Math.PI/2;wheel.position.set(x+px,.25,-5);scene.add(wheel)}}
+// Z07 Sorting: roller lanes and diverter stations in the sort cell.
+for(const z of [7.5,17.5]){box(25,.34,1.25,conveyorMat,0,.48,z);for(let x=-11;x<=11;x+=2.5){const r=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,1.1,10),rollerMat);r.rotation.x=Math.PI/2;r.position.set(x,.7,z);scene.add(r)}}
+for(const x of [-8,0,8]){box(.22,1.1,.22,gold,x,1.1,12.5);box(2.2,.12,1.5,steel,x,1.75,12.5)}
+// Z08 Packing: three packing cells with benches, cartons and scan displays.
+for(const x of [28,38,48]){addBench(x,8.5,4.2);box(.9,.65,.8,palletWood,x,1.55,16);box(.7,.9,.08,screenMat,x+1.4,2,8.5)}
+// Z09 Outbound Staging: numbered lanes and wrapped pallets ready for dispatch.
+for(const x of [-49,-38,-27]){addLane(x,34,6,12);for(const z of [30,35,40])addPallet(x,z)}
+// Z10 Dispatch: staging desks, scan gates and loading buffers.
+for(const x of [-8,0,8]){addBench(x,31,3.8);box(.12,3.2,.12,gold,x-2,1.6,39);box(.12,3.2,.12,gold,x+2,1.6,39);box(4.1,.12,.12,gold,x,3.1,39)}
+for(const x of [-7,0,7])addPallet(x,41);
+// Z12 Control Center: operator consoles and wall-mounted live status screens.
+for(const x of [29,38,47]){box(3.8,.2,1.25,benchMat,x,1.05,34);box(.12,1.1,.12,steel,x-1.65,.5,34);box(.12,1.1,.12,steel,x+1.65,.5,34);box(1.5,1.05,.12,screenMat,x,2,33.2);box(1.25,.78,.025,mat(0x3b91a5,.25,.3,true,.9),x,2,33.12)}
+// Inbound / returns hand-pallet trucks as static industrial props.
+for(const [x,z] of [[-52,-34],[26,-34],[43,38]]){box(.2,.9,.2,cartMat,x,.55,z);box(1.1,.12,.16,steel,x+.45,.15,z);box(.12,.65,.12,gold,x-.35,.45,z)}
 // Dock aprons and dock doors along the south wall, placed outside the main footprint.
 const apron=mat(0x344657,.9,.1);box(88,.18,13,apron,0,.02,54);
 for(const x of [-42,-28,-14,0,14,28,42]){box(7,4,.28,steel,x,2,46.2);box(6.2,3.35,.12,mat(0x101e2c),x,2,46.0);box(6.2,.18,.35,gold,x,.12,45.7)}
