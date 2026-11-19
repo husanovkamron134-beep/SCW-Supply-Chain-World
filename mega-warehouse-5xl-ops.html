@@ -137,7 +137,7 @@ for(const x of reserveRackX)for(const z of (mobileQuality?[8,17]:[8,14,19]))addR
 
 // Operational equipment across the remaining nine zones.
 // Pallet loads, inspection benches, return lanes, packing cells and control desks.
-const palletWood=mat(0x92704d,.9,.08),cartMat=mat(0x4d7185,.52,.48),benchMat=mat(0x64798a,.55,.42),screenMat=mat(0x102b3e,.3,.5,true,.8),laneMat=mat(0x8aa2b4,.8,.2);
+const palletWood=mat(0x92704d,.9,.08),cartMat=mat(0x4d7185,.52,.48),benchMat=mat(0x64798a,.55,.42),screenMat=mat(0x102b3e,.3,.5,true,.8),laneMat=mat(0x8aa2b4,.8,.2),zoneConveyorMat=mat(0x354b5d,.48,.55),zoneRollerMat=mat(0x9aabb8,.34,.72);
 function addPallet(x,z,tier=0){
  const g=new THREE.Group();scene.add(g);g.position.set(x,.12,z);
  box(1.55,.16,1.25,palletWood,0,.08,0,g);
@@ -170,7 +170,7 @@ for(const x of [29,38,47]){addLane(x,-39,5,5);addPallet(x,-39);addBench(x,-29,3.
 // Z06 Replenishment: transfer carts and forward-pick reserve.
 for(const x of [29,38,47]){addRack(x,-15,3,2,.62);box(2.4,.12,1.4,cartMat,x,.55,-5);for(const px of [-.8,.8]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.12,10),steel);wheel.rotation.z=Math.PI/2;wheel.position.set(x+px,.25,-5);scene.add(wheel)}}
 // Z07 Sorting: roller lanes and diverter stations in the sort cell.
-for(const z of [7.5,17.5]){box(25,.34,1.25,conveyorMat,0,.48,z);for(let x=-11;x<=11;x+=2.5){const r=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,1.1,10),rollerMat);r.rotation.x=Math.PI/2;r.position.set(x,.7,z);scene.add(r)}}
+for(const z of [7.5,17.5]){box(25,.34,1.25,zoneConveyorMat,0,.48,z);for(let x=-11;x<=11;x+=2.5){const r=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,1.1,10),zoneRollerMat);r.rotation.x=Math.PI/2;r.position.set(x,.7,z);scene.add(r)}}
 for(const x of [-8,0,8]){box(.22,1.1,.22,gold,x,1.1,12.5);box(2.2,.12,1.5,steel,x,1.75,12.5)}
 // Z08 Packing: three packing cells with benches, cartons and scan displays.
 for(const x of [28,38,48]){addBench(x,8.5,4.2);box(.9,.65,.8,palletWood,x,1.55,16);box(.7,.9,.08,screenMat,x+1.4,2,8.5)}
