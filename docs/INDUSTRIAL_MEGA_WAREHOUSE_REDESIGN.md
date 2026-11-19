@@ -22,3 +22,5 @@ This is a separate preview page and does not replace `mega-warehouse-5xl-ops.htm
 - Conveyor parcels and stock are not yet driven by live WMS tasks.
 - This is a new visual prototype; preserve the previous operational page.
 - Validate on real mobile and desktop browsers before replacing the primary preview.
+
+- Corrected pallet-rack blocks to use long multi-bay runs with two parallel rows and clear forklift aisles; avoided overlapping rack footprints.
