@@ -85,7 +85,7 @@ renderer.shadowMap.enabled=!mobileQuality;renderer.shadowMap.type=THREE.PCFSoftS
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x081421);scene.fog=new THREE.Fog(0x081421,125,235);
 const camera=new THREE.PerspectiveCamera(42,1,.1,360);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.target.set(0,2,0);controls.minDistance=24;controls.maxDistance=190;controls.maxPolarAngle=Math.PI*.49;
-function home(){camera.position.set(105,105,125);controls.target.set(0,2,0);controls.update()}home();
+function home(){camera.position.set(43,27,48);controls.target.set(0,3.2,0);controls.update()}home();
 scene.add(new THREE.HemisphereLight(0xc7e7ff,0x263448,2.0));
 const sun=new THREE.DirectionalLight(0xffedcf,2.6);sun.position.set(-45,95,55);sun.castShadow=!mobileQuality;sun.shadow.mapSize.set(mobileQuality?512:2048,mobileQuality?512:2048);sun.shadow.camera.left=-75;sun.shadow.camera.right=75;sun.shadow.camera.top=75;sun.shadow.camera.bottom=-75;scene.add(sun);
 const fill=new THREE.DirectionalLight(0x5b9dff,1.05);fill.position.set(70,38,-65);scene.add(fill);
@@ -105,6 +105,20 @@ box(.16,2,D-2,glass,-W/2+.45,9.5,0);box(.16,2,D-2,glass,W/2-.45,9.5,0);
 for(let x=-54;x<=54;x+=12){for(const z of [-45,45])box(.42,H,.42,steel,x,H/2,z)}
 for(let z=-42;z<=42;z+=12){for(const x of [-57,57])box(.42,H,.42,steel,x,H/2,z)}
 for(let z=-42;z<=42;z+=12){box(112,.22,.28,steel,0,11.2,z)}
+// Industrial roof skeleton, translucent skylight strips and suspended high-bay lighting.
+const roofSteel=mat(0x40566a,.52,.62),lightHousing=mat(0x9db6c8,.35,.42),lightGlow=mat(0xd9efff,.22,.08,true,.92);
+for(let z=-42;z<=42;z+=12){
+ box(.32,.32,112,roofSteel,0,11.65,z);
+ for(const x of [-54,-36,-18,0,18,36,54])box(.22,.22,.22,roofSteel,x,11.7,z);
+}
+for(const x of [-42,-21,0,21,42]){
+ box(.18,.18,88,roofSteel,x,11.82,0);
+ for(const z of [-34,-17,0,17,34]){
+  box(3.2,.18,1.05,lightHousing,x,11.45,z);
+  box(2.8,.035,.72,lightGlow,x,11.34,z);
+ }
+}
+// Roof remains open in the viewer so the full interior is visible; trusses communicate the enclosed volume.
 // Service corridors: vertical centre aisles and cross-aisles between zone rows.
 const aisleMat=mat(0x30485d,.9,.05);
 for(const x of [-19,19])box(4,.035,90,aisleMat,x,.035,0);
@@ -124,7 +138,7 @@ for(const z of L.zones){
 }
 // Storage equipment: realistic rack frames in reserve, high-bay and picking areas.
 function addRack(x,z,levels=5,bays=3,scale=1){
- const g=new THREE.Group();const rackLevels=mobileQuality?Math.min(levels,4):levels,bayCount=mobileQuality?Math.min(bays,2):bays;const width=3.8*scale,depth=1.45*scale,height=rackLevels*1.55*scale;
+ const g=new THREE.Group();const rackLevels=mobileQuality?Math.min(levels,5):levels,bayCount=mobileQuality?Math.min(bays,3):bays;const width=3.8*scale,depth=1.45*scale,height=rackLevels*1.55*scale;
  for(const px of [-width/2,width/2])for(const pz of [-depth/2,depth/2])box(.13*scale,height,.13*scale,rackBlue,px,height/2,pz,g);
  for(let n=1;n<=rackLevels;n++){const y=n*1.55*scale;box(width,.12*scale,.16*scale,rackOrange,0,y,-depth/2,g);box(width,.12*scale,.16*scale,rackOrange,0,y,depth/2,g);for(let b=0;b<bayCount;b++){const bx=-width/2+(b+.5)*width/bayCount;box(width/bayCount-.12*scale,.9*scale,depth*.72,mat([0x9aafbf,0xb49d7d,0x789d91][(n+b)%3],.8,.02),bx,y+.52*scale,0,g)}}
  g.position.set(x,.12,z);scene.add(g);return g
@@ -134,6 +148,17 @@ for(const x of reserveRackX)for(const z of reserveRackZ)addRack(x,z,5,3,.85);
 const highBayRackX=mobileQuality?[-11,-4,4,11]:[-12,-7,-2,3,8,13],highBayRackZ=mobileQuality?[-15,-5]:[-15,-10,-5];
 for(const x of highBayRackX)for(const z of highBayRackZ)addRack(x,z,7,3,.9);
 for(const x of reserveRackX)for(const z of (mobileQuality?[8,17]:[8,14,19]))addRack(x,z,4,3,.8);
+// Additional dense, parallel pallet-rack aisles: the warehouse should read as a
+// high-capacity building, not isolated display shelves.
+for(const x of (mobileQuality?[-48,-40,-32]:[-51,-45,-39,-33,-27,-21])){
+ for(const z of [-16,-10,-4])addRack(x,z,6,4,.92);
+}
+for(const x of (mobileQuality?[-11,-4,4,11]:[-14,-9,-4,1,6,11,16])){
+ for(const z of [-16,-10,-4])addRack(x,z,8,4,.95);
+}
+for(const x of (mobileQuality?[-48,-40,-32]:[-51,-45,-39,-33,-27,-21])){
+ for(const z of [8,14,20])addRack(x,z,5,4,.88);
+}
 
 // Operational equipment across the remaining nine zones.
 // Pallet loads, inspection benches, return lanes, packing cells and control desks.
@@ -226,11 +251,38 @@ document.querySelector("#fit").onclick=()=>{top=false;home();document.querySelec
 document.querySelector("#reset").onclick=home;document.querySelector("#reset2").onclick=home;
 const resizeObserver=new ResizeObserver(()=>{const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()});resizeObserver.observe(canvas);
 const clock=new THREE.Clock();
+// Industrial forklift models with mast, forks, cab, counterweight and rubber wheels.
+function addForklift(x,z,bodyColor=0xe3a63f){
+ const g=new THREE.Group(),body=mat(bodyColor,.48,.28),rubber=mat(0x111820,.9,.02),cab=mat(0x3b566a,.35,.45,true,.48);
+ box(2.15,.85,1.15,body,0,.9,0,g);box(1.05,1.3,.92,cab,-.15,1.85,0,g);
+ box(.14,2.7,.16,steel,1.0,1.55,-.38,g);box(.14,2.7,.16,steel,1.0,1.55,.38,g);
+ box(.12,.12,.9,gold,1,2.95,0,g);
+ box(1.6,.12,.16,steel,1.72,.22,-.3,g);box(1.6,.12,.16,steel,1.72,.22,.3,g);
+ for(const wx of [-.7,.7])for(const wz of [-.57,.57]){
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.18,12),rubber);w.rotation.x=Math.PI/2;w.position.set(wx,.32,wz);g.add(w);
+ }
+ g.position.set(x,.12,z);scene.add(g);return g;
+}
+const forklifts=[addForklift(-42,.5),addForklift(34,-2,0x4d9a8b),addForklift(-34,32,0xd7b64c)];
+// Loading yard tractors and semi-trailers outside the dispatch dock face.
+function addTruck(x,z,color=0x477c9f){
+ const g=new THREE.Group(),paint=mat(color,.55,.22),trailer=mat(0x8999a6,.72,.18),tyre=mat(0x111820,.95,.02);
+ box(10,3.4,4.2,trailer,0,2,0,g);box(3.1,3.2,3.8,paint,6.4,1.85,0,g);
+ box(.16,2.5,.16,glass,6.5,2.4,-1.35,g);box(.16,2.5,.16,glass,6.5,2.4,1.35,g);
+ for(const wx of [-3.4,0,5.8,7.5])for(const wz of [-1.65,1.65]){
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(.58,.58,.28,12),tyre);w.rotation.x=Math.PI/2;w.position.set(wx,.58,wz);g.add(w);
+ }
+ g.position.set(x,.12,z);scene.add(g);return g;
+}
+const yardTrucks=[addTruck(-35,61),addTruck(-5,61,0x6b8f70),addTruck(25,61,0x9a765b)];
+
 let simTime=0;
 let lastRender=0;
 function animate(timestamp=0){requestAnimationFrame(animate);if(mobileQuality&&timestamp-lastRender<1000/30)return;lastRender=timestamp;const dt=Math.min(clock.getDelta(),.05);simTime+=dt;
  asrsCrane.position.z=-11+Math.sin(simTime*.32)*5.1;
  asrsLift.position.y=1.1+(Math.sin(simTime*.7)+1)*3.65;
+ forklifts.forEach((forklift,i)=>{forklift.position.x=[-42,34,-34][i]+Math.sin(simTime*.22+i)*2.2;forklift.position.z=[.5,-2,32][i]+Math.cos(simTime*.22+i)*2.4;});
+
  conveyorRollers.forEach((roller,i)=>{roller.rotation.z+=dt*1.8});
  parcels.forEach(item=>{item.mesh.position.x=-10+((simTime*1.35+item.offset)%60)});
  controls.update();renderer.render(scene,camera)}
