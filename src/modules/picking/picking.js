@@ -14,7 +14,7 @@ function plan(){
  const data=inventory().snapshot(),orders=operations().snapshot().salesOrders,buffer="PICK-01";
  const created=[],shortages=[];
  const reserved={};
- state.tasks.filter(t=>t.status==="OPEN").forEach(t=>t.lines.forEach(line=>{const key=line.lot;reserved[key]=(reserved[key]||0)+line.qty}));
+ state.tasks.filter(t=>t.status==="OPEN").forEach(t=>t.lines.forEach(line=>{const key=t.sku+"|"+line.lot;reserved[key]=(reserved[key]||0)+line.qty}));
  orders.filter(o=>o.status==="NEW"&&!state.tasks.some(t=>t.orderId===o.id)).forEach(order=>{
   let remaining=order.qty;const lines=[];
   data.balances.filter(b=>b.sku===order.sku&&b.location===buffer&&b.qty>0).forEach(b=>{
