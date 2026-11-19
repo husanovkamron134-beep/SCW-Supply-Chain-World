@@ -175,3 +175,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added order-aware sorting tasks and logical lane assignment for PICKED orders.
 - Sorting completion publishes a workflow event for Packing without changing inventory balances.
 - Technical contract and manual integration test: `docs/PHASE28_SORTING.md`.
+
+
+## Phase 29 — Packing
+- Added a Sorting-gated packing workflow for PICKED orders.
+- Packing completion updates the existing sales-order status through the Operations Adapter.
+- Dispatch remains the only stage that issues shipped inventory.
+- Technical contract and manual integration test: `docs/PHASE29_PACKING.md`.
