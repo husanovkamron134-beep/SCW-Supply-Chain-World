@@ -231,3 +231,9 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Connected Control Center module state to the 12 zone floor colors in the isolated 5XL operations preview.
 - Blue/original = not started, green = running, gold = open / waiting work.
 - Technical notes: `docs/PHASE37_LIVE_3D_ZONE_STATUS.md`.
+
+
+## Phase 38 — 3D equipment visualization
+- Added an animated High-Bay AS/RS mast / lift carriage and Sorting-to-Packing roller conveyor with moving parcels to the isolated 5XL operations preview.
+- These are visual simulation elements, not physical equipment integrations.
+- Technical notes: `docs/PHASE38_3D_EQUIPMENT_VISUALIZATION.md`.
