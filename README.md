@@ -169,3 +169,9 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - When reserve stock is insufficient, the module can request linked High-Bay AS/RS retrieval tasks.
 - Completed movements use the Inventory Adapter; task state is separate from the stock ledger.
 - Technical contract and manual integration test: `docs/PHASE27_REPLENISHMENT.md`.
+
+
+## Phase 28 — Sorting
+- Added order-aware sorting tasks and logical lane assignment for PICKED orders.
+- Sorting completion publishes a workflow event for Packing without changing inventory balances.
+- Technical contract and manual integration test: `docs/PHASE28_SORTING.md`.
