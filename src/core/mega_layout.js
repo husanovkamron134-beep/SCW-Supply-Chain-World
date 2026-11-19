@@ -40,7 +40,8 @@
 
   const corridors = [
     {id:"AISLE-WEST",from:{x:-56,z:-45},to:{x:-56,z:45},width:4},
-    {id:"AISLE-CENTRE",from:{x:0,z:-45},to:{x:0,z:45},width:4},
+    {id:"AISLE-WEST-CENTRE",from:{x:-19,z:-45},to:{x:-19,z:45},width:4},
+    {id:"AISLE-EAST-CENTRE",from:{x:19,z:-45},to:{x:19,z:45},width:4},
     {id:"AISLE-EAST",from:{x:56,z:-45},to:{x:56,z:45},width:4},
     {id:"CROSS-NORTH",from:{x:-56,z:-22},to:{x:56,z:-22},width:4},
     {id:"CROSS-MID-1",from:{x:-56,z:1},to:{x:56,z:1},width:4},
