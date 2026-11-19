@@ -211,3 +211,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added explicit dependency-ordered startup and reverse-order shutdown for adapters and all 12 operational modules.
 - Bootstrap checks that every module script has loaded and rolls back modules started in a failed startup attempt.
 - It is not yet wired into the production pages; see `docs/PHASE34_MODULE_BOOTSTRAP.md`.
+
+
+## Phase 35 — Mega Warehouse 5XL operations preview
+- Added isolated `mega-warehouse-5xl-ops.html` with the existing 3D mega-warehouse scene plus a collapsible live Control Center panel.
+- Loads all 12 operational modules and adapters through the documented bootstrap sequence.
+- The existing 3D preview and main navigation remain untouched until browser integration validation.
+- Test instructions: `docs/PHASE35_MEGA_WAREHOUSE_OPS_PREVIEW.md`.
