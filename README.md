@@ -98,3 +98,12 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Conveyor rollers and demo parcels animate during simulation.
 - AGV receives putaway tasks from the existing warehouse task engine and completes them through the SCW inventory ledger.
 - Test steps and limitations: `docs/PHASE18_AGV_CONVEYOR_AUTOMATION.md`
+
+
+## Phase 19 — order-aware warehouse fulfilment
+- WMS picking tasks are generated from NEW sales orders and available stock across multiple LOTs.
+- AGV executes picking transfers into the dispatch staging location (`DSP-01`).
+- Completed WMS picking updates the linked sales order to `PICKED`; the existing pack and dispatch workflow can then continue.
+- Dispatch consumes the staged quantities lot-by-lot through the shared inventory ledger.
+- The 3D scene exposes separate putaway and picking task creation controls.
+- This remains a browser-local deterministic simulation; AGV routing is waypoint-based and does not represent real fleet coordination.
