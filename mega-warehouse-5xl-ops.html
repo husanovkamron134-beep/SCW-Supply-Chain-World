@@ -136,6 +136,32 @@ const apron=mat(0x344657,.9,.1);box(88,.18,13,apron,0,.02,54);
 for(const x of [-42,-28,-14,0,14,28,42]){box(7,4,.28,steel,x,2,46.2);box(6.2,3.35,.12,mat(0x101e2c),x,2,46.0);box(6.2,.18,.35,gold,x,.12,45.7)}
 // Small service road markings.
 for(let x=-48;x<=48;x+=8)box(3,.025,.16,gold,x,.13,53);
+
+// High-Bay AS/RS aisle: floor rails, overhead beam, moving mast and lift carriage.
+const asrsRailMat=mat(0x526d83,.42,.62),asrsCarriageMat=mat(0xd6e2eb,.36,.68);
+box(.2,.12,15,asrsRailMat,-.58,.13,-11);box(.2,.12,15,asrsRailMat,.58,.13,-11);
+box(1.45,.22,15,steel,0,10.1,-11);
+const asrsCrane=new THREE.Group();scene.add(asrsCrane);
+box(.18,9.3,.18,asrsRailMat,-.42,4.7,0,asrsCrane);box(.18,9.3,.18,asrsRailMat,.42,4.7,0,asrsCrane);
+const asrsLift=new THREE.Group();asrsCrane.add(asrsLift);
+box(1.15,.22,1.25,asrsCarriageMat,0,0,0,asrsLift);
+box(.92,.7,.92,rackOrange,0,.48,0,asrsLift);
+box(1.4,.12,1.5,gold,0,-.18,0,asrsLift);
+
+// Sorting-to-packing conveyor with visible rollers and animated parcels.
+const conveyorX=19,conveyorZ=13.5,conveyorLength=60;
+const conveyorMat=mat(0x354b5d,.48,.55),rollerMat=mat(0x9aabb8,.34,.72);
+box(conveyorLength,.38,1.75,conveyorMat,conveyorX,.55,conveyorZ);
+const conveyorRollers=[];
+for(let x=-10;x<=48;x+=2.4){
+ const roller=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,1.62,12),rollerMat);
+ roller.rotation.x=Math.PI/2;roller.position.set(x,.79,conveyorZ);roller.castShadow=true;scene.add(roller);conveyorRollers.push(roller);
+}
+const parcels=[];
+for(let i=0;i<5;i++){
+ const parcel=box(1.1,.82,.95,mat([0xc58d53,0x9aafbf,0x6b9a8d,0xb9a36d,0x8b9fbe][i],.78,.08),-10-i*9,1.18,conveyorZ);
+ parcels.push({mesh:parcel,offset:i*11.5});
+}
 const validation=L.validate();document.querySelector("#zoneDesc").textContent=validation.valid?"12 ta operatsion zona · geometriya tekshiruvdan o‘tdi · yagona 5XL bino.":"Layout tekshiruvida xato: "+validation.errors.join("; ");
 const list=document.querySelector("#zoneList");let selected=null;
 for(const z of L.zones){const b=document.createElement("button");b.className="zone";b.innerHTML="<b>"+z.code+"</b>"+z.name;b.addEventListener("click",()=>selectZone(z.id));list.appendChild(b)}
@@ -148,7 +174,13 @@ document.querySelector("#fit").onclick=()=>{top=false;home();document.querySelec
 document.querySelector("#reset").onclick=home;document.querySelector("#reset2").onclick=home;
 const resizeObserver=new ResizeObserver(()=>{const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()});resizeObserver.observe(canvas);
 const clock=new THREE.Clock();
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);controls.update();renderer.render(scene,camera)}
+let simTime=0;
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);simTime+=dt;
+ asrsCrane.position.z=-11+Math.sin(simTime*.32)*5.1;
+ asrsLift.position.y=1.1+(Math.sin(simTime*.7)+1)*3.65;
+ conveyorRollers.forEach((roller,i)=>{roller.rotation.z+=dt*1.8});
+ parcels.forEach(item=>{item.mesh.position.x=-10+((simTime*1.35+item.offset)%60)});
+ controls.update();renderer.render(scene,camera)}
 animate();
 
 async function refreshOps(){
