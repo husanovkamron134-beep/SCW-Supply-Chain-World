@@ -3,6 +3,7 @@
 "use strict";
 const KEY="scw-phase24-reserve-storage-v1";
 const seed={tasks:[],sequence:1};
+let unsubscribeAccepted=null;
 function clone(x){return JSON.parse(JSON.stringify(x))}
 function load(){try{const x=JSON.parse(root.localStorage.getItem(KEY));if(x&&Array.isArray(x.tasks)&&Number.isInteger(x.sequence))return x}catch(e){}return clone(seed)}
 let state=load();
@@ -51,11 +52,12 @@ function complete(taskId){
 }
 function snapshot(){return {tasks:clone(state.tasks),metrics:{open:state.tasks.filter(x=>x.status==="OPEN").length,completed:state.tasks.filter(x=>x.status==="DONE").length,blocked:0}}}
 function start(){
- core().on("quality.accepted",()=>{try{plan()}catch(error){core().emit("reserve.storage.planning.error",{message:error.message},{source:"ReserveStorage"})}});
+ unsubscribeAccepted=core().on("quality.accepted",()=>{try{plan()}catch(error){core().emit("reserve.storage.planning.error",{message:error.message},{source:"ReserveStorage"})}});
  core().emit("reserve.storage.ready",{moduleId:"RESERVE_STORAGE"},{source:"ReserveStorage"});
 }
+function stop(){if(unsubscribeAccepted){unsubscribeAccepted();unsubscribeAccepted=null}}
 root.SCWReserveStorage=Object.freeze({plan,complete,snapshot});
-core().registerModule({id:"RESERVE_STORAGE",name:"Reserve Storage",version:"1.0.0",dependencies:["INVENTORY_ADAPTER","QUALITY_CONTROL"],start});
+core().registerModule({id:"RESERVE_STORAGE",name:"Reserve Storage",version:"1.0.0",dependencies:["INVENTORY_ADAPTER","QUALITY_CONTROL"],start,stop});
 core().registerCommand("reserve.storage.plan",()=>plan(),{moduleId:"RESERVE_STORAGE"});
 core().registerCommand("reserve.storage.snapshot",()=>snapshot(),{moduleId:"RESERVE_STORAGE"});
 core().registerCommand("reserve.storage.complete",input=>complete(input&&input.id),{moduleId:"RESERVE_STORAGE"});
