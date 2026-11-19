@@ -92,3 +92,9 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Forklift pallet transfers post to the authoritative `SCWDomain` movement ledger
 - Inbound demo action records a real inventory receipt; a deterministic AGV route is included
 - Details and manual test steps: `docs/PHASE17_INVENTORY_LINKED_3D_WAREHOUSE.md`
+
+
+## Phase 18 — WMS and conveyor automation
+- Conveyor rollers and demo parcels animate during simulation.
+- AGV receives putaway tasks from the existing warehouse task engine and completes them through the SCW inventory ledger.
+- Test steps and limitations: `docs/PHASE18_AGV_CONVEYOR_AUTOMATION.md`
