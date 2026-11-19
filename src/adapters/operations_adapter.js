@@ -8,6 +8,7 @@ const api={
  createPurchaseOrder(input){const x=ops().createPurchaseOrder(input);core().emit("procurement.po.created",{purchaseOrder:x},{source:"OperationsAdapter"});return x},
  receivePurchaseOrder(input){const x=ops().receivePurchaseOrder(input);const receipt=x.receipts[0];core().emit("procurement.po.received",{purchaseOrderId:x.id,receipt},{source:"OperationsAdapter"});core().emit("inventory.received",{sku:x.sku,qty:receipt.qty,lot:receipt.lot,to:receipt.location,reference:x.id},{source:"OperationsAdapter"});return x},
  createSalesOrder(input){const x=ops().createSalesOrder(input);core().emit("orders.sales.created",{order:x},{source:"OperationsAdapter"});return x},
+ completeWarehousePick(input){const x=ops().completeWarehousePick(input);core().emit("orders.sales.picked",{order:x},{source:"OperationsAdapter"});return x},
  packOrder(input){const x=ops().packOrder(input);core().emit("packing.completed",{order:x},{source:"OperationsAdapter"});return x},
  dispatchOrder(input){const x=ops().dispatchOrder(input);core().emit("dispatch.shipped",{order:x},{source:"OperationsAdapter"});return x}
 };
