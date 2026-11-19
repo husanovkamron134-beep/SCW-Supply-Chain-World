@@ -19,10 +19,10 @@ function plan(){
   let remaining=order.qty;const lines=[];
   data.balances.filter(b=>b.sku===order.sku&&b.location===buffer&&b.qty>0).forEach(b=>{
    if(remaining<=0)return;
-   const available=b.qty-(reserved[b.lot]||0);
+   const reservationKey=order.sku+"|"+b.lot;const available=b.qty-(reserved[reservationKey]||0);
    if(available<=0)return;
    const take=Math.min(remaining,available);
-   lines.push({from:buffer,lot:b.lot,qty:take});reserved[b.lot]=(reserved[b.lot]||0)+take;remaining-=take;
+   lines.push({from:buffer,lot:b.lot,qty:take});reserved[reservationKey]=(reserved[reservationKey]||0)+take;remaining-=take;
   });
   if(remaining>0){shortages.push({orderId:order.id,sku:order.sku,required:order.qty,available:order.qty-remaining,shortage:remaining});return}
   const task={id:nextId(),kind:"PICK",orderId:order.id,sku:order.sku,qty:order.qty,lines,status:"OPEN",createdAt:new Date().toISOString()};
