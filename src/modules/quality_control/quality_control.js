@@ -19,17 +19,18 @@ function receiptFor(input){
  const receipt=po.receipts[index];
  if(input.sku&&input.sku!==po.sku)throw Error("SKU xarid buyurtmasiga mos emas.");
  if(input.lot&&input.lot!==receipt.lot)throw Error("LOT qabul yozuviga mos emas.");
- const inspected=inspections.filter(x=>x.sourceType==="INBOUND"&&x.purchaseOrderId===po.id&&x.receiptIndex===index).reduce((n,x)=>n+x.qty,0);
+ const receiptAt=receipt.at;
+ const inspected=inspections.filter(x=>x.sourceType==="INBOUND"&&x.purchaseOrderId===po.id&&x.receiptAt===receiptAt).reduce((n,x)=>n+x.qty,0);
  const remaining=receipt.qty-inspected;
  const qty=positive(input.qty);
  if(qty>remaining)throw Error("Tekshiruv miqdori shu qabul yozuvida qolgan miqdordan oshdi ("+remaining+").");
- return {po,receipt,index,qty,remaining};
+ return {po,receipt,index,receiptAt,qty,remaining};
 }
 function validateDecision(value){const decision=String(value||"").toUpperCase();if(!["ACCEPTED","QUARANTINED","REJECTED"].includes(decision))throw Error("QC qarori noto'g'ri.");return decision}
 function recordDecision(data,decision){
  const item={
   id:nextId(),sourceType:data.sourceType,sourceId:data.sourceId,
-  purchaseOrderId:data.purchaseOrderId||null,receiptIndex:data.receiptIndex===undefined?null:data.receiptIndex,
+  purchaseOrderId:data.purchaseOrderId||null,receiptIndex:data.receiptIndex===undefined?null:data.receiptIndex,receiptAt:data.receiptAt||null,
   returnId:data.returnId||null,sku:data.sku,lot:data.lot,location:data.location||null,qty:data.qty,
   decision,reason:String(data.reason||"").trim(),inspector:String(data.inspector||"").trim(),
   at:new Date().toISOString()
@@ -46,7 +47,7 @@ const api={
   input=input||{};
   const decision=validateDecision(input.decision);
   const source=receiptFor(input);
-  const data={sourceType:"INBOUND",sourceId:source.po.id+":"+source.index,purchaseOrderId:source.po.id,receiptIndex:source.index,sku:source.po.sku,lot:source.receipt.lot,location:source.receipt.location,qty:source.qty,reason:input.reason,inspector:input.inspector};
+  const data={sourceType:"INBOUND",sourceId:source.po.id+":"+source.index,purchaseOrderId:source.po.id,receiptIndex:source.index,receiptAt:source.receiptAt,sku:source.po.sku,lot:source.receipt.lot,location:source.receipt.location,qty:source.qty,reason:input.reason,inspector:input.inspector};
   core().emit("quality.inspection.started",data,{source:"QualityControl"});
   return recordDecision(data,decision);
  },
@@ -69,7 +70,7 @@ const api={
  eligibleInboundReceipts(){
   const data=operations().snapshot(),out=[];
   data.purchaseOrders.forEach(po=>po.receipts.forEach((receipt,index)=>{
-   const inspected=inspections.filter(x=>x.sourceType==="INBOUND"&&x.purchaseOrderId===po.id&&x.receiptIndex===index).reduce((n,x)=>n+x.qty,0);
+   const inspected=inspections.filter(x=>x.sourceType==="INBOUND"&&x.purchaseOrderId===po.id&&x.receiptAt===receipt.at).reduce((n,x)=>n+x.qty,0);
    out.push({purchaseOrderId:po.id,supplier:po.supplier,sku:po.sku,lot:receipt.lot,location:receipt.location,received:receipt.qty,inspected,remaining:receipt.qty-inspected});
   }));
   return out;
