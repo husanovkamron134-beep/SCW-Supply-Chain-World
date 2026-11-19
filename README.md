@@ -243,3 +243,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added a lower-cost mobile rendering profile, reduced rack density, disabled real-time shadows and capped mobile rendering near 30 FPS in the isolated preview.
 - Real-device FPS / memory / thermal tests remain outstanding.
 - Technical notes: `docs/PHASE39_MOBILE_PERFORMANCE.md`.
+
+
+## Phase 40 — Browser runtime test lab
+- Added `scw-module-test.html`, an isolated real-browser test runner for the complete 12-module workflow.
+- Uses a temporary in-memory localStorage shim so test data does not modify the main app's browser data.
+- Reports PASS / FAIL per stage and shuts down modules at the end.
+- Instructions: `docs/PHASE40_BROWSER_RUNTIME_TEST.md`.
