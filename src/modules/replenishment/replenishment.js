@@ -13,7 +13,7 @@ function request(input){
  input=input||{};
  const sku=String(input.sku||"").trim(),qty=Number(input.qty),lot=input.lot?String(input.lot).trim():null,orderId=input.orderId?String(input.orderId):null;
  if(!sku||!Number.isInteger(qty)||qty<=0)throw Error("SKU va musbat butun replenishment miqdori talab qilinadi.");
- if(orderId&&state.tasks.some(t=>t.orderId===orderId))return {created:[],waiting:[],shortage:0,duplicate:true};
+ if(orderId&&state.tasks.some(t=>t.orderId===orderId&&(t.status==="OPEN"||t.status==="WAITING_ASRS")))return {created:[],waiting:[],shortage:0,duplicate:true};
  const data=inventory().snapshot(),buffer=data.locations.find(x=>x.code==="PICK-01");
  if(!buffer)throw Error("PICK-01 mavjud emas. Avval High-Bay AS/RS modulini ishga tushiring.");
  const used=data.balances.filter(x=>x.location==="PICK-01").reduce((n,x)=>n+x.qty,0);
