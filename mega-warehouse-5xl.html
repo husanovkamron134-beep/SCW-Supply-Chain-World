@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#08111d">
+<title>SCW · Mega Warehouse 5XL</title>
+<style>
+:root{color-scheme:dark;--bg:#08111d;--panel:#101d2d;--line:#294057;--text:#edf5ff;--muted:#91a8bf;--blue:#63b5ff;--gold:#f2c46e}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+.app{height:100dvh;display:grid;grid-template-rows:58px 1fr}.top{display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#0c1726;border-bottom:1px solid var(--line);z-index:2}.brand{display:flex;align-items:center;gap:11px}.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#70caff,#2868bc);display:grid;place-items:center;font-weight:800;font-size:12px}.brand strong{display:block;font-size:13px;letter-spacing:.4px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.top-actions{display:flex;gap:8px;align-items:center}.pill,.btn{border:1px solid #35516c;background:#14283d;color:#eaf4ff;border-radius:9px;padding:8px 11px;font-size:10px;font-weight:700}.pill{color:#9ee8c7;border-color:#28624e;background:#123328}.btn{cursor:pointer}.btn.active{background:#1c4a74;border-color:#5aaee9}.main{position:relative;min-height:0}#scene{width:100%;height:100%;display:block;touch-action:none}.hud{position:absolute;left:14px;top:14px;display:flex;gap:7px;flex-wrap:wrap;pointer-events:none}.chip{background:#091523e8;border:1px solid #30465d;border-radius:9px;padding:8px 10px;color:#c8d9e9;font-size:10px;backdrop-filter:blur(8px)}.chip b{color:#fff;margin-left:5px}.panel{position:absolute;right:14px;top:14px;width:min(280px,calc(100vw - 28px));max-height:calc(100% - 28px);overflow:auto;background:#0b1725eF;border:1px solid #30465d;border-radius:14px;padding:13px;backdrop-filter:blur(12px)}.eyebrow{color:#59ded2;font-size:9px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}.panel h1{font-size:17px;margin:5px 0}.muted{color:var(--muted);font-size:10px;line-height:1.5}.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.stat{padding:9px;background:#122338;border:1px solid #2a4058;border-radius:10px}.stat small{display:block;color:var(--muted);font-size:9px}.stat strong{display:block;font-size:17px;margin-top:4px}.zones{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}.zone{border:1px solid #2b4158;border-radius:8px;background:#112238;padding:7px;text-align:left;color:#e8f4ff;font-size:9px;cursor:pointer}.zone b{display:block;color:#8ecbff;font-size:9px;margin-bottom:3px}.zone.selected{border-color:#f2c46e;background:#293044}.controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}.controls .btn{width:100%}.wide{grid-column:1/-1}.help{position:absolute;left:14px;bottom:14px;max-width:290px;background:#091523e8;border:1px solid #30465d;border-radius:10px;padding:10px 12px;font-size:10px;line-height:1.6;color:#b9cde0;pointer-events:none}.help b{color:white}.notice{position:absolute;top:75px;left:50%;transform:translateX(-50%);background:#143b32;border:1px solid #347b66;color:#c9ffea;border-radius:10px;padding:9px 14px;font-size:10px;opacity:0;transition:opacity .2s;pointer-events:none}.notice.show{opacity:1}
+@media(max-width:700px){.app{grid-template-rows:52px 1fr}.top{padding:0 10px}.brand strong{font-size:11px}.brand small{font-size:9px}.pill{display:none}.panel{top:auto;bottom:10px;right:10px;left:10px;width:auto;max-height:36%;padding:9px}.panel h1{font-size:14px}.panel .muted{font-size:9px}.stats{grid-template-columns:repeat(4,1fr);gap:5px;margin:7px 0}.stat{padding:6px}.stat strong{font-size:13px}.stat small{font-size:8px}.zones{grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px}.zone{padding:6px;font-size:8px}.zone b{font-size:8px}.controls{grid-template-columns:repeat(3,1fr);margin-top:6px}.controls .btn{padding:7px 4px;font-size:9px}.help{display:none}.hud{left:8px;top:8px;max-width:calc(100% - 16px)}.chip{padding:6px 7px;font-size:9px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>MEGA WAREHOUSE · 5XL</strong><small>12 zonali raqamli egizak · Foundation preview</small></div></div><div class="top-actions"><span class="pill">● 3D ENGINE ONLINE</span><button class="btn" id="reset">Kamerani tiklash</button></div></header>
+<main class="main"><canvas id="scene"></canvas>
+<div class="hud"><div class="chip">BINО <b>116 × 94 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">MASSHTAB <b>5XL</b></div></div>
+<aside class="panel"><div class="eyebrow">SCW DIGITAL TWIN</div><h1 id="zoneTitle">Mega Warehouse</h1><div class="muted" id="zoneDesc">12 ta operatsion zona va xizmat yo‘laklari bilan yagona bino.</div>
+<div class="stats"><div class="stat"><small>Maydon</small><strong>10 904</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Qator</small><strong>4</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
+<div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
+<div class="controls"><button class="btn active" id="labels">Yorliqlar: ON</button><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn wide" id="reset2">Kamerani boshlang‘ich holatga qaytarish</button></div>
+</aside>
+<div class="help"><b>Kamera boshqaruvi</b><br>Sichqoncha yoki barmoq bilan aylantiring · ikki barmoq/scroll bilan zoom · sudrab panoramalash. Zonani tanlash uchun paneldagi nomini bosing.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div>
+</main></div>
+<script src="src/core/mega_layout.js"></script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+const L=window.SCWMegaLayout;
+if(!L)throw new Error("SCWMegaLayout yuklanmadi");
+const canvas=document.querySelector("#scene");
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.65));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x081421);scene.fog=new THREE.Fog(0x081421,125,235);
+const camera=new THREE.PerspectiveCamera(42,1,.1,360);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.target.set(0,2,0);controls.minDistance=24;controls.maxDistance=190;controls.maxPolarAngle=Math.PI*.49;
+function home(){camera.position.set(105,105,125);controls.target.set(0,2,0);controls.update()}home();
+scene.add(new THREE.HemisphereLight(0xc7e7ff,0x263448,2.0));
+const sun=new THREE.DirectionalLight(0xffedcf,2.6);sun.position.set(-45,95,55);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-75;sun.shadow.camera.right=75;sun.shadow.camera.top=75;sun.shadow.camera.bottom=-75;scene.add(sun);
+const fill=new THREE.DirectionalLight(0x5b9dff,1.05);fill.position.set(70,38,-65);scene.add(fill);
+const mat=(color,roughness=.72,metalness=.05,transparent=false,opacity=1)=>new THREE.MeshStandardMaterial({color,roughness,metalness,transparent,opacity});
+const steel=mat(0x40586d,.48,.58),wall=mat(0x182a3b,.72,.25),glass=mat(0x4e86a5,.3,.35,true,.28),floor=mat(0x25384a),line=mat(0x71869a,.8),gold=mat(0xe6b85e,.55,.25),rackBlue=mat(0x276ca8,.48,.35),rackOrange=mat(0xe49b42,.5,.25);
+function box(w,h,d,m,x,y,z,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function groundPlane(w,d,m,x=0,z=0,y=0){return box(w,.7,d,m,x,y-.35,z)}
+groundPlane(L.BUILDING.width,L.BUILDING.depth,floor);
+const grid=new THREE.GridHelper(116,58,0x456078,0x30465b);grid.position.y=.015;scene.add(grid);
+// Outer shell: four perimeter walls with a continuous industrial clerestory band.
+const W=L.BUILDING.width,D=L.BUILDING.depth,H=L.BUILDING.wallHeight;
+box(W,H,.8,wall,0,H/2,-D/2);box(W,H,.8,wall,0,H/2,D/2);
+box(.8,H,D,wall,-W/2,H/2,0);box(.8,H,D,wall,W/2,H/2,0);
+box(W-2,2,.16,glass,0,9.5,-D/2+.45);box(W-2,2,.16,glass,0,9.5,D/2-.45);
+box(.16,2,D-2,glass,-W/2+.45,9.5,0);box(.16,2,D-2,glass,W/2-.45,9.5,0);
+// Structural columns and roof trusses keep the building readable without a roof occluding the scene.
+for(let x=-54;x<=54;x+=12){for(const z of [-45,45])box(.42,H,.42,steel,x,H/2,z)}
+for(let z=-42;z<=42;z+=12){for(const x of [-57,57])box(.42,H,.42,steel,x,H/2,z)}
+for(let z=-42;z<=42;z+=12){box(112,.22,.28,steel,0,11.2,z)}
+// Service corridors: vertical centre aisles and cross-aisles between zone rows.
+const aisleMat=mat(0x30485d,.9,.05);
+for(const x of [-19,19])box(4,.035,90,aisleMat,x,.035,0);
+for(const z of [-22,1,24])box(112,.04,4,aisleMat,0,.04,z);
+for(const x of [-56,56])box(3,.035,88,aisleMat,x,.035,0);
+// Zone floors, perimeter stripes, identifiers and light beacons.
+const palette={receiving:0x315d78,inspection:0x665b37,returns:0x59445f,storage:0x31536d,automated_storage:0x344c77,replenishment:0x41645b,picking:0x52613b,sorting:0x62523a,packing:0x66513d,staging:0x3c5e69,dispatch:0x315e64,control:0x514a70};
+const zoneMeshes=new Map(),zoneLabels=[];
+function makeLabel(text,x,z,color=0x8bd4ff){const c=document.createElement("canvas");c.width=640;c.height=160;const ctx=c.getContext("2d");ctx.fillStyle="rgba(5,15,26,.9)";ctx.strokeStyle="#5aaee9";ctx.lineWidth=5;ctx.beginPath();ctx.roundRect(5,5,630,150,22);ctx.fill();ctx.stroke();ctx.fillStyle="#eaf5ff";ctx.font="bold 42px Arial";ctx.textAlign="center";ctx.fillText(text,320,98);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sprite.position.set(x,7.3,z);sprite.scale.set(13,3.25,1);scene.add(sprite);zoneLabels.push(sprite);return sprite}
+for(const z of L.zones){
+ const zm=mat(palette[z.kind]||0x34516a,.82,.08,true,.52);
+ const pad=box(z.width-.35,.06,z.depth-.35,zm,z.x,.055,z.z);pad.userData.zoneId=z.id;zoneMeshes.set(z.id,pad);
+ const edgeMat=mat(0x8bb4cf,.65,.2);
+ const y=.11;box(z.width,.08,.18,edgeMat,z.x,y,z.minZ);box(z.width,.08,.18,edgeMat,z.x,y,z.maxZ);box(.18,.08,z.depth,edgeMat,z.minX,y,z.z);box(.18,.08,z.depth,edgeMat,z.maxX,y,z.z);
+ makeLabel(z.code+"  "+z.name.toUpperCase(),z.x,z.z);
+ const beacon=new THREE.PointLight(palette[z.kind]||0x5aaee9,1.1,12);beacon.position.set(z.x,4,z.z);scene.add(beacon);
+}
+// Storage equipment: realistic rack frames in reserve, high-bay and picking areas.
+function addRack(x,z,levels=5,bays=3,scale=1){
+ const g=new THREE.Group();const width=3.8*scale,depth=1.45*scale,height=levels*1.55*scale;
+ for(const px of [-width/2,width/2])for(const pz of [-depth/2,depth/2])box(.13*scale,height,.13*scale,rackBlue,px,height/2,pz,g);
+ for(let n=1;n<=levels;n++){const y=n*1.55*scale;box(width,.12*scale,.16*scale,rackOrange,0,y,-depth/2,g);box(width,.12*scale,.16*scale,rackOrange,0,y,depth/2,g);for(let b=0;b<bays;b++){const bx=-width/2+(b+.5)*width/bays;box(width/bays-.12*scale,.9*scale,depth*.72,mat([0x9aafbf,0xb49d7d,0x789d91][(n+b)%3],.8,.02),bx,y+.52*scale,0,g)}}
+ g.position.set(x,.12,z);scene.add(g);return g
+}
+for(const x of [-49,-43,-37,-31,-25])for(const z of [-15,-10,-5])addRack(x,z,5,3,.85);
+for(const x of [-12,-7,-2,3,8,13])for(const z of [-15,-10,-5])addRack(x,z,7,3,.9);
+for(const x of [-49,-43,-37,-31,-25])for(const z of [8,14,19])addRack(x,z,4,3,.8);
+// Dock aprons and dock doors along the south wall, placed outside the main footprint.
+const apron=mat(0x344657,.9,.1);box(88,.18,13,apron,0,.02,54);
+for(const x of [-42,-28,-14,0,14,28,42]){box(7,4,.28,steel,x,2,46.2);box(6.2,3.35,.12,mat(0x101e2c),x,2,46.0);box(6.2,.18,.35,gold,x,.12,45.7)}
+// Small service road markings.
+for(let x=-48;x<=48;x+=8)box(3,.025,.16,gold,x,.13,53);
+const validation=L.validate();document.querySelector("#zoneDesc").textContent=validation.valid?"12 ta operatsion zona · geometriya tekshiruvdan o‘tdi · yagona 5XL bino.":"Layout tekshiruvida xato: "+validation.errors.join("; ");
+const list=document.querySelector("#zoneList");let selected=null;
+for(const z of L.zones){const b=document.createElement("button");b.className="zone";b.innerHTML="<b>"+z.code+"</b>"+z.name;b.addEventListener("click",()=>selectZone(z.id));list.appendChild(b)}
+function selectZone(id){const z=L.getZone(id);if(!z)return;selected=id;document.querySelector("#zoneTitle").textContent=z.code+" · "+z.name;document.querySelector("#zoneDesc").textContent="Joylashuv: X "+z.x+" · Z "+z.z+" | O‘lcham: "+z.width+" × "+z.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.querySelector("b").textContent===z.code);for(const [key,m] of zoneMeshes){m.material.opacity=key===id?.82:.42;m.material.emissive.setHex(key===id?0x243b4f:0x000000)}controls.target.set(z.x,1,z.z);controls.update();notify(z.name+" zonasi tanlandi")}
+function notify(s){const n=document.querySelector("#notice");n.textContent=s;n.classList.add("show");clearTimeout(notify.timer);notify.timer=setTimeout(()=>n.classList.remove("show"),1500)}
+let labelsOn=true,top=false;
+document.querySelector("#labels").onclick=()=>{labelsOn=!labelsOn;zoneLabels.forEach(x=>x.visible=labelsOn);document.querySelector("#labels").textContent="Yorliqlar: "+(labelsOn?"ON":"OFF")};
+document.querySelector("#top").onclick=()=>{top=!top;camera.position.set(0,top?155:105,top?1:125);controls.target.set(0,0,0);controls.update();document.querySelector("#top").classList.toggle("active",top)};
+document.querySelector("#fit").onclick=()=>{top=false;home();document.querySelector("#top").classList.remove("active")};
+document.querySelector("#reset").onclick=home;document.querySelector("#reset2").onclick=home;
+const resizeObserver=new ResizeObserver(()=>{const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()});resizeObserver.observe(canvas);
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);controls.update();renderer.render(scene,camera)}
+animate();
+</script>
+</body></html>
