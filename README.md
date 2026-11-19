@@ -237,3 +237,9 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added an animated High-Bay AS/RS mast / lift carriage and Sorting-to-Packing roller conveyor with moving parcels to the isolated 5XL operations preview.
 - These are visual simulation elements, not physical equipment integrations.
 - Technical notes: `docs/PHASE38_3D_EQUIPMENT_VISUALIZATION.md`.
+
+
+## Phase 39 — Mobile 3D performance profile
+- Added a lower-cost mobile rendering profile, reduced rack density, disabled real-time shadows and capped mobile rendering near 30 FPS in the isolated preview.
+- Real-device FPS / memory / thermal tests remain outstanding.
+- Technical notes: `docs/PHASE39_MOBILE_PERFORMANCE.md`.
