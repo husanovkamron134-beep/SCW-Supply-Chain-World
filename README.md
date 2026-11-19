@@ -146,3 +146,11 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Reserve task state is persisted separately; no duplicate stock ledger is introduced.
 - The older generic WMS putaway remains QC-unaware and must not be used for production until migrated.
 - Technical contract and manual integration test: `docs/PHASE24_RESERVE_STORAGE.md`.
+
+
+## Phase 25 — High-Bay AS/RS foundation
+- Added a 24-bin logical automated storage/retrieval engine (3 aisles × 4 levels × 2 bays).
+- Added safe, additive inventory-location registration through the domain and adapter APIs.
+- Supports capacity-aware split putaway, LOT-isolated bins, retrieval tasks and ledger-backed transfers.
+- Physical crane control, PLC integration and 3D crane animation remain future work.
+- Technical contract and manual integration test: `docs/PHASE25_HIGH_BAY_ASRS.md`.
