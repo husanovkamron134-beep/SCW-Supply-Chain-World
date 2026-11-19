@@ -13,6 +13,7 @@ const api={
  },
  aggregate(){return domain().aggregate()},
  locationBalances(){return domain().locationBalances()},
+ ensureLocation(input){const location=domain().ensureLocation(input);core().emit("inventory.location.registered",{location},{source:"InventoryAdapter"});return location},
  total(sku){return domain().total(sku)}
 };
 root.SCWInventoryAdapter=Object.freeze(api);
