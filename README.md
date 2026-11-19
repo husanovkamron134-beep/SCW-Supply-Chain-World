@@ -256,3 +256,9 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Added operational 3D fixtures across Inbound, Quality Control, Returns, Replenishment, Sorting, Packing, Outbound Staging, Dispatch and Control Center.
 - Existing Reserve, High-Bay AS/RS and Picking rack systems remain.
 - Technical notes: `docs/PHASE41_ALL_ZONES_FURNISHED.md`.
+
+
+## Phase 42 — Industrial interior rebuild
+- Reframed the 5XL preview as an interior warehouse view with roof trusses, high-bay lights, dense multi-aisle pallet racking, forklifts and loading-yard trucks.
+- The top-view camera remains available; the default camera now starts inside the building.
+- Technical notes: `docs/PHASE42_INDUSTRIAL_INTERIOR_REBUILD.md`.
