@@ -25,9 +25,8 @@ function receiptFor(input){
  if(qty>remaining)throw Error("Tekshiruv miqdori shu qabul yozuvida qolgan miqdordan oshdi ("+remaining+").");
  return {po,receipt,index,qty,remaining};
 }
+function validateDecision(value){const decision=String(value||"").toUpperCase();if(!["ACCEPTED","QUARANTINED","REJECTED"].includes(decision))throw Error("QC qarori noto'g'ri.");return decision}
 function recordDecision(data,decision){
- const allowed=["ACCEPTED","QUARANTINED","REJECTED"];
- if(!allowed.includes(decision))throw Error("QC qarori noto'g'ri.");
  const item={
   id:nextId(),sourceType:data.sourceType,sourceId:data.sourceId,
   purchaseOrderId:data.purchaseOrderId||null,receiptIndex:data.receiptIndex===undefined?null:data.receiptIndex,
@@ -45,15 +44,16 @@ const api={
  snapshot(){return {inspections:clone(inspections),metrics:{total:inspections.length,accepted:inspections.filter(x=>x.decision==="ACCEPTED").length,quarantined:inspections.filter(x=>x.decision==="QUARANTINED").length,rejected:inspections.filter(x=>x.decision==="REJECTED").length}}},
  inspectInbound(input){
   input=input||{};
+  const decision=validateDecision(input.decision);
   const source=receiptFor(input);
   const data={sourceType:"INBOUND",sourceId:source.po.id+":"+source.index,purchaseOrderId:source.po.id,receiptIndex:source.index,sku:source.po.sku,lot:source.receipt.lot,qty:source.qty,reason:input.reason,inspector:input.inspector};
   core().emit("quality.inspection.started",data,{source:"QualityControl"});
-  return recordDecision(data,String(input.decision||"").toUpperCase());
+  return recordDecision(data,decision);
  },
  inspectReturn(input){
   input=input||{};
+  const decision=validateDecision(input.decision);
   const data={sourceType:"RETURN",sourceId:textValue(input.returnId,"Return ID"),returnId:textValue(input.returnId,"Return ID"),sku:textValue(input.sku,"SKU"),lot:textValue(input.lot,"LOT"),qty:positive(input.qty),reason:input.reason,inspector:input.inspector};
-  const decision=String(input.decision||"").toUpperCase();
   core().emit("quality.return.inspection.started",data,{source:"QualityControl"});
   const result=recordDecision(data,decision);
   core().emit("quality.return.inspected",result,{source:"QualityControl"});
