@@ -53,9 +53,16 @@ const api={
  inspectReturn(input){
   input=input||{};
   const decision=validateDecision(input.decision);
-  const data={sourceType:"RETURN",sourceId:textValue(input.returnId,"Return ID"),returnId:textValue(input.returnId,"Return ID"),sku:textValue(input.sku,"SKU"),lot:textValue(input.lot,"LOT"),qty:positive(input.qty),reason:input.reason,inspector:input.inspector};
+  if(!root.SCWReturns)throw Error("Returns moduli yuklanmagan.");
+  const returnId=textValue(input.returnId,"Return ID"),returned=root.SCWReturns.get(returnId);
+  if(!returned)throw Error("Qaytarish yozuvi topilmadi.");
+  const sku=textValue(input.sku,"SKU"),lot=textValue(input.lot,"LOT"),qty=positive(input.qty);
+  if(returned.sku!==sku||returned.lot!==lot)throw Error("QC SKU/LOT qaytarish yozuviga mos emas.");
+  if(returned.inspectedQty+qty>returned.qty)throw Error("QC tekshiruv miqdori qaytarilgan miqdordan oshib ketdi.");
+  const data={sourceType:"RETURN",sourceId:returnId,returnId,sku,lot,location:returned.location,qty,reason:input.reason,inspector:input.inspector};
   core().emit("quality.return.inspection.started",data,{source:"QualityControl"});
   const result=recordDecision(data,decision);
+  root.SCWReturns.recordInspection(result);
   core().emit("quality.return.inspected",result,{source:"QualityControl"});
   return result;
  },
