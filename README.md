@@ -182,3 +182,14 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Packing completion updates the existing sales-order status through the Operations Adapter.
 - Dispatch remains the only stage that issues shipped inventory.
 - Technical contract and manual integration test: `docs/PHASE29_PACKING.md`.
+
+
+## Phase 30 — Outbound Staging
+- Added dock assignment and staging tasks for fully packed orders.
+- Staging is a gate before dispatch and does not post inventory.
+- Technical contract: `docs/PHASE30_OUTBOUND_STAGING.md`.
+
+## Phase 31 — Dispatch
+- Added dispatch tasks gated by completed Outbound Staging.
+- Shipment completion uses the existing Operations Adapter and legacy inventory issue workflow exactly once.
+- Technical contract: `docs/PHASE31_DISPATCH.md`.
