@@ -262,3 +262,7 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Reframed the 5XL preview as an interior warehouse view with roof trusses, high-bay lights, dense multi-aisle pallet racking, forklifts and loading-yard trucks.
 - The top-view camera remains available; the default camera now starts inside the building.
 - Technical notes: `docs/PHASE42_INDUSTRIAL_INTERIOR_REBUILD.md`.
+
+
+## Industrial Mega Warehouse redesign
+A separate process-flow prototype is available at `mega-warehouse-industrial.html`, using `src/core/industrial_layout.js`. It preserves the existing 5XL operational preview while testing a larger 160 × 140 m industrial layout with storage aisles, high-bay AS/RS, branched conveyors, dock doors, forklifts and AGVs. See `docs/INDUSTRIAL_MEGA_WAREHOUSE_REDESIGN.md`.
