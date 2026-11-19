@@ -32,7 +32,7 @@ for(const z of L.zones){const m=mat(palette[z.kind]||0x34516a,.9,.05);m.transpar
 // Industrial pallet rack: repeated bays, load levels, bracing and stored pallets
 function rack(x,z,bays=5,levels=5,scale=1){const g=new THREE.Group(),w=bays*2.35*scale,d=2.2*scale,h=levels*2.05*scale;for(const xx of [-w/2,w/2])for(const zz of [-d/2,d/2])box(.16*scale,h,.16*scale,rackBlue,xx,h/2,zz,g);for(let lv=1;lv<=levels;lv++){const y=lv*2.05*scale;box(w,.16*scale,.18*scale,rackOrange,0,y,-d/2,g);box(w,.16*scale,.18*scale,rackOrange,0,y,d/2,g);for(let b=0;b<bays;b++){const px=-w/2+(b+.5)*w/bays;box(w/bays-.16,.82*scale,d*.72,boxMats[(b+lv)%4],px,y+.55*scale,0,g);box(w/bays-.3,.08,d*.78,palletMat,px,y+.13,0,g)}}g.position.set(x,.12,z);scene.add(g);return g}
 function rackBlock(cx,cz,rows,bays,levels,spacing=5){for(let r=0;r<rows;r++){const x=cx+(r-(rows-1)/2)*spacing;for(const z of [-1,1])rack(x,cz+z*2.2,bays,levels,1)}}
-rackBlock(-55,-13,5,6,5,7.1);rackBlock(-55,34,5,5,4,7.1);rackBlock(0,-13,4,6,8,7.2);rackBlock(55,-13,3,4,4,7.3);
+rackBlock(-54,-13,2,16,5,18.5);rackBlock(-54,34,2,16,4,18.5);rackBlock(0,-13,2,7,8,21);rackBlock(55,-13,2,5,4,16.5);
 // AGV travel paths: visible dashed floor lanes with safety edge
 const lane=mat(0x3b718b,.8,.15),dash=mat(0xe4b64f,.65,.25);for(const z of [-32,10,53]){box(150,.035,3,lane,0,.08,z);for(let x=-72;x<=72;x+=8)box(3,.04,.14,dash,x,.12,z)}
 // Inbound dock doors, dock levellers, trailers
