@@ -31,8 +31,13 @@ function label(t,x,z){const c=document.createElement("canvas");c.width=512;c.hei
 for(const z of L.zones){const m=mat(palette[z.kind]||0x34516a,.9,.05);m.transparent=true;m.opacity=.55;const p=box(z.width,.08,z.depth,m,z.x,.03,z.z);zoneMeshes.set(z.id,p);const edge=mat(0x8db5ce,.65,.3);box(z.width,.08,.2,edge,z.x,.12,z.minZ);box(z.width,.08,.2,edge,z.x,.12,z.maxZ);box(.2,.08,z.depth,edge,z.minX,.12,z.z);box(.2,.08,z.depth,edge,z.maxX,.12,z.z);label(z.code+"  "+z.name.toUpperCase(),z.x,z.z)}
 // Industrial pallet rack: repeated bays, load levels, bracing and stored pallets
 function rack(x,z,bays=5,levels=5,scale=1){const g=new THREE.Group(),w=bays*2.35*scale,d=2.2*scale,h=levels*2.05*scale;for(const xx of [-w/2,w/2])for(const zz of [-d/2,d/2])box(.16*scale,h,.16*scale,rackBlue,xx,h/2,zz,g);for(let lv=1;lv<=levels;lv++){const y=lv*2.05*scale;box(w,.16*scale,.18*scale,rackOrange,0,y,-d/2,g);box(w,.16*scale,.18*scale,rackOrange,0,y,d/2,g);for(let b=0;b<bays;b++){const px=-w/2+(b+.5)*w/bays;box(w/bays-.16,.82*scale,d*.72,boxMats[(b+lv)%4],px,y+.55*scale,0,g);box(w/bays-.3,.08,d*.78,palletMat,px,y+.13,0,g)}}g.position.set(x,.12,z);scene.add(g);return g}
-function rackBlock(cx,cz,rows,bays,levels,spacing=5){for(let r=0;r<rows;r++){const x=cx+(r-(rows-1)/2)*spacing;for(const z of [-1,1])rack(x,cz+z*2.2,bays,levels,1)}}
-rackBlock(-54,-13,2,16,5,18.5);rackBlock(-54,34,2,16,4,18.5);rackBlock(0,-13,2,7,8,21);rackBlock(55,-13,2,5,4,16.5);
+function rackRun(x,z0,bays=15,levels=5,bayPitch=2.05){const g=new THREE.Group(),len=bays*bayPitch,d=2.25,h=levels*2.05;for(const xx of [-d/2,d/2]){for(let b=0;b<=bays;b++){const zz=b*bayPitch;box(.14,h,.14,rackBlue,xx,h/2,zz,g);if(b<bays){for(let lv=1;lv<=levels;lv++){const y=lv*2.05;box(.18,.14,bayPitch-.12,rackOrange,xx,y,zz+bayPitch/2,g);box(.9,.78,bayPitch-.24,boxMats[(b+lv)%4],xx*.38,y+.48,zz+bayPitch/2,g);box(1,.08,bayPitch-.2,palletMat,xx*.38,y+.12,zz+bayPitch/2,g)}}}}for(let lv=1;lv<=levels;lv++)box(d,.12,.12,steel,0,lv*2.05,0,g);g.position.set(x,.12,z0);scene.add(g);return g}
+function rackAisles(xPositions,z0,bays,levels){for(const x of xPositions)rackRun(x,z0,bays,levels)}
+// Reserve and picking: five long parallel rack runs with 3.7–4.0 m forklift aisles.
+rackAisles([-73,-66,-59,-52,-45],-30,15,5);
+rackAisles([-73,-66,-59,-52,-45],20,15,4);
+// High-bay: four 8-level rack runs flank the central stacker-crane aisle.
+rackAisles([-14,-8,8,14],-30,15,8);
 // AGV travel paths: visible dashed floor lanes with safety edge
 const lane=mat(0x3b718b,.8,.15),dash=mat(0xe4b64f,.65,.25);for(const z of [-32,10,53]){box(150,.035,3,lane,0,.08,z);for(let x=-72;x<=72;x+=8)box(3,.04,.14,dash,x,.12,z)}
 // Inbound dock doors, dock levellers, trailers
