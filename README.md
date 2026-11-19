@@ -161,3 +161,11 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Completed picks transfer stock to `DSP-01` through the Inventory Adapter and update the sales order through the Operations Adapter.
 - Shortages are emitted for the Replenishment workflow; Picking does not bypass AS/RS by taking stock directly from high-bay bins.
 - Technical contract and manual integration test: `docs/PHASE26_PICKING.md`.
+
+
+## Phase 27 — Replenishment
+- Added pick-buffer replenishment from reserve storage, with SKU/LOT source reservations and capacity checks.
+- Picking shortage events can automatically create replenishment plans.
+- When reserve stock is insufficient, the module can request linked High-Bay AS/RS retrieval tasks.
+- Completed movements use the Inventory Adapter; task state is separate from the stock ledger.
+- Technical contract and manual integration test: `docs/PHASE27_REPLENISHMENT.md`.
