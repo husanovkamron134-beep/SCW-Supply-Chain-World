@@ -17,8 +17,12 @@ function receive(input){
  if(!orderId||!lot)throw Error("Buyurtma ID va qaytarilgan LOT talab qilinadi.");
  const order=operations().snapshot().salesOrders.find(x=>x.id===orderId);
  if(!order||order.status!=="DISPATCHED")throw Error("Faqat jo'natilgan buyurtmadan qaytarish qabul qilinadi.");
+ const shippedLines=Array.isArray(order.pick&&order.pick.lines)&&order.pick.lines.length?order.pick.lines:[{lot:order.pick&&order.pick.lot,qty:order.qty}];
+ const shippedLot=shippedLines.find(x=>x.lot===lot);
+ if(!shippedLot)throw Error("Qaytarilayotgan LOT ushbu buyurtma jo'natmasida mavjud emas.");
  const already=state.returns.filter(x=>x.orderId===orderId).reduce((n,x)=>n+x.qty,0);
- if(already+qty>order.qty)throw Error("Qaytarish miqdori jo'natilgan buyurtma miqdoridan oshib ketdi.");
+ const alreadyLot=state.returns.filter(x=>x.orderId===orderId&&x.lot===lot).reduce((n,x)=>n+x.qty,0);
+ if(already+qty>order.qty||alreadyLot+qty>shippedLot.qty)throw Error("Qaytarish miqdori jo'natilgan buyurtma yoki LOT miqdoridan oshib ketdi.");
  const id="RET-"+String(state.sequence++).padStart(6,"0");
  const item={id,orderId,sku:order.sku,product:order.product,qty,lot,location:"RET-01",reason:String(input.reason||"").trim(),receivedAt:new Date().toISOString(),inspectedQty:0,acceptedQty:0,quarantinedQty:0,rejectedQty:0,status:"QC_PENDING"};
  inventory().record({type:"RECEIPT",sku:item.sku,qty,lot,to:item.location,reference:id,note:"Customer return from "+orderId});
