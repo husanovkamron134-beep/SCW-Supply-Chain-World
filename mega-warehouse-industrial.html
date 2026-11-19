@@ -13,7 +13,7 @@ const L=window.SCWIndustrialLayout;if(!L)throw Error("Industrial layout missing"
 const canvas=document.querySelector("#scene"),mobile=innerWidth<=700,renderer=new THREE.WebGLRenderer({canvas,antialias:!mobile,powerPreference:mobile?"low-power":"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.15:1.6));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x071421);scene.fog=new THREE.Fog(0x071421,145,290);
 const camera=new THREE.PerspectiveCamera(48,1,.1,500),controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,3,0);controls.minDistance=18;controls.maxDistance=230;controls.maxPolarAngle=Math.PI*.48;
-function home(){camera.position.set(88,63,105);controls.target.set(0,3,0);controls.update()}home();
+function home(){camera.position.set(mobile?150:118,mobile?172:112,mobile?190:142);controls.target.set(0,2,0);controls.update()}home();
 scene.add(new THREE.HemisphereLight(0xc5e5ff,0x26384b,2));const sun=new THREE.DirectionalLight(0xffe8c6,2.4);sun.position.set(-65,110,70);sun.castShadow=!mobile;sun.shadow.mapSize.set(mobile?512:2048,mobile?512:2048);scene.add(sun);const fill=new THREE.DirectionalLight(0x5b9dff,1.1);fill.position.set(85,45,-85);scene.add(fill);
 const mat=(c,r=.7,m=.1,em=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m,emissive:em?c:0,emissiveIntensity:em?.3:0});
 const floorMat=mat(0x27394a,.95),wallMat=mat(0x24394c,.8,.25),steel=mat(0x71889b,.55,.65),rackBlue=mat(0x28618a,.48,.5),rackOrange=mat(0xe19a3e,.55,.25),palletMat=mat(0x9a7955),boxMats=[mat(0xbba27b),mat(0x8da9b9),mat(0x91a78b),mat(0xc5a46f)],belt=mat(0x344c60,.65,.5),roller=mat(0xa6b6c2,.35,.75),yellow=mat(0xe8b64e,.5,.3),glass=mat(0x47738b,.25,.45);
@@ -33,11 +33,12 @@ for(const z of L.zones){const m=mat(palette[z.kind]||0x34516a,.9,.05);m.transpar
 function rack(x,z,bays=5,levels=5,scale=1){const g=new THREE.Group(),w=bays*2.35*scale,d=2.2*scale,h=levels*2.05*scale;for(const xx of [-w/2,w/2])for(const zz of [-d/2,d/2])box(.16*scale,h,.16*scale,rackBlue,xx,h/2,zz,g);for(let lv=1;lv<=levels;lv++){const y=lv*2.05*scale;box(w,.16*scale,.18*scale,rackOrange,0,y,-d/2,g);box(w,.16*scale,.18*scale,rackOrange,0,y,d/2,g);for(let b=0;b<bays;b++){const px=-w/2+(b+.5)*w/bays;box(w/bays-.16,.82*scale,d*.72,boxMats[(b+lv)%4],px,y+.55*scale,0,g);box(w/bays-.3,.08,d*.78,palletMat,px,y+.13,0,g)}}g.position.set(x,.12,z);scene.add(g);return g}
 function rackRun(x,z0,bays=15,levels=5,bayPitch=2.05){const g=new THREE.Group(),len=bays*bayPitch,d=2.25,h=levels*2.05;for(const xx of [-d/2,d/2]){for(let b=0;b<=bays;b++){const zz=b*bayPitch;box(.14,h,.14,rackBlue,xx,h/2,zz,g);if(b<bays){for(let lv=1;lv<=levels;lv++){const y=lv*2.05;box(.18,.14,bayPitch-.12,rackOrange,xx,y,zz+bayPitch/2,g);box(.9,.78,bayPitch-.24,boxMats[(b+lv)%4],xx*.38,y+.48,zz+bayPitch/2,g);box(1,.08,bayPitch-.2,palletMat,xx*.38,y+.12,zz+bayPitch/2,g)}}}}for(let lv=1;lv<=levels;lv++)box(d,.12,.12,steel,0,lv*2.05,0,g);g.position.set(x,.12,z0);scene.add(g);return g}
 function rackAisles(xPositions,z0,bays,levels){for(const x of xPositions)rackRun(x,z0,bays,levels)}
-// Reserve and picking: five long parallel rack runs with 3.7–4.0 m forklift aisles.
-rackAisles([-73,-66,-59,-52,-45],-30,15,5);
-rackAisles([-73,-66,-59,-52,-45],20,15,4);
-// High-bay: four 8-level rack runs flank the central stacker-crane aisle.
-rackAisles([-14,-8,8,14],-30,15,8);
+// Dense industrial pallet storage: seven parallel runs per manual-storage zone.
+// Each run has 15 bays, multiple load levels, visible pallet loads and clear MHE aisles.
+rackAisles([-74,-67,-60,-53,-46,-39,-32],-30,15,5);
+rackAisles([-74,-67,-60,-53,-46,-39,-32],20,15,4);
+// High-bay AS/RS: six tall rack runs with a deliberately wide central stacker-crane aisle.
+rackAisles([-16,-11,-5,5,11,16],-30,15,8);
 // AGV travel paths: visible dashed floor lanes with safety edge
 const lane=mat(0x3b718b,.8,.15),dash=mat(0xe4b64f,.65,.25);for(const z of [-32,10,53]){box(150,.035,3,lane,0,.08,z);for(let x=-72;x<=72;x+=8)box(3,.04,.14,dash,x,.12,z)}
 // Inbound dock doors, dock levellers, trailers
@@ -73,7 +74,7 @@ const agvs=[];for(let i=0;i<5;i++){const g=new THREE.Group();box(1.6,.45,1.2,mat
 const list=document.querySelector("#zoneList"),selectedClass="selected";let selected=null;for(const z of L.zones){const b=document.createElement("button");b.className="zone";b.innerHTML="<b>"+z.code+"</b>"+z.name;b.onclick=()=>selectZone(z.id);list.appendChild(b)}
 function selectZone(id){const z=L.getZone(id);if(!z)return;selected=id;document.querySelector("#zoneTitle").textContent=z.code+" · "+z.name;document.querySelector("#zoneDesc").textContent="X "+z.x+" · Z "+z.z+" | "+z.width+" × "+z.depth+" m · "+z.kind;for(const el of list.children)el.classList.toggle("selected",el.querySelector("b").textContent===z.code);for(const [k,m]of zoneMeshes){m.material.opacity=k===id?.78:.3;m.material.emissive.setHex(k===id?0x203d52:0)}controls.target.set(z.x,2,z.z);controls.update()}
 const notice=document.querySelector("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
-document.querySelector("#reset").onclick=home;document.querySelector("#fit").onclick=home;document.querySelector("#top").onclick=()=>{camera.position.set(0,190,.1);controls.target.set(0,0,0);controls.update()};let showLabels=true;document.querySelector("#labels").onclick=()=>{showLabels=!showLabels;zoneLabels.forEach(x=>x.visible=showLabels);document.querySelector("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF")};
+document.querySelector("#reset").onclick=home;document.querySelector("#fit").onclick=home;document.querySelector("#top").onclick=()=>{camera.position.set(0,215,.1);controls.target.set(0,0,0);controls.update()};let showLabels=true;document.querySelector("#labels").onclick=()=>{showLabels=!showLabels;zoneLabels.forEach(x=>x.visible=showLabels);document.querySelector("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF")};
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener("resize",resize);resize();
 let t=0,last=0;function animate(ms){requestAnimationFrame(animate);const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;crane.position.set(0,0,-13+Math.sin(t*.28)*14);lift.position.y=1+Math.abs(Math.sin(t*.65))*7;forklifts.forEach((v,i)=>{v.position.x=[-55,-54,55][i]+Math.sin(t*.18+i)*2;v.position.z=[-18,36,-15][i]+Math.cos(t*.18+i)*3});agvs.forEach((v,i)=>{const a=t*.16+i*1.25;v.position.x=Math.cos(a)*67;v.position.z=Math.sin(a)*48;v.rotation.y=-a});controls.update();renderer.render(scene,camera)}requestAnimationFrame(animate);
 const check=L.validate();document.querySelector("#zoneDesc").textContent=check.valid?"12 zona · sanoat oqimi · geometriya tekshirildi":"Layout xatosi: "+check.errors.join(", ");
