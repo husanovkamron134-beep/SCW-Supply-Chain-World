@@ -154,3 +154,10 @@ Phase 1–10 browser modules still store operational data in localStorage until 
 - Supports capacity-aware split putaway, LOT-isolated bins, retrieval tasks and ledger-backed transfers.
 - Physical crane control, PLC integration and 3D crane animation remain future work.
 - Technical contract and manual integration test: `docs/PHASE25_HIGH_BAY_ASRS.md`.
+
+
+## Phase 26 — order-aware Picking module
+- Added picking tasks from the dedicated `PICK-01` buffer, with LOT-level allocation and open-task reservations.
+- Completed picks transfer stock to `DSP-01` through the Inventory Adapter and update the sales order through the Operations Adapter.
+- Shortages are emitted for the Replenishment workflow; Picking does not bypass AS/RS by taking stock directly from high-bay bins.
+- Technical contract and manual integration test: `docs/PHASE26_PICKING.md`.
