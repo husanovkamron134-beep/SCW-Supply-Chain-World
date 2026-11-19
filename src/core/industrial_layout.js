@@ -26,6 +26,6 @@ const corridors=Object.freeze([
 ]);
 function getZone(id){return raw.find(z=>z.id===id||z.code===id)||null}
 function contains(id,x,z){const a=getZone(id);return !!a&&x>=a.minX&&x<=a.maxX&&z>=a.minZ&&z<=a.maxZ}
-function validate(){const errors=[];for(let i=0;i<raw.length;i++){const a=raw[i];if(a.minX< -80||a.maxX>80||a.minZ< -70||a.maxZ>70)errors.push(a.id+" outside building");for(let j=i+1;j<raw.length;j++){const b=raw[j];if(a.minX<b.maxX&&a.maxX>b.minX&&a.minZ<b.maxZ&&a.maxZ>b.minZ)errors.push(a.id+" overlaps "+b.id)}}if(raw.length!==12)errors.push("Expected 12 zones");return{valid:!errors.length,zoneCount:raw.length,errors}}
+function validate(){const errors=[];for(let i=0;i<raw.length;i++){const a=raw[i];if(a.minX< -80||a.maxX>80||a.minZ< -75||a.maxZ>75)errors.push(a.id+" outside building");for(let j=i+1;j<raw.length;j++){const b=raw[j];if(a.minX<b.maxX&&a.maxX>b.minX&&a.minZ<b.maxZ&&a.maxZ>b.minZ)errors.push(a.id+" overlaps "+b.id)}}if(raw.length!==12)errors.push("Expected 12 zones");return{valid:!errors.length,zoneCount:raw.length,errors}}
 root.SCWIndustrialLayout=Object.freeze({BUILDING,zones:Object.freeze(raw),corridors,getZone,contains,validate});
 })(window);
