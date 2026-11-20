@@ -535,12 +535,13 @@ const journeyForklift=forkliftModel(0xf2a31b);journeyForklift.g.visible=false;
 journeyForklift.g.rotation.y=-Math.PI/2;
 function makeJourneyStacker(){
  const g=new THREE.Group();g.position.set(-40,0,-16);scene.add(g);
- for(const x of[-.62,.62])box(rackBlue,-40+x,6.6,-16,.14,13.2,.18);
- box(steel,-40,13.15,-16,1.45,.18,.3);
+ const part=(parent,mat,w,h,d,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=!mobile;parent.add(m);return m};
+ for(const x of[-.62,.62])part(g,rackBlue,.14,13.2,.18,x,6.6,0);
+ part(g,steel,1.45,.18,.3,0,13.15,0);
  const lift=new THREE.Group();g.add(lift);
- box(rackOrange,-40,.12,-16,1.45,.16,1.5);
- const pallet=new THREE.Mesh(palletGeo,palletMat);pallet.position.set(-40,.2,-16);lift.add(pallet);
- const load=new THREE.Mesh(new THREE.BoxGeometry(1.15,1.25,1.1),cartonMat.clone());load.material.color.setHex(0xc99b62);load.position.set(-40,.95,-16);lift.add(load);
+ part(lift,rackOrange,1.45,.16,1.5,0,.12,0);
+ const pallet=new THREE.Mesh(palletGeo,palletMat);pallet.position.set(0,.2,0);pallet.castShadow=!mobile;lift.add(pallet);
+ const load=new THREE.Mesh(new THREE.BoxGeometry(1.15,1.25,1.1),cartonMat.clone());load.material.color.setHex(0xc99b62);load.position.set(0,.95,0);load.castShadow=!mobile;lift.add(load);
  return{g,lift};
 }
 const journeyStacker=makeJourneyStacker();journeyStacker.g.visible=false;
