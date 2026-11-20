@@ -38,6 +38,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .notice.show{opacity:1}
 .loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
 .loading.done{opacity:0;pointer-events:none}
+ @media(max-width:700px){#boxStatus{bottom:calc(52% + 16px)!important;max-width:calc(100% - 24px);font-size:10px!important;padding:7px 10px!important}}
 @media(max-width:700px){
 .top{height:58px;padding:8px 10px}
 .brand strong{font-size:11px}.brand small{display:none}.logo{width:38px;height:38px}
@@ -83,7 +84,7 @@ const R=(a,b)=>a+(b-a)*rnd(),pick=a=>a[Math.floor(rnd()*a.length)];
 
 /* ================= renderer, scene, camera ================= */
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?2:1.75));
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.5:1.75));
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
@@ -94,7 +95,7 @@ const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene
 {const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x3a3f45,.55));
 const sun=new THREE.DirectionalLight(0xfff0d8,2.2);sun.position.set(-70,120,60);sun.castShadow=true;
-sun.shadow.mapSize.set(mobile?2048:4096,mobile?2048:4096);Object.assign(sun.shadow.camera,{left:-125,right:125,top:125,bottom:-125,near:10,far:380});sun.shadow.bias=-.0004;sun.shadow.normalBias=.06;scene.add(sun);
+sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);Object.assign(sun.shadow.camera,{left:-125,right:125,top:125,bottom:-125,near:10,far:380});sun.shadow.bias=-.0004;sun.shadow.normalBias=.06;scene.add(sun);
 scene.add(new THREE.DirectionalLight(0x7fb0ff,.6).translateX(90).translateY(50).translateZ(-90));
 let composer=null;
 if(!mobile){const rt=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4});composer=new EffectComposer(renderer,rt);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(512,512),.32,.55,.9));composer.addPass(new OutputPass())}
@@ -336,7 +337,7 @@ function makeSign(z){const c=document.createElement("canvas");c.width=512;c.heig
   q.fillStyle="#"+(palette[z.kind]||0x5aaee9).toString(16).padStart(6,"0");q.fillRect(26,22,460,10);
   q.textAlign="center";q.fillStyle="#7fd0ff";q.font="bold 76px Arial";q.fillText(z.code,256,106);q.fillStyle="#eef7ff";q.font="bold 36px Arial";q.fillText(z.name.toUpperCase(),256,162);
   const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,sizeAttenuation:false}));
-  sp.position.set(z.x,12.8,z.z);const k=mobile?1.15:1;sp.scale.set(10*k,3.9*k,1);sp.renderOrder=10;scene.add(sp);labels.push(sp);
+  sp.position.set(z.x,12.8,z.z);const k=mobile?.72:1;sp.scale.set(10*k,3.9*k,1);sp.renderOrder=10;scene.add(sp);labels.push(sp);
   box(steel,z.x-3,13.9,z.z,.04,2.3,.04);box(steel,z.x+3,13.9,z.z,.04,2.3,.04)}
 zones.forEach(makeSign);
 
@@ -393,7 +394,7 @@ let goal=null,followBox=false;
 controls.addEventListener("start",()=>{goal=null;followBox=false});
 function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
 function homePose(){if(mobile)return topPose();const d=fitDist(170,160)*1.18;const tg=new THREE.Vector3(10,0,6);return{pos:new THREE.Vector3(.5,.72,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
-function topPose(){const d=fitDist(170,160)*1.14;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
+function topPose(){const d=fitDist(170,160)*(mobile?1.02:1.14);const dir=new THREE.Vector3(.62,1,.62).normalize();return{pos:dir.multiplyScalar(d).add(new THREE.Vector3(0,0,0)),target:new THREE.Vector3(0,0,0)}}
 function insidePose(){return{pos:new THREE.Vector3(-72,3.4,10),target:new THREE.Vector3(10,mobile?2.6:5.5,10)}}
 function fly(p,instant){if(instant){camera.position.copy(p.pos);controls.target.copy(p.target);controls.update();goal=null}else goal=p}
 const list=$("#zoneList"),panel=$("#panel"),toggle=$("#toggle");
@@ -468,16 +469,17 @@ const demoStages=[
 ];
 const Vdemo=(x,y,z)=>new THREE.Vector3(x,y,z);
 const demoPoints=[
- Vdemo(-54,1.05,-51),Vdemo(-27,1.05,-51),Vdemo(0,1.05,-51),
- Vdemo(0,1.05,-32),Vdemo(-21,1.05,-32),Vdemo(-54,1.05,-32),Vdemo(-54,1.05,-13),
- Vdemo(-21,1.05,-13),Vdemo(21,1.05,-13),Vdemo(55,1.05,-13),
- Vdemo(55,1.05,10),Vdemo(21,1.05,10),Vdemo(-21,1.05,10),Vdemo(-54,1.05,10),
- Vdemo(-54,1.05,34),Vdemo(-21,1.05,34),Vdemo(0,1.05,34),
- Vdemo(21,1.05,34),Vdemo(55,1.05,34),
- Vdemo(55,1.05,53),Vdemo(21,1.05,53),Vdemo(0,1.05,53),Vdemo(0,1.05,65)
+ Vdemo(-54,1.05,-66),Vdemo(-24,1.05,-66),Vdemo(-24,1.05,-32),
+ Vdemo(0,1.05,-32),Vdemo(21,1.05,-32),Vdemo(21,1.05,-13),
+ Vdemo(21,1.05,10),Vdemo(-21,1.05,10),Vdemo(-54,1.05,10),
+ Vdemo(-21,1.05,10),Vdemo(-21,1.05,-13),Vdemo(-21,1.05,-32),
+ Vdemo(21,1.05,-32),Vdemo(21,1.05,10),Vdemo(21,1.05,53),
+ Vdemo(-21,1.05,53),Vdemo(-54,1.05,53),Vdemo(-21,1.05,53),
+ Vdemo(0,1.05,53),Vdemo(21,1.05,53),Vdemo(55,1.05,53),
+ Vdemo(21,1.05,53),Vdemo(0,1.05,65)
 ];
 const demoRoute=pathOf(demoPoints);
-const demoMilestones=[0,2,6,9,14,16,18,19,22].map(i=>demoPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?arr[j].distanceTo(arr[j-1]):0),0));
+const demoMilestones=[0,3,8,10,13,16,18,20,22].map(i=>demoPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?arr[j].distanceTo(arr[j-1]):0),0));
 function startBoxDemo(){
  if(demoBox)scene.remove(demoBox);
  const g=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(1.55,1.25,1.45),cartonMat.clone());
