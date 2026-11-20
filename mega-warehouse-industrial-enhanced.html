@@ -85,7 +85,7 @@ const R=(a,b)=>a+(b-a)*rnd(),pick=a=>a[Math.floor(rnd()*a.length)];
 
 /* ================= renderer, scene, camera ================= */
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.5:1.75));
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.85:2.25));
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.04;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
@@ -101,10 +101,10 @@ sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);Object.assign(sun.shad
 scene.add(new THREE.DirectionalLight(0x9bcaff,.95).translateX(90).translateY(50).translateZ(-90));
 scene.add(new THREE.DirectionalLight(0xffe5c2,.48).translateX(0).translateY(45).translateZ(100));
 let composer=null;
-if(!mobile){const rt=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4});composer=new EffectComposer(renderer,rt);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(512,512),.32,.55,.9));composer.addPass(new OutputPass())}
+if(!mobile){const rt=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4});composer=new EffectComposer(renderer,rt);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(768,768),.16,.35,.96));composer.addPass(new OutputPass())}
 
 /* ================= procedural textures ================= */
-const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+const aniso=Math.min(16,renderer.capabilities.getMaxAnisotropy());
 function ctex(w,h,draw,rx=1,ry=1){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=aniso;t.colorSpace=THREE.SRGBColorSpace;return t}
 const concreteTex=ctex(1024,1024,(q,w,h)=>{
   q.fillStyle="#7d838a";q.fillRect(0,0,w,h);
