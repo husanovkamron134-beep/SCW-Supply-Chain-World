@@ -392,8 +392,8 @@ buildInstances();
 let goal=null,followBox=false;
 controls.addEventListener("start",()=>{goal=null;followBox=false});
 function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
-function homePose(){const d=fitDist(112,76)*(mobile?1.0:1.32);const tg=new THREE.Vector3(mobile?0:14,0,mobile?4:8);return{pos:new THREE.Vector3(.5,.7,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
-function topPose(){const d=fitDist(84,80)*1.04;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
+function homePose(){if(mobile)return topPose();const d=fitDist(170,160)*1.18;const tg=new THREE.Vector3(10,0,6);return{pos:new THREE.Vector3(.5,.72,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
+function topPose(){const d=fitDist(170,160)*1.14;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
 function insidePose(){return{pos:new THREE.Vector3(-72,3.4,10),target:new THREE.Vector3(10,mobile?2.6:5.5,10)}}
 function fly(p,instant){if(instant){camera.position.copy(p.pos);controls.target.copy(p.target);controls.update();goal=null}else goal=p}
 const list=$("#zoneList"),panel=$("#panel"),toggle=$("#toggle");
