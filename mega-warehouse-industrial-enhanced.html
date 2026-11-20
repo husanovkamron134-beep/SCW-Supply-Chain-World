@@ -52,7 +52,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
 <body><div class="app">
-<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><button class="btn" id="reset">Kamerani tiklash</button></header>
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn" id="zoomOut" aria-label="Uzoqlashtirish">−</button><button class="btn" id="zoomIn" aria-label="Yaqinlashtirish">+</button><button class="btn" id="reset">Tiklash</button></div></header>
 <main class="main"><canvas id="scene"></canvas><div class="loading" id="loading">OMBOR YUKLANMOQDA…</div>
 <div class="inspect" id="inspect"><b>ELEMENT INSPECTOR</b><strong id="inspectTitle">Jihozni tanlang</strong><div class="muted" id="inspectDesc">Ombordagi uskuna yoki element ustiga bosing — vazifasi va ishlash prinsipi shu yerda ko‘rsatiladi.</div></div>
 <div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLAHUV <b>PROCESS FLOW</b></div></div>
@@ -89,7 +89,7 @@ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
 const camera=new THREE.PerspectiveCamera(mobile?58:46,1,1,2500);
 const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;controls.dampingFactor=.085;controls.enableZoom=true;controls.zoomSpeed=.82;controls.minDistance=16;controls.maxDistance=420;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;
+controls.enableDamping=true;controls.dampingFactor=.12;controls.enableZoom=true;controls.zoomSpeed=.42;controls.minDistance=14;controls.maxDistance=320;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;controls.autoRotate=false;controls.enableRotate=true;controls.enablePan=true;
 const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
 {const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x3a3f45,.55));
@@ -390,6 +390,7 @@ buildInstances();
 
 /* ================= camera presets and UI ================= */
 let goal=null;
+controls.addEventListener("start",()=>{goal=null});
 function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
 function homePose(){const d=fitDist(112,76)*(mobile?1.0:1.32);const tg=new THREE.Vector3(mobile?0:14,0,mobile?4:8);return{pos:new THREE.Vector3(.5,.7,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
 function topPose(){const d=fitDist(84,80)*1.04;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
@@ -411,7 +412,7 @@ function selectZone(id){const z=L.getZone(id);if(!z)return;
   fly({pos:tg.clone().add(dir.multiplyScalar(dist)),target:tg});if(mobile){panel.classList.add("collapsed");syncToggle()}}
 function clearSelection(){$("#zoneTitle").textContent="Industrial Mega Warehouse";$("#zoneDesc").textContent=defaultDesc;for(const el of list.children)el.classList.remove("selected");for(const p of pads.values())p.material.opacity=.12}
 const notice=$("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
-$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
+$("#zoomIn").onclick=()=>{goal=null;controls.dollyIn(1.22);controls.update()};$("#zoomOut").onclick=()=>{goal=null;controls.dollyOut(1.22);controls.update()};$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
 let showLabels=true;$("#labels").onclick=()=>{showLabels=!showLabels;labels.forEach(s=>s.visible=showLabels);$("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF");notify(showLabels?"Yorliqlar yoqildi":"Yorliqlar o‘chirildi")};
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h)}camera.aspect=w/h;camera.updateProjectionMatrix()}
 addEventListener("resize",resize);resize();
@@ -443,7 +444,20 @@ const elementGuide={
 "Rezina g‘ildirak":["G‘ildirak","Forklift, AGV yoki transport vositasining harakatlanish qismi."]
 };
 function nearestZone(x,z){let best=null,score=Infinity;for(const q of zones){const d=(q.x-x)*(q.x-x)+(q.z-z)*(q.z-z);if(d<score){score=d;best=q}}return best}
-canvas.addEventListener("pointerdown",ev=>{if(ev.pointerType==="touch"&&ev.isPrimary===false)return;pointer.x=(ev.offsetX/canvas.clientWidth)*2-1;pointer.y=-(ev.offsetY/canvas.clientHeight)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(scene.children,true);if(!hits.length)return;const hit=hits.find(h=>h.object.visible&&h.object!==canvas);if(!hit)return;const mat=Array.isArray(hit.object.material)?hit.object.material[0]:hit.object.material;const label=mat?.name||"Ombor elementi";const guide=elementGuide[label]||["Ombor elementi","Bu element omborning tegishli operatsion zonasida ishlatiladi. Uning vazifasi zona jarayoniga bog‘liq."];const z=nearestZone(hit.point.x,hit.point.z);$("#inspectTitle").textContent=guide[0];$("#inspectDesc").textContent=guide[1]+(z?" · Hudud: "+z.code+" — "+z.name:"");if(z){const zone=L.getZone(z.id);if(zone){$("#zoneTitle").textContent=zone.code+" · "+zone.name;$("#zoneDesc").textContent=(roles[zone.id]||"")+ " · "+zone.width+" × "+zone.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.dataset.id===zone.id);for(const[k,p]of pads)p.material.opacity=k===zone.id?.26:.05;}}const point=hit.point.clone(),dir=camera.position.clone().sub(point).normalize();fly({pos:point.clone().add(dir.multiplyScalar(Math.max(22,Math.min(55,camera.position.distanceTo(point)*.48)))),target:point});},{passive:true});
+let inspectStart=null;
+canvas.addEventListener("pointerdown",ev=>{inspectStart={x:ev.clientX,y:ev.clientY,id:ev.pointerId,type:ev.pointerType}});
+canvas.addEventListener("pointerup",ev=>{
+ if(!inspectStart||inspectStart.id!==ev.pointerId)return;
+ const moved=Math.hypot(ev.clientX-inspectStart.x,ev.clientY-inspectStart.y);inspectStart=null;
+ if(moved>7||ev.pointerType==="touch"&&ev.isPrimary===false)return;
+ pointer.x=(ev.offsetX/canvas.clientWidth)*2-1;pointer.y=-(ev.offsetY/canvas.clientHeight)*2+1;
+ raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(scene.children,true);if(!hits.length)return;
+ const hit=hits.find(h=>h.object.visible&&h.object!==canvas);if(!hit)return;
+ const mat=Array.isArray(hit.object.material)?hit.object.material[0]:hit.object.material;
+ const label=mat?.name||"Ombor elementi",guide=elementGuide[label]||["Ombor elementi","Bu element omborning tegishli operatsion zonasida ishlatiladi. Uning vazifasi zona jarayoniga bog‘liq."];
+ const z=nearestZone(hit.point.x,hit.point.z);$("#inspectTitle").textContent=guide[0];$("#inspectDesc").textContent=guide[1]+(z?" · Hudud: "+z.code+" — "+z.name:"");
+ if(z){const zone=L.getZone(z.id);if(zone){$("#zoneTitle").textContent=zone.code+" · "+zone.name;$("#zoneDesc").textContent=(roles[zone.id]||"")+" · "+zone.width+" × "+zone.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.dataset.id===zone.id);for(const[k,p]of pads)p.material.opacity=k===zone.id?.26:.05;}}
+},{passive:true});
 /* ================= loop ================= */
 const tmp=new THREE.Vector3();let t=0,last=0,first=true;
 function animate(ms){
