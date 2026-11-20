@@ -389,8 +389,8 @@ for(let i=0;i<8;i++)parcel(()=>pathOf([V(-11,.95,3.5),V(11,.95,3.5)]),1.1,i/8);
 buildInstances();
 
 /* ================= camera presets and UI ================= */
-let goal=null;
-controls.addEventListener("start",()=>{goal=null});
+let goal=null,followBox=false;
+controls.addEventListener("start",()=>{goal=null;followBox=false});
 function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
 function homePose(){const d=fitDist(112,76)*(mobile?1.0:1.32);const tg=new THREE.Vector3(mobile?0:14,0,mobile?4:8);return{pos:new THREE.Vector3(.5,.7,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
 function topPose(){const d=fitDist(84,80)*1.04;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
@@ -516,7 +516,7 @@ function animate(ms){
   }
   if(goal){camera.position.lerp(goal.pos,.09);controls.target.lerp(goal.target,.09);if(camera.position.distanceTo(goal.pos)<.3&&controls.target.distanceTo(goal.target)<.15)goal=null}
   roofGroup.visible=camera.position.y<H+1.5;
-  for(const sp of labels){const d=camera.position.distanceTo(sp.position),k=THREE.MathUtils.clamp(d*.05,4.5,14)*(mobile?1.15:1);sp.scale.set(k,k*.39,1)}
+  /* Fixed screen-space zone labels; do not rescale them with camera distance. */
   controls.update();composer?composer.render():renderer.render(scene,camera);
   if(first){first=false;$("#loading").classList.add("done");window.__scwReady=true;window.__scwStats={calls:renderer.info.render.calls,tris:renderer.info.render.triangles}}
 }
