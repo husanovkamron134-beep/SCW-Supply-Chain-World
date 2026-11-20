@@ -33,7 +33,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .zone b{display:block;color:#8cc9f6;margin-bottom:3px}
 .zone.selected{border-color:#5cbcff;background:#173b59}
 .controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
-.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
+.fp-pad{display:none;position:absolute;left:14px;bottom:18px;z-index:4;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px;touch-action:none}.fp-pad button{border:1px solid #5b7891;border-radius:13px;background:#10263bdc;color:#fff;font-size:21px;font-weight:800;touch-action:none}.fp-pad button:active{background:#24618b}.fp-hint{display:none;position:absolute;right:12px;bottom:18px;z-index:4;padding:8px 10px;border-radius:10px;background:#0b1928dc;border:1px solid #38536d;color:#dce9f4;font-size:10px;pointer-events:none}.main.fp .fp-pad{display:grid}.main.fp .fp-hint{display:block}.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
 .notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
 .notice.show{opacity:1}
 .loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
@@ -61,9 +61,9 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <div class="sheet-head"><div><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">Oqimga asoslangan 12 zonali logistika markazi.</div></div><button class="tg" id="toggle">Zonalar ▲</button></div>
 <div class="body"><div class="stats"><div class="stat"><small>Maydon</small><strong id="area">24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Qator</small><strong>3 qanot</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
 <div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
-<div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn" id="inside">Ichkarida</button><button class="btn" id="labels">Yorliqlar: ON</button><button class="btn" id="boxRun">Quti ▶</button></div></div>
+<div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn" id="inside">Ichkarida</button><button class="btn" id="firstPerson">Yuk ko‘zi ▶</button><button class="btn" id="labels">Yorliqlar: ON</button><button class="btn" id="boxRun">Quti ▶</button></div></div>
 </aside>
-<div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div><div id="boxStatus" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 24px);background:#0b1928ed;border:1px solid #4c83aa;border-radius:12px;padding:10px 14px;font-size:12px;color:#e8f2fb;display:none;z-index:3;text-align:center;pointer-events:none">Quti harakati</div></main></div>
+<div class="fp-pad" id="fpPad"><span></span><button data-move="forward">↑</button><span></span><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div><div class="fp-hint" id="fpHint">Surish: qarash · Tugmalar: yurish</div><div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div><div id="boxStatus" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 24px);background:#0b1928ed;border:1px solid #4c83aa;border-radius:12px;padding:10px 14px;font-size:12px;color:#e8f2fb;display:none;z-index:3;text-align:center;pointer-events:none">Quti harakati</div></main></div>
 <script src="src/core/industrial_layout.js"></script>
 <script type="module">
 import * as THREE from "three";
@@ -381,8 +381,19 @@ for(let i=0;i<8;i++)parcel(()=>pathOf([V(-11,.95,3.5),V(11,.95,3.5)]),1.1,i/8);
 buildInstances();
 
 /* ================= camera presets and UI ================= */
-let goal=null,followBox=false;
+let goal=null,followBox=false,firstPerson=false;
+const main=$(".main"),fpButton=$("#firstPerson"),fpKeys=new Set();let fpYaw=-Math.PI/2,fpPitch=0,fpLook=null;
+const fpSpeed=mobile?8:10;
+function setFirstPerson(on){firstPerson=on;main.classList.toggle("fp",on);controls.enabled=!on;goal=null;followBox=false;fpKeys.clear();if(on){camera.position.set(-72,1.35,10);camera.rotation.order="YXZ";fpYaw=-Math.PI/2;fpPitch=0;camera.rotation.set(0,fpYaw,0);camera.updateMatrixWorld();notify("Yuk ko‘zi rejimi yoqildi")}else{camera.rotation.set(0,0,0);fly(insidePose());notify("Oddiy kamera rejimi")};fpButton.textContent=on?"Yuk ko‘zi: ON":"Yuk ko‘zi ▶"}
+fpButton.onclick=()=>setFirstPerson(!firstPerson);
 controls.addEventListener("start",()=>{goal=null;followBox=false});
+function fpMove(dt){if(!firstPerson)return;const f=(fpKeys.has("forward")||fpKeys.has("w")?1:0)-(fpKeys.has("back")||fpKeys.has("s")?1:0),r=(fpKeys.has("right")||fpKeys.has("d")?1:0)-(fpKeys.has("left")||fpKeys.has("a")?1:0);if(!f&&!r)return;const forward=new THREE.Vector3(-Math.sin(fpYaw),0,-Math.cos(fpYaw)),right=new THREE.Vector3(Math.cos(fpYaw),0,-Math.sin(fpYaw));const move=forward.multiplyScalar(f).add(right.multiplyScalar(r));if(move.lengthSq()>1)move.normalize();camera.position.addScaledVector(move,fpSpeed*dt);camera.position.x=THREE.MathUtils.clamp(camera.position.x,-77,77);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-72,72);camera.position.y=1.35;}
+const fpPad=$("#fpPad");fpPad.querySelectorAll("button[data-move]").forEach(b=>{const k=b.dataset.move;b.addEventListener("pointerdown",e=>{e.preventDefault();fpKeys.add(k);b.setPointerCapture(e.pointerId)});const up=()=>fpKeys.delete(k);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("lostpointercapture",up)});
+addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(k)){if(firstPerson){e.preventDefault();fpKeys.add(({arrowup:"forward",arrowdown:"back",arrowleft:"left",arrowright:"right"})[k]||k)}}if(k==="escape"&&firstPerson)setFirstPerson(false)});
+addEventListener("keyup",e=>{const k=e.key.toLowerCase();fpKeys.delete(k);fpKeys.delete(({arrowup:"forward",arrowdown:"back",arrowleft:"left",arrowright:"right"})[k])});
+canvas.addEventListener("pointerdown",e=>{if(firstPerson)fpLook={x:e.clientX,y:e.clientY}});
+canvas.addEventListener("pointermove",e=>{if(!firstPerson||!fpLook)return;const dx=e.clientX-fpLook.x,dy=e.clientY-fpLook.y;fpLook={x:e.clientX,y:e.clientY};fpYaw-=dx*.004;fpPitch=THREE.MathUtils.clamp(fpPitch-dy*.003,-1.05,1.05);camera.rotation.set(fpPitch,fpYaw,0)});
+for(const ev of ["pointerup","pointercancel"])canvas.addEventListener(ev,()=>fpLook=null);
 function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
 function homePose(){if(mobile)return topPose();const d=fitDist(170,160)*1.18;const tg=new THREE.Vector3(10,0,6);return{pos:new THREE.Vector3(.5,.72,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
 function topPose(){const d=fitDist(170,160)*(mobile?1.02:1.14);const dir=new THREE.Vector3(.62,1,.62).normalize();return{pos:dir.multiplyScalar(d).add(new THREE.Vector3(0,0,0)),target:new THREE.Vector3(0,0,0)}}
@@ -439,6 +450,7 @@ function nearestZone(x,z){let best=null,score=Infinity;for(const q of zones){con
 let inspectStart=null;
 canvas.addEventListener("pointerdown",ev=>{inspectStart={x:ev.clientX,y:ev.clientY,id:ev.pointerId,type:ev.pointerType}});
 canvas.addEventListener("pointerup",ev=>{
+ if(firstPerson){inspectStart=null;return;}
  if(!inspectStart||inspectStart.id!==ev.pointerId)return;
  const moved=Math.hypot(ev.clientX-inspectStart.x,ev.clientY-inspectStart.y);inspectStart=null;
  if(moved>7||ev.pointerType==="touch"&&ev.isPrimary===false)return;
@@ -488,7 +500,7 @@ demoButton.onclick=startBoxDemo;
 const tmp=new THREE.Vector3();let t=0,last=0,first=true;
 function animate(ms){
   requestAnimationFrame(animate);
-  const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;
+  const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;fpMove(dt);
   for(const c of cranes){const a=t*.2+c.ph;c.g.position.set(c.x,0,-16+Math.sin(a)*13.5);c.lift.position.set(0,1.2+(Math.sin(a*1.9)*.5+.5)*10.5,0);c.lift.children[2].visible=Math.sin(a*.7)>-.3}
   for(const f of forklifts){if(f.park){f.lift.position.y=.15+(Math.sin(t*.5)*.5+.5)*1.2;continue}
     const a=t*f.sp+f.ph,v=Math.cos(a);
@@ -508,9 +520,9 @@ function animate(ms){
     if(demoDistance>=demoRoute.tot){demoRunning=false;demoStatus.textContent="Yuk jo‘natildi · Jarayon yakunlandi · 100%";demoButton.textContent="Quti ↻";followBox=false}
   }
   if(goal){camera.position.lerp(goal.pos,.09);controls.target.lerp(goal.target,.09);if(camera.position.distanceTo(goal.pos)<.3&&controls.target.distanceTo(goal.target)<.15)goal=null}
-  roofGroup.visible=camera.position.y<H+1.5;
+  roofGroup.visible=firstPerson?false:camera.position.y<H+1.5;
   /* Fixed screen-space zone labels; do not rescale them with camera distance. */
-  controls.update();composer?composer.render():renderer.render(scene,camera);
+  if(!firstPerson)controls.update();composer?composer.render():renderer.render(scene,camera);
   if(first){first=false;$("#loading").classList.add("done");window.__scwReady=true;window.__scwStats={calls:renderer.info.render.calls,tris:renderer.info.render.triangles}}
 }
 requestAnimationFrame(animate);
