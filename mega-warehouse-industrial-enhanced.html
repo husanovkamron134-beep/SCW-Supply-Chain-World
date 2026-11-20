@@ -86,18 +86,20 @@ const R=(a,b)=>a+(b-a)*rnd(),pick=a=>a[Math.floor(rnd()*a.length)];
 /* ================= renderer, scene, camera ================= */
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.5:1.75));
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.04;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
-const camera=new THREE.PerspectiveCamera(mobile?58:46,1,1,2500);
+const camera=new THREE.PerspectiveCamera(mobile?58:46,1,.12,2500);
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;controls.dampingFactor=.12;controls.enableZoom=true;controls.zoomSpeed=.42;controls.minDistance=14;controls.maxDistance=1100;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;controls.autoRotate=false;controls.enableRotate=true;controls.enablePan=true;
 const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
 {const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
-scene.add(new THREE.HemisphereLight(0xcfe6ff,0x3a3f45,.55));
-const sun=new THREE.DirectionalLight(0xfff0d8,2.2);sun.position.set(-70,120,60);sun.castShadow=true;
+scene.add(new THREE.HemisphereLight(0xd9edff,0x68717b,.92));
+scene.add(new THREE.AmbientLight(0xffffff,.28));
+const sun=new THREE.DirectionalLight(0xfff0d8,1.85);sun.position.set(-70,120,60);sun.castShadow=true;
 sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);Object.assign(sun.shadow.camera,{left:-125,right:125,top:125,bottom:-125,near:10,far:380});sun.shadow.bias=-.0004;sun.shadow.normalBias=.06;scene.add(sun);
-scene.add(new THREE.DirectionalLight(0x7fb0ff,.6).translateX(90).translateY(50).translateZ(-90));
+scene.add(new THREE.DirectionalLight(0x9bcaff,.95).translateX(90).translateY(50).translateZ(-90));
+scene.add(new THREE.DirectionalLight(0xffe5c2,.48).translateX(0).translateY(45).translateZ(100));
 let composer=null;
 if(!mobile){const rt=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4});composer=new EffectComposer(renderer,rt);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(512,512),.32,.55,.9));composer.addPass(new OutputPass())}
 
@@ -210,7 +212,7 @@ function wall(w,x,z,ry,mat){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,H),
 const wallNS=M(0xffffff,.55,.45,{map:metalTex(W/4)}),wallEW=M(0xffffff,.55,.45,{map:metalTex(D/4)});
 wall(W,0,-hd,0,wallNS);wall(W,0,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
 const roofGroup=new THREE.Group();scene.add(roofGroup);
-{const roof=new THREE.Mesh(new THREE.PlaneGeometry(W,D),M(0xffffff,.8,.3,{map:roofTex,emissive:0x46515c,emissiveIntensity:1}));roof.rotation.x=Math.PI/2;roof.position.y=H;roofGroup.add(roof);
+{const roof=new THREE.Mesh(new THREE.PlaneGeometry(W,D),M(0xffffff,.72,.28,{map:roofTex,emissive:0x667887,emissiveIntensity:.72}));roof.rotation.x=Math.PI/2;roof.position.y=H;roofGroup.add(roof);
  const sky=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,2.6,3.2)});for(let x=-60;x<=60;x+=30){const s=new THREE.Mesh(new THREE.PlaneGeometry(3.4,128),sky);s.rotation.x=Math.PI/2;s.position.set(x,H-.04,0);roofGroup.add(s)}}
 // foundation plinth with gaps for dock bays (yard is 1.2 m lower, so truck beds meet the floor)
 const northDocks=[-68,-56,-44],southDocks=[-10,0,10];
