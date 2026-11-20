@@ -472,7 +472,7 @@ function updateMobileCamera(){
   const forward=controls.target.clone().sub(camera.position);forward.y=0;
   if(forward.lengthSq()<.0001)forward.set(0,0,-1);forward.normalize();
   const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0)).normalize();
-  const speed=Math.max(7,controls.getDistance()*.42);
+  const speed=Math.min(8,Math.max(.8,controls.getDistance()*.055));
   const delta=right.clone().multiplyScalar(cameraStickX).addScaledVector(forward,-cameraStickY).multiplyScalar(speed);
   camera.position.add(delta);controls.target.add(delta);
  }
