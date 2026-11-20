@@ -91,7 +91,7 @@ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
 const camera=new THREE.PerspectiveCamera(mobile?58:46,1,.05,2500);
 const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;controls.dampingFactor=.075;controls.enableZoom=true;controls.zoomSpeed=.9;controls.minDistance=3.5;controls.maxDistance=1500;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;controls.autoRotate=false;controls.enableRotate=true;controls.rotateSpeed=.85;controls.enablePan=true;controls.panSpeed=.9;
+controls.enableDamping=true;controls.dampingFactor=.075;controls.enableZoom=true;controls.zoomSpeed=1.25;controls.minDistance=1.8;controls.maxDistance=2400;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;controls.autoRotate=false;controls.enableRotate=true;controls.rotateSpeed=.85;controls.enablePan=true;controls.panSpeed=.9;
 const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
 {const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
 scene.add(new THREE.HemisphereLight(0xd9edff,0x68717b,.92));
@@ -418,7 +418,7 @@ function selectZone(id){const z=L.getZone(id);if(!z)return;
   fly({pos:tg.clone().add(dir.multiplyScalar(dist)),target:tg});if(mobile){panel.classList.add("collapsed");syncToggle()}}
 function clearSelection(){$("#zoneTitle").textContent="Industrial Mega Warehouse";$("#zoneDesc").textContent=defaultDesc;for(const el of list.children)el.classList.remove("selected");for(const p of pads.values())p.material.opacity=.12}
 const notice=$("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
-$("#zoomIn").onclick=()=>{goal=null;controls.dollyIn(1.4);controls.update()};$("#zoomOut").onclick=()=>{goal=null;controls.dollyOut(1.32);controls.update()};$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
+$("#zoomIn").onclick=()=>{goal=null;controls.dollyIn(1.7);controls.update()};$("#zoomOut").onclick=()=>{goal=null;controls.dollyOut(1.5);controls.update()};$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
 let showLabels=true;$("#labels").onclick=()=>{showLabels=!showLabels;labels.forEach(s=>s.visible=showLabels);$("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF");notify(showLabels?"Yorliqlar yoqildi":"Yorliqlar o‘chirildi")};
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h)}camera.aspect=w/h;camera.updateProjectionMatrix()}
 addEventListener("resize",resize);resize();
