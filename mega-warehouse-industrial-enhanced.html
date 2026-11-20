@@ -576,7 +576,7 @@ function updateJourney(dt){
  journeyStacker.g.visible=demoStage===3;
  journeyStacker.lift.position.y=.25+Math.sin(reserveP*Math.PI)*8.2;
  // Receiving forklift unloads the inbound pallet; dispatch forklift lifts and enters the truck.
- const inboundP=THREE.MathUtils.clamp((journeyDistance-journeyMilestones[0])/(journeyMilestones[1]-journeyMilestones[0]),0,1);
+ const inboundP=THREE.MathUtils.clamp(journeyDistance/Math.max(.001,journeyMilestones[0]),0,1);
  const dispatchStart=journeyMilestones[9],liftEnd=journeyMilestones[10],truckEnd=journeyMilestones[11];
  const liftP=THREE.MathUtils.clamp((journeyDistance-dispatchStart)/Math.max(.001,liftEnd-dispatchStart),0,1);
  const truckP=THREE.MathUtils.clamp((journeyDistance-liftEnd)/Math.max(.001,truckEnd-liftEnd),0,1);
