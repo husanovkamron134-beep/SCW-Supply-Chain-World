@@ -89,9 +89,9 @@ renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.5:1.75));
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.04;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
-const camera=new THREE.PerspectiveCamera(mobile?58:46,1,.12,2500);
+const camera=new THREE.PerspectiveCamera(mobile?58:46,1,.05,2500);
 const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;controls.dampingFactor=.12;controls.enableZoom=true;controls.zoomSpeed=.42;controls.minDistance=14;controls.maxDistance=1100;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;controls.autoRotate=false;controls.enableRotate=true;controls.enablePan=true;
+controls.enableDamping=true;controls.dampingFactor=.075;controls.enableZoom=true;controls.zoomSpeed=.9;controls.minDistance=3.5;controls.maxDistance=1500;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;controls.maxPolarAngle=Math.PI*.485;controls.screenSpacePanning=true;controls.autoRotate=false;controls.enableRotate=true;controls.rotateSpeed=.85;controls.enablePan=true;controls.panSpeed=.9;
 const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
 {const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
 scene.add(new THREE.HemisphereLight(0xd9edff,0x68717b,.92));
@@ -414,11 +414,11 @@ function selectZone(id){const z=L.getZone(id);if(!z)return;
   $("#zoneTitle").textContent=z.code+" · "+z.name;$("#zoneDesc").textContent=(roles[z.id]||"")+" · "+z.width+" × "+z.depth+" m";
   for(const el of list.children)el.classList.toggle("selected",el.dataset.id===z.id);
   for(const[k,p]of pads)p.material.opacity=k===id?.26:.05;
-  const dist=Math.max(z.width,z.depth)*(mobile?1.7:1.25)+22,dir=new THREE.Vector3(.4,.8,.8).normalize(),tg=new THREE.Vector3(z.x,2,z.z);
+  const dist=Math.max(16,Math.max(z.width,z.depth)*(mobile?1.08:.86)+8),dir=new THREE.Vector3(.4,.8,.8).normalize(),tg=new THREE.Vector3(z.x,2,z.z);
   fly({pos:tg.clone().add(dir.multiplyScalar(dist)),target:tg});if(mobile){panel.classList.add("collapsed");syncToggle()}}
 function clearSelection(){$("#zoneTitle").textContent="Industrial Mega Warehouse";$("#zoneDesc").textContent=defaultDesc;for(const el of list.children)el.classList.remove("selected");for(const p of pads.values())p.material.opacity=.12}
 const notice=$("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
-$("#zoomIn").onclick=()=>{goal=null;controls.dollyIn(1.22);controls.update()};$("#zoomOut").onclick=()=>{goal=null;controls.dollyOut(1.22);controls.update()};$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
+$("#zoomIn").onclick=()=>{goal=null;controls.dollyIn(1.4);controls.update()};$("#zoomOut").onclick=()=>{goal=null;controls.dollyOut(1.32);controls.update()};$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
 let showLabels=true;$("#labels").onclick=()=>{showLabels=!showLabels;labels.forEach(s=>s.visible=showLabels);$("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF");notify(showLabels?"Yorliqlar yoqildi":"Yorliqlar o‘chirildi")};
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h)}camera.aspect=w/h;camera.updateProjectionMatrix()}
 addEventListener("resize",resize);resize();
@@ -463,7 +463,7 @@ canvas.addEventListener("pointerup",ev=>{
  const mat=Array.isArray(hit.object.material)?hit.object.material[0]:hit.object.material;
  const label=mat?.name||"Ombor elementi",guide=elementGuide[label]||["Ombor elementi","Bu element omborning tegishli operatsion zonasida ishlatiladi. Uning vazifasi zona jarayoniga bog‘liq."];
  const z=nearestZone(hit.point.x,hit.point.z);$("#inspectTitle").textContent=guide[0];$("#inspectDesc").textContent=guide[1]+(z?" · Hudud: "+z.code+" — "+z.name:"");
- if(z){const zone=L.getZone(z.id);if(zone){$("#zoneTitle").textContent=zone.code+" · "+zone.name;$("#zoneDesc").textContent=(roles[zone.id]||"")+" · "+zone.width+" × "+zone.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.dataset.id===zone.id);for(const[k,p]of pads)p.material.opacity=k===zone.id?.26:.05;}}
+ const focusTarget=hit.point.clone();const viewOffset=camera.position.clone().sub(controls.target);if(viewOffset.lengthSq()<.001)viewOffset.set(.4,.8,.8);viewOffset.normalize();const focusDistance=THREE.MathUtils.clamp(camera.position.distanceTo(controls.target)*.46,6,22);fly({pos:focusTarget.clone().addScaledVector(viewOffset,focusDistance),target:focusTarget});notify("Obyektga fokuslandi");if(z){const zone=L.getZone(z.id);if(zone){$("#zoneTitle").textContent=zone.code+" · "+zone.name;$("#zoneDesc").textContent=(roles[zone.id]||"")+" · "+zone.width+" × "+zone.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.dataset.id===zone.id);for(const[k,p]of pads)p.material.opacity=k===zone.id?.26:.05;}}
 },{passive:true});
 /* ================= single-carton process-flow demonstration ================= */
 let demoBox=null,demoDistance=0,demoRunning=false,demoStage=0,journeyRunning=false,journeyDistance=0,journeySpeedFactor=1;
@@ -614,7 +614,7 @@ function animate(ms){
     if(followBox){const desired=demoBox.position.clone().add(new THREE.Vector3(34,25,34));camera.position.lerp(desired,.035);controls.target.lerp(demoBox.position,.055)}
     if(demoDistance>=demoRoute.tot){demoRunning=false;demoStatus.textContent="Yuk jo‘natildi · Jarayon yakunlandi · 100%";demoButton.textContent="Quti ↻";followBox=false}
   }
-  if(goal){camera.position.lerp(goal.pos,.09);controls.target.lerp(goal.target,.09);if(camera.position.distanceTo(goal.pos)<.3&&controls.target.distanceTo(goal.target)<.15)goal=null}
+  if(goal){const ease=1-Math.exp(-dt*5.5);camera.position.lerp(goal.pos,ease);controls.target.lerp(goal.target,ease);if(camera.position.distanceTo(goal.pos)<.08&&controls.target.distanceTo(goal.target)<.05){camera.position.copy(goal.pos);controls.target.copy(goal.target);goal=null}}
   roofGroup.visible=firstPerson?false:camera.position.y<H+1.5;
   /* Fixed screen-space zone labels; do not rescale them with camera distance. */
   if(!firstPerson)controls.update();composer?composer.render():renderer.render(scene,camera);
