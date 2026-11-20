@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08111d">
+<title>SCW · Smart Warehouse 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#08111d;--panel:#101d2d;--line:#26394f;--muted:#8fa3ba;--text:#edf5ff;--blue:#63b5ff;--cyan:#59ded2;--green:#63d6a5;--gold:#f2c46e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;overflow:hidden}
+.app{height:100dvh;display:grid;grid-template-rows:64px 1fr}.top{display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #26394f;background:#0c1726;z-index:2}.brand{display:flex;align-items:center;gap:12px}.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(145deg,#70caff,#2868bc);display:grid;place-items:center;font:700 14px "Space Grotesk"}.brand strong{font:700 15px "Space Grotesk";display:block}.brand small{font-size:10px;color:var(--muted)}.topright{display:flex;gap:9px;align-items:center}.status{font-size:10px;color:var(--green);border:1px solid #28624e;background:#123328;padding:7px 10px;border-radius:99px}.btn{background:#172b42;color:#eaf4ff;border:1px solid #35516f;padding:9px 12px;border-radius:9px;font:600 11px "DM Sans";cursor:pointer}.btn:hover,.btn.active{background:#1f4770;border-color:#579cdb}.layout{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 290px}.viewport{position:relative;min-width:0;min-height:0;background:radial-gradient(ellipse at 50% 42%,#1a3045,#08111d 75%)}#scene{width:100%;height:100%;display:block;touch-action:none}.hud{position:absolute;left:17px;top:16px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}.chip{padding:8px 10px;background:#091523dc;border:1px solid #30465d;border-radius:9px;font-size:10px;color:#c5d8ed;backdrop-filter:blur(8px)}.chip b{color:white;margin-left:5px}.help{position:absolute;bottom:16px;left:17px;padding:10px 12px;background:#091523dc;border:1px solid #30465d;border-radius:10px;color:#b8cbe0;font-size:10px;line-height:1.6;max-width:280px;pointer-events:none}.help b{color:#fff}.crosshair{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);opacity:.35;pointer-events:none}.crosshair:before,.crosshair:after{content:"";position:absolute;background:#b8dfff}.crosshair:before{width:18px;height:1px;top:9px}.crosshair:after{height:18px;width:1px;left:9px}.side{background:#0c1726;border-left:1px solid #26394f;padding:16px;overflow:auto}.side h2{font:700 17px "Space Grotesk";margin:3px 0 4px}.eyebrow{font-size:9px;color:var(--cyan);letter-spacing:1.5px;text-transform:uppercase;font-weight:700}.muted{font-size:10px;color:var(--muted);line-height:1.5}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:15px 0}.metric{padding:11px;background:#112136;border:1px solid #263d56;border-radius:11px}.metric small{font-size:9px;color:var(--muted)}.metric strong{display:block;font:700 20px "Space Grotesk";margin-top:5px}.metric em{font-size:9px;color:var(--green);font-style:normal}.section{border-top:1px solid #26394f;padding-top:14px;margin-top:14px}.section h3{font:600 11px "Space Grotesk";margin:0 0 10px}.action{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #1c2d42}.action:last-child{border:0}.action b{font-size:10px;display:block}.action small{font-size:9px;color:var(--muted)}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px #63d6a5}.bar{height:6px;border-radius:9px;background:#20334a;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#398ce0,#59ded2);border-radius:9px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px}.controls .btn{width:100%}.wide{grid-column:1/-1}.select{width:100%;background:#122238;color:#eaf4ff;border:1px solid #30465d;border-radius:9px;padding:9px;font:11px "DM Sans"}.notice{position:absolute;top:75px;left:50%;transform:translateX(-50%);background:#143b32;border:1px solid #347b66;color:#c9ffea;border-radius:10px;padding:9px 14px;font-size:10px;opacity:0;transition:opacity .2s;pointer-events:none}.notice.show{opacity:1}
+details.controlsbox{grid-column:1/-1}details.controlsbox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;font:600 11px "Space Grotesk";padding:3px 0 10px}details.controlsbox>summary::-webkit-details-marker{display:none}details.controlsbox>summary span{font:500 10px "DM Sans";color:var(--cyan)}details.controlsbox[open]>summary span{font-size:0}details.controlsbox[open]>summary span:after{content:"Yopish";font-size:10px}.controls{margin-top:8px}@media(max-width:850px){.layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(155px,27vh)}.side{border-left:0;border-top:1px solid #26394f;display:block;padding:8px 12px;overflow:auto}.sidehead{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.sidehead .eyebrow{display:none}.sidehead h2{font-size:14px;margin:0}.sidehead .muted{font-size:9px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:7px 0}.metric{padding:7px}.metric small{font-size:8px}.metric strong{font-size:14px;margin-top:2px}.metric em,.metric .bar{display:none}.section{margin-top:7px;padding-top:7px}.side>.section:not(.controlsbox):not(:last-child){display:none}.section.controlsbox{margin-top:4px}.section:last-child{padding-top:6px}.section:last-child h3{margin-bottom:5px}.action{padding:5px 0}.help{display:none}.app{grid-template-rows:56px 1fr}.top{padding:0 12px}.topright .status{display:none}.hud{left:9px;top:9px}.chip{padding:6px 8px;font-size:9px}}@media(max-width:520px){.layout{grid-template-rows:minmax(0,1fr) minmax(145px,24vh)}.topright .btn{padding:8px}.brand strong{font-size:13px}.brand small{font-size:9px}.controls{gap:5px}.controls .btn{padding:8px 6px;font-size:10px}.side{padding:7px 10px}.metric{min-width:0}.metric small{white-space:nowrap}.section:last-child .muted{font-size:9px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>SMART WAREHOUSE 3D</strong><small>Digital twin · Warehouse operations</small></div></div><div class="topright"><span class="status">● SIMULATION ONLINE</span><button class="btn" id="reset">Qayta boshlash</button></div></header>
+<div class="layout">
+<main class="viewport"><canvas id="scene"></canvas>
+<div class="hud"><div class="chip">ZONA <b>A · STORAGE</b></div><div class="chip">KAMERA <b id="cam">ORBIT</b></div><div class="chip">SIM VAQT <b id="clock">00:00</b></div></div>
+<div class="crosshair"></div><div class="help"><b>Boshqaruv</b><br>Sichqoncha / barmoq — kamerani aylantirish · Scroll — yaqinlashtirish<br><b>W A S D</b> — yurish · <b>E</b> — yuk olish · <b>Q</b> — tushirish · <b>R/F</b> — vilkani ko‘tarish/tushirish</div><div class="notice" id="notice">Simulyatsiya yangilandi</div></main>
+<aside class="side">
+<div class="sidehead"><div class="eyebrow">Operations overview</div><h2>Ombor markazi</h2><div class="muted">Interaktiv 3D logistika muhiti · Demo rejim</div></div>
+<div class="metrics">
+<div class="metric"><small>Jami pallet</small><strong id="pallets">128</strong><em>● Inventar</em></div>
+<div class="metric"><small>Bandlik</small><strong id="capacity">72%</strong><div class="bar"><i style="width:72%"></i></div></div>
+<div class="metric"><small>Faol texnika</small><strong>03</strong><em>● Online</em></div>
+<div class="metric"><small>Ochiq vazifa</small><strong id="tasks">12</strong><em>● Jarayonda</em></div>
+</div>
+<div class="section"><h3>OMBOR ZONALARI</h3>
+<div class="action"><div><b>A · Saqlash stellajlari</b><small>12 qator · 4 qavat</small></div><span class="dot"></span></div>
+<div class="action"><div><b>B · Qabul qilish</b><small>Inbound · 3 dock</small></div><span class="dot"></span></div>
+<div class="action"><div><b>C · Saralash va qadoqlash</b><small>Conveyor · 2 liniya</small></div><span class="dot"></span></div>
+<div class="action"><div><b>D · Jo‘natish</b><small>Outbound · 4 dock</small></div><span class="dot"></span></div>
+</div>
+<details class="section controlsbox"><summary>SIMULYATSIYA BOSHQARUVI <span>Ochish</span></summary><div class="controls">
+<button class="btn active" id="play">Ⅱ To‘xtatish</button><button class="btn" id="speed">Tezlik: 1×</button>
+<button class="btn" id="toggleLabels">Yorliqlar: ON</button><button class="btn" id="topView">Yuqoridan ko‘rish</button>
+<button class="btn" id="pickup">E · Yuk olish</button><button class="btn" id="drop">Q · Yukni tushirish</button><button class="btn" id="forkUp">R · Vilkani ↑</button><button class="btn" id="forkDown">F · Vilkani ↓</button><button class="btn" id="wmsTask">Putaway yaratish</button><button class="btn" id="pickTask">Picking yaratish</button><button class="btn" id="agv">AGV: WMS bajarish</button><button class="btn wide" id="spawn">Inventarga yangi pallet qabul qilish +</button><div class="wide controls" id="touchPad"><button class="btn" data-key="KeyW">↑</button><button class="btn" data-key="KeyA">←</button><button class="btn" data-key="KeyS">↓</button><button class="btn" data-key="KeyD">→</button></div>
+</div></details>
+<div class="section"><h3>JORIY TOPSHIRIQ</h3><div class="action"><div><b id="taskName">PUTAWAY · A-03-02</b><small id="taskDesc">Qabul zonasidan saqlash joyiga</small></div><span class="dot"></span></div><div class="muted" id="forkStatus">Forklift bo‘sh. Yaqin pallet yonida E tugmasini bosing. Yukni Q bilan tushiring.</div></div>
+</aside></div></div>
+<script src="src/domain.js"></script>
+<script src="src/operations.js"></script>
+<script src="src/warehouse_sim.js"></script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+const canvas=document.querySelector("#scene"),renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x091522);scene.fog=new THREE.Fog(0x091522,34,90);
+const camera=new THREE.PerspectiveCamera(48,1,.1,180);camera.position.set(16,14,18);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.target.set(0,2,0);orbit.maxPolarAngle=Math.PI*.48;orbit.minDistance=6;orbit.maxDistance=52;
+scene.add(new THREE.HemisphereLight(0xc6e5ff,0x273448,2.1));
+const key=new THREE.DirectionalLight(0xfff1d6,3.1);key.position.set(-14,28,12);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-32;key.shadow.camera.right=32;key.shadow.camera.top=32;key.shadow.camera.bottom=-32;scene.add(key);
+const fill=new THREE.DirectionalLight(0x5b9dff,1.1);fill.position.set(18,13,-18);scene.add(fill);
+const mat=(color,roughness=.75,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+const floorMat=mat(0x25384a),steel=mat(0x40566b,.48,.55),beam=mat(0xe49b42,.5,.25),blue=mat(0x236cae,.45,.2),yellow=mat(0xf2bd4e,.5,.15),palletMat=mat(0x9b7651),dark=mat(0x182433),boxMats=[mat(0x9cb4c8),mat(0xb7a98a),mat(0x799bb3),mat(0x7d9d8b)];
+function cube(w,h,d,material,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+cube(52,.5,42,floorMat,0,-.3,0);const grid=new THREE.GridHelper(52,52,0x456078,0x31485f);grid.position.y=-.035;scene.add(grid);
+for(let x=-24;x<=24;x+=4){cube(.08,.03,40,mat(0xe5b64c),x,.01,0)}
+// Warehouse structure
+const roof=mat(0x23384c,.6,.35),wall=mat(0x142638);
+cube(52,.45,.5,steel,0,11,-20);cube(.5,11,40,wall,-26,5,0);cube(.5,11,40,wall,26,5,0);cube(52,11,.5,wall,0,5,20);
+for(let x=-24;x<=24;x+=8){cube(.32,11,.32,steel,x,5,-19.5);cube(.32,11,.32,steel,x,5,19.5)}
+for(let z=-16;z<=16;z+=8){cube(51,.25,.25,steel,0,10.7,z)}
+// Roof trusses and skylights
+for(let x=-20;x<=20;x+=8){const beamM=cube(.16,.16,39,steel,x,10.3,0);beamM.rotation.z=.08}
+for(let z=-12;z<=12;z+=8){cube(5,.12,2.8,mat(0x47728a,.3,.3),-8,10.4,z);cube(5,.12,2.8,mat(0x47728a,.3,.3),8,10.4,z)}
+// Rack rows, four levels
+const rackRows=[-13,-7,7,13];let rackCount=0;
+for(const z of rackRows){for(let x=-20;x<=20;x+=5){
+rackCount++;for(const px of [x-2.35,x+2.35])cube(.18,7.7,.22,blue,px,3.85,z);
+for(let level=1;level<=4;level++){const y=level*1.8;cube(4.9,.16,.62,beam,x,y,z);cube(4.9,.08,.62,steel,x,y-.17,z)}
+for(let level=0;level<4;level++){const y=1.05+level*1.8;const c=boxMats[(rackCount+level)%boxMats.length];cube(1.55,1.3,1.55,c,x-1.1,y,z);cube(1.55,1.3,1.55,boxMats[(rackCount+level+1)%4],x+1.1,y,z)}
+}}
+function makePallet(x,z,color=0x9b7651,stock=null){const g=new THREE.Group();g.position.set(x,0,z);cube(1.55,.16,1.45,palletMat,0,.08,0,g);for(let i=-1;i<=1;i++)cube(.16,.22,1.4,dark,i*.52,.19,0,g);const load=cube(1.25,1.1,1.2,mat(color),0,.82,0,g);load.userData.pallet=true;g.userData.stock=stock?{...stock}:null;g.userData.carried=false;scene.add(g);return g}
+const locationWorld={"RCV-01":{x:-20,z:16},"A-01-01":{x:-22,z:-17},"A-01-02":{x:-22,z:-3},"B-01-01":{x:22,z:3},"DSP-01":{x:20,z:-16}};
+const palletColors=[0x9db5c7,0xb7a98a,0x789f91,0x9b7651];
+function buildInventoryPallets(){const d=window.SCWDomain.snapshot();d.balances.filter(b=>b.qty>0).forEach((b,i)=>{const p=locationWorld[b.location]||locationWorld["RCV-01"];pallets.push(makePallet(p.x+(i%2)*1.5,p.z+Math.floor(i/2)*1.5,palletColors[i%palletColors.length],b))})}
+const pallets=[];buildInventoryPallets();
+// Receiving / packing / dispatch stations
+function station(x,z,labelColor){cube(6,.35,3,steel,x,.18,z);cube(5,.12,2.5,blue,x,.42,z);for(let i=-1;i<=1;i++)cube(.15,1.5,.15,steel,x+i*2,1.1,z-1.1);cube(2.1,.16,1.5,yellow,x,1.1,z); }
+station(-20,7);station(20,-7);station(-20,16);station(20,-16);
+const conveyorRollers=[];for(let i=0;i<8;i++){cube(.75,.12,1.1,steel,-8+i*2,.75,0);const roller=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,1.25,12),beam);roller.rotation.z=Math.PI/2;roller.position.set(-8+i*2,.9,0);roller.castShadow=true;scene.add(roller);conveyorRollers.push(roller)}
+const conveyorParcels=[];for(let i=0;i<5;i++){const parcel=cube(.72,.72,.72,boxMats[i%boxMats.length],-7+i*3,1.28,0);conveyorParcels.push(parcel)}
+// dock doors and exterior trucks
+for(let x=-18;x<=18;x+=12){cube(5,4,.18,mat(0x52718a),x,2,20.28);cube(4.5,3.6,.08,dark,x,2,20.4)}
+function truck(x,z){const g=new THREE.Group();cube(3.8,1.7,2.2,blue,0,1.15,0,g);cube(1.4,1.5,2.1,mat(0xd5e3ed),-2.2,1.05,0,g);for(const xw of [-2.5,-1.1,1.2])for(const side of [-1,1]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.18,16),dark);w.rotation.z=Math.PI/2;w.position.set(xw,.42,side*1.08);g.add(w)}g.position.set(x,0,z);scene.add(g);return g}
+truck(-17,24);truck(1,24);truck(19,24);
+// Forklift model
+const forklift=new THREE.Group();const forkCarriage=new THREE.Group();forklift.add(forkCarriage);const body=cube(1.55,1.05,2.1,yellow,0,1.05,0,forklift);cube(.95,.16,1.15,dark,0,1.72,-.12,forklift);cube(.12,2.9,.12,steel,.58,1.7,-.9,forklift);cube(.12,2.9,.12,steel,-.58,1.7,-.9,forklift);cube(1.35,.12,.16,steel,0,2.95,-.9,forklift);cube(1.7,.13,1.25,steel,0,.28,-1.3,forkCarriage);for(const x of [-.72,.72])for(const z of [-.72,.72]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.2,18),dark);w.rotation.z=Math.PI/2;w.position.set(x,.36,z);forklift.add(w)}forklift.position.set(-10,0,0);scene.add(forklift);
+// Autonomous mobile robot (AGV) follows a safe demo route through the open cross-aisle.
+const agv=new THREE.Group();cube(1.15,.32,1.35,blue,0,.42,0,agv);cube(.62,.18,.72,mat(0x9bd9ff,.35,.3),0,.68,0,agv);for(const wx of [-.48,.48])for(const wz of [-.42,.42]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.13,14),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(wx,.22,wz);agv.add(wheel)}agv.position.set(-20,0,16);scene.add(agv);
+let agvRunning=false,agvTask=null,agvRoute=[],agvSegment=0,agvSegmentProgress=0;
+function startNextAgvTask(){if(!window.SCWWarehouse){notify("WMS moduli mavjud emas");return}const task=window.SCWWarehouse.snapshot().tasks.find(t=>t.status==="OPEN"&&(t.kind==="PUTAWAY"||t.kind==="PICK"));if(!task){notify("Ochiq WMS topshirig‘i yo‘q. Avval putaway yoki picking yarating.");return}const dest=locationWorld[task.to];if(!dest){notify("Topshiriq manzili 3D xaritada belgilanmagan");return}agvTask=task;agvRoute=[new THREE.Vector3(agv.position.x,0,agv.position.z),new THREE.Vector3(-4,0,5),new THREE.Vector3(dest.x,0,dest.z)];agvSegment=0;agvSegmentProgress=0;agvRunning=true;document.querySelector("#agv").textContent="AGV: topshiriqni bajarmoqda";document.querySelector("#taskName").textContent="AGV · "+task.id;document.querySelector("#taskDesc").textContent=task.sku+" · "+task.from+" → "+task.to;notify("AGV WMS topshirig‘ini boshladi")}
+function syncPalletTransfer(sku,lot,from,to,qty){
+ const source=pallets.find(x=>x.userData.stock&&x.userData.stock.sku===sku&&x.userData.stock.lot===lot&&x.userData.stock.location===from&&!x.userData.carried);
+ const dest=locationWorld[to];if(!source||!dest)return;
+ if(source.userData.stock.qty>qty){source.userData.stock.qty-=qty;pallets.push(makePallet(dest.x+.8,dest.z+.8,0x9db5c7,{sku,lot,qty,location:to}))}
+ else{source.position.set(dest.x+.8,0,dest.z+.8);source.userData.stock.location=to}
+}
+function finishAgvTask(){try{
+ const task=agvTask;window.SCWWarehouse.complete(task.id);
+ if(task.kind==="PUTAWAY")syncPalletTransfer(task.sku,task.lot,task.from,task.to,task.qty);
+ if(task.kind==="PICK")task.lines.forEach(line=>syncPalletTransfer(task.sku,line.lot,line.from,"DSP-01",line.qty));
+ document.querySelector("#taskName").textContent=task.kind==="PICK"?"PICKING · BAJARILDI":"PUTAWAY · BAJARILDI";
+ document.querySelector("#taskDesc").textContent=task.id+" · "+task.to;refreshInventoryMetrics();
+ notify(task.kind==="PICK"?"Buyurtma picking qilindi · yuk jo‘natish zonasida":"AGV topshiriqni yakunladi · inventar yangilandi")
+ }catch(err){notify("WMS xatosi: "+err.message)}agvRunning=false;agvTask=null;document.querySelector("#agv").textContent="AGV: WMS bajarish"}
+function updateAgv(dt){if(!agvRunning||!agvTask)return;let distance=dt*5;while(distance>0&&agvSegment<agvRoute.length-1){const a=agvRoute[agvSegment],b=agvRoute[agvSegment+1],len=a.distanceTo(b);const remaining=len-agvSegmentProgress,step=Math.min(distance,remaining);agvSegmentProgress+=step;distance-=step;agv.position.lerpVectors(a,b,Math.min(1,agvSegmentProgress/len));agv.rotation.y=Math.atan2(b.x-a.x,b.z-a.z)+Math.PI;if(agvSegmentProgress>=len-.0001){agvSegment++;agvSegmentProgress=0}}if(agvSegment>=agvRoute.length-1)finishAgvTask()}
+// Safety lane markings
+const lineMat=mat(0xf0c65d,.7);for(let x=-23;x<24;x+=3){cube(1.4,.025,.12,lineMat,x,.015,2)}
+// Area labels as sprites
+function label(text,x,y,z){const c=document.createElement("canvas");c.width=512;c.height=128;const ctx=c.getContext("2d");ctx.fillStyle="rgba(7,18,30,.86)";ctx.strokeStyle="#5aaee9";ctx.lineWidth=5;ctx.roundRect(5,5,502,118,20);ctx.fill();ctx.stroke();ctx.font="bold 42px Arial";ctx.fillStyle="#e8f5ff";ctx.textAlign="center";ctx.fillText(text,256,79);const tex=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));s.position.set(x,y,z);s.scale.set(5.2,1.3,1);scene.add(s);return s}
+const labels=[label("A · STORAGE",0,8.5,-13),label("B · INBOUND",-20,5,7),label("C · SORTING",0,4.5,0),label("D · OUTBOUND",20,5,-7)];
+// Selectable rack glow
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let selected=null;
+renderer.domElement.addEventListener("pointerdown",e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(scene.children,true);const hit=hits.find(h=>h.object.userData.pallet);if(hit){if(selected)selected.material.emissive?.setHex(0x000000);selected=hit.object;selected.material.emissive?.setHex(0x183b55);document.querySelector("#taskName").textContent="PALLET · TANLANDI";document.querySelector("#taskDesc").textContent="Tanlangan yuk birligi · demo inventar"}}); 
+let playing=true,simTime=0,speed=1,labelsOn=true,top=false,spawned=0,carried=null,forkLift=0;const keys={};
+const rackObstacles=[];for(const rz of rackRows){for(let rx=-20;rx<=20;rx+=5)rackObstacles.push({x:rx,z:rz,hx:2.45,hz:.62})}
+function collides(x,z){if(x < -24 || x > 24 || z < -18 || z > 18)return true;return rackObstacles.some(o=>Math.abs(x-o.x)<o.hx+.85&&Math.abs(z-o.z)<o.hz+.85)}
+function setForkHeight(v){forkLift=THREE.MathUtils.clamp(v,0,1.35);forkCarriage.position.y=forkLift;document.querySelector("#forkStatus").textContent=carried?"Yuk ko‘tarilgan · vilka balandligi "+forkLift.toFixed(1)+" m":"Vilka balandligi "+forkLift.toFixed(1)+" m"}
+function pickup(){if(carried){notify("Forkliftda allaqachon yuk bor");return}let best=null,bestD=2.6;for(const p of pallets){if(p.userData.carried||!p.userData.stock)continue;const d=Math.hypot(p.position.x-forklift.position.x,p.position.z-forklift.position.z);if(d<bestD){best=p;bestD=d}}if(!best){notify("Yaqin atrofda inventarga ulangan pallet yo‘q");return}scene.remove(best);forklift.add(best);best.position.set(0,.42+forkLift,-2.25);best.userData.carried=true;carried=best;document.querySelector("#taskName").textContent="PICK · "+best.userData.stock.sku;document.querySelector("#taskDesc").textContent=best.userData.stock.lot+" · "+best.userData.stock.qty+" dona/kg";document.querySelector("#forkStatus").textContent="Yuk forkliftda. Manzil lokatsiyasiga olib boring va Q ni bosing.";notify("Inventar pallet forkliftga olindi")}
+function drop(){if(!carried){notify("Tushirish uchun avval yuk oling");return}const forward=new THREE.Vector3(0,0,-2.7).applyAxisAngle(new THREE.Vector3(0,1,0),forklift.rotation.y);const x=forklift.position.x+forward.x,z=forklift.position.z+forward.z;if(collides(x,z)){notify("Bu joy band — xavfsiz joy tanlang");return}const stock=carried.userData.stock;if(!stock){notify("Bu pallet inventar bilan bog‘lanmagan");return}const targets=Object.entries(locationWorld).map(([code,p])=>({code,x:p.x,z:p.z,d:Math.hypot(x-p.x,z-p.z)})).filter(t=>t.code!==stock.location).sort((a,b)=>a.d-b.d);const target=targets[0];if(!target||target.d>6){notify("Inventar lokatsiyasi yoniga olib boring (qabul / saqlash / jo‘natish)");return}try{window.SCWDomain.record({type:"TRANSFER",sku:stock.sku,qty:stock.qty,lot:stock.lot,from:stock.location,to:target.code,reference:"3D-FORKLIFT",note:"Smart Warehouse 3D orqali ko‘chirildi"});stock.location=target.code;forklift.remove(carried);scene.add(carried);carried.position.set(x,0,z);carried.userData.carried=false;carried=null;document.querySelector("#taskName").textContent="TRANSFER · "+target.code;document.querySelector("#taskDesc").textContent="Inventar jurnali muvaffaqiyatli yangilandi";document.querySelector("#forkStatus").textContent="SCW inventarida lokatsiya o‘zgardi. Keyingi palletni tanlang.";notify("Pallet ko‘chirildi · SCW inventar jurnali yangilandi");refreshInventoryMetrics()}catch(err){notify(err.message||"Inventar harakati bajarilmadi")}}
+window.addEventListener("keydown",e=>{if(["KeyW","KeyA","KeyS","KeyD","Space"].includes(e.code))e.preventDefault();if(e.repeat&&["KeyE","KeyQ","KeyR","KeyF","Space"].includes(e.code))return;keys[e.code]=true;if(e.code==="Space"){playing=!playing;updatePlay()}if(e.code==="KeyE")pickup();if(e.code==="KeyQ")drop();if(e.code==="KeyR")setForkHeight(forkLift+.15);if(e.code==="KeyF")setForkHeight(forkLift-.15)});window.addEventListener("keyup",e=>keys[e.code]=false);
+function updatePlay(){document.querySelector("#play").textContent=playing?"Ⅱ To‘xtatish":"▶ Davom ettirish";document.querySelector("#play").classList.toggle("active",playing)}
+document.querySelector("#play").onclick=()=>{playing=!playing;updatePlay()};
+document.querySelector("#pickup").onclick=pickup;document.querySelector("#drop").onclick=drop;document.querySelector("#forkUp").onclick=()=>setForkHeight(forkLift+.15);document.querySelector("#forkDown").onclick=()=>setForkHeight(forkLift-.15);
+document.querySelectorAll("#touchPad [data-key]").forEach(b=>{const k=b.dataset.key;const on=e=>{e.preventDefault();keys[k]=true},off=e=>{e.preventDefault();keys[k]=false};b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);b.addEventListener("pointerleave",off);b.addEventListener("pointercancel",off)});
+document.querySelector("#speed").onclick=()=>{speed=speed===1?2:speed===2?4:1;document.querySelector("#speed").textContent="Tezlik: "+speed+"×"};
+document.querySelector("#toggleLabels").onclick=()=>{labelsOn=!labelsOn;labels.forEach(x=>x.visible=labelsOn);document.querySelector("#toggleLabels").textContent="Yorliqlar: "+(labelsOn?"ON":"OFF")};
+document.querySelector("#topView").onclick=()=>{top=!top;camera.position.set(top?0:22,top?38:19,top?1:25);orbit.target.set(0,2,0);document.querySelector("#cam").textContent=top?"TOP":"ORBIT"};
+document.querySelector("#reset").onclick=()=>{if(carried){forklift.remove(carried);scene.add(carried);carried.position.set(-21,0,-16);carried.userData.carried=false;carried=null}forklift.position.set(-10,0,0);forklift.rotation.y=0;setForkHeight(0);simTime=0;playing=true;updatePlay();notify("Simulyatsiya boshlang‘ich holatga qaytdi")};
+function refreshInventoryMetrics(){const d=window.SCWDomain.snapshot();document.querySelector("#pallets").textContent=d.balances.filter(b=>b.qty>0).length;const used=d.balances.reduce((n,b)=>n+b.qty,0);document.querySelector("#capacity").textContent=Math.min(100,Math.round(used/5000*100))+"%";document.querySelector("#tasks").textContent=window.SCWWarehouse?window.SCWWarehouse.metrics().open:"—"}
+refreshInventoryMetrics();
+document.querySelector("#wmsTask").onclick=()=>{try{const made=window.SCWWarehouse.createPutawayTasks();refreshInventoryMetrics();notify(made.length?made.length+" ta putaway topshirig‘i yaratildi":"Qabul zonasida joylashtirish uchun yangi zaxira yo‘q")}catch(err){notify(err.message)}};
+document.querySelector("#pickTask").onclick=()=>{try{const made=window.SCWWarehouse.createPickTasks();refreshInventoryMetrics();notify(made.length?made.length+" ta picking topshirig‘i yaratildi":"Yangi yoki zaxirasi yetarli buyurtma topilmadi")}catch(err){notify(err.message)}};
+document.querySelector("#agv").onclick=()=>{if(agvRunning){agvRunning=false;agvTask=null;document.querySelector("#agv").textContent="AGV: WMS bajarish";notify("AGV to‘xtatildi")}else startNextAgvTask()};
+document.querySelector("#spawn").onclick=()=>{try{const sku="SCW-001",lot="3D-"+Date.now(),qty=24;window.SCWDomain.record({type:"RECEIPT",sku,qty,lot,to:"RCV-01",reference:"3D-INBOUND",note:"Smart Warehouse 3D qabul zonasi"});const p=locationWorld["RCV-01"];pallets.push(makePallet(p.x+(spawned%3)*1.7,p.z,0x9db5c7,{sku,lot,qty,location:"RCV-01"}));spawned++;refreshInventoryMetrics();notify("24 dona SCW-001 inventarga qabul qilindi")}catch(err){notify(err.message||"Qabul operatsiyasi bajarilmadi")}};
+function notify(s){const n=document.querySelector("#notice");n.textContent=s;n.classList.add("show");setTimeout(()=>n.classList.remove("show"),1600)}
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(canvas);resize();
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);if(playing){simTime+=dt*speed;updateAgv(dt*speed);conveyorRollers.forEach(r=>r.rotation.x+=dt*speed*2.4);conveyorParcels.forEach((p,i)=>{p.position.x+=dt*speed*1.8;if(p.position.x>8)p.position.x=-8-i*1.2});const v=new THREE.Vector3((keys.KeyD?1:0)-(keys.KeyA?1:0),0,(keys.KeyS?1:0)-(keys.KeyW?1:0));if(v.lengthSq()){v.normalize();const nx=forklift.position.x+v.x*dt*5,nz=forklift.position.z+v.z*dt*5;if(!collides(nx,forklift.position.z))forklift.position.x=nx;if(!collides(forklift.position.x,nz))forklift.position.z=nz;forklift.rotation.y=Math.atan2(v.x,v.z)+Math.PI}if(carried)carried.position.y=.42+forkLift}orbit.update();renderer.render(scene,camera);document.querySelector("#clock").textContent=new Date(Math.floor(simTime)*1000).toISOString().slice(14,19)}
+animate();
+</script>
+</body></html>

@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>SCW Industrial Mega Warehouse</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111e;color:#e8f2fb;font-family:Inter,Arial,sans-serif}
+.app{height:100%;display:flex;flex-direction:column}
+.top{height:72px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px;background:#0b1725;border-bottom:1px solid #263c51;z-index:3}
+.brand{display:flex;gap:12px;align-items:center;min-width:0}
+.logo{width:44px;height:44px;flex:none;border-radius:12px;background:linear-gradient(135deg,#56b9ff,#2467a5);display:grid;place-items:center;font-weight:900}
+.brand strong{display:block;font-size:14px;letter-spacing:.07em}
+.brand small{color:#91a8bc}
+.btn{border:1px solid #38536d;border-radius:12px;background:#13283d;color:#e8f2fb;padding:10px 14px;font-weight:700;cursor:pointer}
+.btn:active{background:#1c3b57}
+.main{position:relative;flex:1;min-height:0}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;top:12px;left:14px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.chip{background:#0b1a2bdc;border:1px solid #38536d;border-radius:22px;padding:9px 13px;font-size:12px;color:#b6c9d9}
+.chip b{color:#fff;margin-left:6px}
+.panel{position:absolute;right:14px;top:14px;width:min(330px,calc(100% - 28px));max-height:calc(100% - 28px);overflow:auto;background:#0b1928f2;border:1px solid #38536d;border-radius:18px;padding:15px;backdrop-filter:blur(12px)}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.eyebrow{color:#61d7ce;font-size:11px;letter-spacing:.16em;font-weight:900;margin:5px 0 9px}
+.panel h1{font-size:21px;margin:0 0 7px}
+.muted{font-size:12px;color:#91a8bc;line-height:1.5}
+.tg{flex:none;border:1px solid #38536d;border-radius:10px;background:#13283d;color:#cfe3f3;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.panel.collapsed .body{display:none}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:14px 0}
+.stat{background:#11263a;border:1px solid #2d455c;border-radius:12px;padding:10px}
+.stat small{display:block;color:#91a8bc}
+.stat strong{display:block;font-size:18px;margin-top:4px}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.zone{background:#11263a;color:#dce9f4;border:1px solid #2d455c;border-radius:10px;padding:9px;text-align:left;font-size:11px;min-height:48px;cursor:pointer}
+.zone b{display:block;color:#8cc9f6;margin-bottom:3px}
+.zone.selected{border-color:#5cbcff;background:#173b59}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
+.notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
+.notice.show{opacity:1}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
+.loading.done{opacity:0;pointer-events:none}
+@media(max-width:700px){
+.top{height:58px;padding:8px 10px}
+.brand strong{font-size:11px}.brand small{display:none}.logo{width:38px;height:38px}
+.btn{padding:8px 10px;font-size:12px}
+.hud{top:8px;left:8px}.chip{padding:7px 9px;font-size:10px}.chip:nth-child(n+2){display:none}
+.panel{top:auto;bottom:8px;left:8px;right:8px;width:auto;max-height:52%;padding:11px;border-radius:15px}
+.eyebrow{margin:2px 0 5px;font-size:10px}
+.panel h1{font-size:16px;margin:0 0 4px}
+.stats{grid-template-columns:repeat(4,1fr);margin:9px 0}.stat{padding:7px}.stat strong{font-size:14px}
+.zones{grid-template-columns:repeat(3,1fr)}.zone{padding:7px;min-height:42px;font-size:10px}
+.help{display:none}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
+<body><div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><button class="btn" id="reset">Kamerani tiklash</button></header>
+<main class="main"><canvas id="scene"></canvas><div class="loading" id="loading">OMBOR YUKLANMOQDA…</div>
+<div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLAHUV <b>PROCESS FLOW</b></div></div>
+<aside class="panel" id="panel">
+<div class="sheet-head"><div><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">Oqimga asoslangan 12 zonali logistika markazi.</div></div><button class="tg" id="toggle">Zonalar ▲</button></div>
+<div class="body"><div class="stats"><div class="stat"><small>Maydon</small><strong id="area">24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Qator</small><strong>3 qanot</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
+<div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
+<div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn" id="inside">Ichkarida</button><button class="btn" id="labels">Yorliqlar: ON</button></div></div>
+</aside>
+<div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div></main></div>
+<script src="src/core/industrial_layout.js"></script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {RoomEnvironment} from "three/addons/environments/RoomEnvironment.js";
+import {EffectComposer} from "three/addons/postprocessing/EffectComposer.js";
+import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
+import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
+import {OutputPass} from "three/addons/postprocessing/OutputPass.js";
+import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
+
+const L=window.SCWIndustrialLayout;if(!L)throw Error("Industrial layout missing");
+const $=s=>document.querySelector(s);
+const W=L.BUILDING.width,D=L.BUILDING.depth,H=L.BUILDING.wallHeight,hw=W/2,hd=D/2;
+const canvas=$("#scene"),mobile=innerWidth<=700;
+let seed=20261119;const rnd=()=>{seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296};
+const R=(a,b)=>a+(b-a)*rnd(),pick=a=>a[Math.floor(rnd()*a.length)];
+
+/* ================= renderer, scene, camera ================= */
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?2:1.75));
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
+const camera=new THREE.PerspectiveCamera(mobile?58:46,1,1,2500);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.08;controls.minDistance=4;controls.maxDistance=1000;controls.maxPolarAngle=Math.PI*.495;
+const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
+{const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x3a3f45,.55));
+const sun=new THREE.DirectionalLight(0xfff0d8,2.2);sun.position.set(-70,120,60);sun.castShadow=true;
+sun.shadow.mapSize.set(mobile?2048:4096,mobile?2048:4096);Object.assign(sun.shadow.camera,{left:-125,right:125,top:125,bottom:-125,near:10,far:380});sun.shadow.bias=-.0004;sun.shadow.normalBias=.06;scene.add(sun);
+scene.add(new THREE.DirectionalLight(0x7fb0ff,.6).translateX(90).translateY(50).translateZ(-90));
+let composer=null;
+if(!mobile){const rt=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4});composer=new EffectComposer(renderer,rt);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(512,512),.32,.55,.9));composer.addPass(new OutputPass())}
+
+/* ================= procedural textures ================= */
+const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+function ctex(w,h,draw,rx=1,ry=1){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=aniso;t.colorSpace=THREE.SRGBColorSpace;return t}
+const concreteTex=ctex(1024,1024,(q,w,h)=>{
+  q.fillStyle="#7d838a";q.fillRect(0,0,w,h);
+  for(let i=0;i<9000;i++){q.fillStyle=rnd()<.5?`rgba(255,255,255,${.015+rnd()*.04})`:`rgba(0,0,0,${.02+rnd()*.05})`;const s=1+rnd()*4;q.fillRect(rnd()*w,rnd()*h,s,s)}
+  for(let i=0;i<14;i++){const x=rnd()*w,y=rnd()*h,r=90+rnd()*160,g=q.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,"rgba(0,0,0,.035)");g.addColorStop(1,"rgba(0,0,0,0)");q.fillStyle=g;q.fillRect(x-r,y-r,r*2,r*2)}
+  for(let i=0;i<60;i++){q.strokeStyle=`rgba(20,22,26,${.03+rnd()*.05})`;q.lineWidth=1+rnd()*2;q.beginPath();const x=rnd()*w,y=rnd()*h;q.moveTo(x,y);q.lineTo(x+R(-120,120),y+R(-120,120));q.stroke()}
+  q.strokeStyle="rgba(12,16,20,.55)";q.lineWidth=2;for(let i=0;i<=3;i++){const p=i*w/3;q.beginPath();q.moveTo(p,0);q.lineTo(p,h);q.stroke();q.beginPath();q.moveTo(0,p);q.lineTo(w,p);q.stroke()}
+},W/20,D/20);
+function metalTex(rx,ry=1){return ctex(256,256,(q,w,h)=>{
+  for(let x=0;x<w;x+=16){const g=q.createLinearGradient(x,0,x+16,0);g.addColorStop(0,"#8896a3");g.addColorStop(.45,"#d2dce5");g.addColorStop(1,"#74828f");q.fillStyle=g;q.fillRect(x,0,16,h)}
+  const g=q.createLinearGradient(0,0,0,h);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(.62,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(8,12,16,.5)");q.fillStyle=g;q.fillRect(0,0,w,h);
+  for(let i=0;i<420;i++){q.fillStyle=`rgba(0,0,0,${rnd()*.05})`;q.fillRect(rnd()*w,rnd()*h,1+rnd()*2,6+rnd()*34)}},rx,ry)}
+const roofTex=ctex(512,512,(q,w,h)=>{q.fillStyle="#56616b";q.fillRect(0,0,w,h);for(let i=0;i<3000;i++){q.fillStyle=`rgba(${rnd()<.5?255:0},${rnd()<.5?255:0},${rnd()<.5?255:0},.03)`;q.fillRect(rnd()*w,rnd()*h,2,2)}q.strokeStyle="rgba(0,0,0,.35)";q.lineWidth=3;for(let x=0;x<=w;x+=64){q.beginPath();q.moveTo(x,0);q.lineTo(x,h);q.stroke()}},W/8,D/8);
+const cartonTex=ctex(256,256,(q,w,h)=>{
+  q.fillStyle="#d9bc8c";q.fillRect(0,0,w,h);
+  for(let j=0;j<2;j++)for(let i=0;i<2;i++){const x=i*128,y=j*128;
+    q.fillStyle=`rgba(${rnd()<.5?"255,240,210":"90,60,30"},${.05+rnd()*.08})`;q.fillRect(x,y,128,128);
+    q.strokeStyle="rgba(80,52,24,.8)";q.lineWidth=4;q.strokeRect(x+2,y+2,124,124);
+    q.fillStyle="rgba(238,226,196,.7)";q.fillRect(x+56,y,16,128);
+    if(rnd()<.8){q.fillStyle="#f4f4f0";q.fillRect(x+80,y+78,40,32);q.fillStyle="#222";for(let k=0;k<9;k++)q.fillRect(x+84+k*4,y+96,rnd()<.5?1:2,10);q.fillRect(x+84,y+82,26,3)}
+    if(rnd()<.3){q.fillStyle="rgba(200,40,30,.8)";q.fillRect(x+12,y+14,26,8)}}
+  for(let i=0;i<1500;i++){q.fillStyle=`rgba(0,0,0,${rnd()*.06})`;q.fillRect(rnd()*w,rnd()*h,2,2)}});
+const poolTex=ctex(128,128,(q,w,h)=>{const g=q.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,"rgba(255,244,225,.55)");g.addColorStop(.5,"rgba(255,240,215,.18)");g.addColorStop(1,"rgba(255,240,215,0)");q.fillStyle=g;q.fillRect(0,0,w,h)});
+const dashTex=ctex(512,256,(q,w,h)=>{
+  q.fillStyle="#08202f";q.fillRect(0,0,w,h);q.fillStyle="#0e3a52";q.fillRect(8,8,w-16,28);q.fillStyle="#7fe0ff";q.font="bold 18px Arial";q.fillText("SCW CONTROL CENTER · LIVE",18,28);
+  for(let i=0;i<10;i++){const bh=20+rnd()*90;q.fillStyle=i%3?"#38b6ff":"#3ddc97";q.fillRect(20+i*26,230-bh,18,bh)}
+  q.strokeStyle="#ffcf5a";q.lineWidth=3;q.beginPath();for(let i=0;i<=10;i++){const y=130-Math.sin(i*.9)*35-rnd()*14;i?q.lineTo(300+i*18,y):q.moveTo(300,y)}q.stroke();
+  q.fillStyle="#9fd6ee";q.font="13px Arial";for(let i=0;i<6;i++)q.fillText("Z"+String(i+1).padStart(2,"0")+" ■■■■■■ "+(70+Math.floor(rnd()*29))+"%",300,170+i*14)});
+dashTex.wrapS=dashTex.wrapT=THREE.ClampToEdgeWrapping;
+
+/* ================= materials ================= */
+const M=(c,r=.7,m=.1,x={})=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m,...x});
+const floorMat=M(0xb4b9be,.42,.02,{map:concreteTex,envMapIntensity:.7});
+const steel=M(0x8798a6,.45,.75),darkSteel=M(0x39434d,.6,.6),rackBlue=M(0x1c5c9b,.42,.6),rackBrace=M(0x2a74b8,.5,.5),rackOrange=M(0xf28a17,.45,.4),
+yellow=M(0xf3c431,.5,.2),black=M(0x14181c,.85,.1),rubber=M(0x0d1013,.95,0),plinth=M(0x59616a,.95,0),asphalt=M(0x242b32,.97,0),
+glass=M(0x7fb9d6,.08,.1,{transparent:true,opacity:.28}),palletMat=M(0xffffff,.92,0),cartonMat=M(0xffffff,.88,0,{map:cartonTex}),
+wrapMat=new THREE.MeshStandardMaterial({color:0xe8f1fa,roughness:.1,metalness:0,transparent:true,opacity:.3,depthWrite:false}),
+wireMat=new THREE.MeshStandardMaterial({color:0xaab7c3,roughness:.4,metalness:.7,transparent:true,opacity:.2,depthWrite:false}),
+beltMat=M(0x20262c,.8,.3),rollerMat=M(0xb7c3cd,.3,.8),cartMat=M(0x3d6f94,.6,.4),agvMat=M(0x1f5f86,.45,.5),orangeSafety=M(0xff7a1a,.5,.2),
+deskMat=M(0xc8ced4,.6,.2),screenOn=M(0x0a2536,.3,.1,{emissive:0x4cc3ff,emissiveIntensity:1.3}),
+glowW=M(0x222222,.4,0,{emissive:0xe8f4ff,emissiveIntensity:3.2}),glowR=M(0x330000,.4,0,{emissive:0xff2a1a,emissiveIntensity:2.5}),glowG=M(0x003300,.4,0,{emissive:0x28ff6a,emissiveIntensity:2.5}),glowA=M(0x332200,.4,0,{emissive:0xffa21a,emissiveIntensity:3}),
+dashMat=new THREE.MeshStandardMaterial({color:0xffffff,map:dashTex,emissive:0xffffff,emissiveMap:dashTex,emissiveIntensity:1.1,roughness:.4}),
+poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
+paintY=new THREE.MeshStandardMaterial({color:0xf0c030,roughness:.6,metalness:0,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
+paintW=new THREE.MeshStandardMaterial({color:0xdfe6ec,roughness:.6,metalness:0,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
+paintG=new THREE.MeshStandardMaterial({color:0x2fae63,roughness:.6,metalness:0,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
+laneMat=new THREE.MeshStandardMaterial({color:0x56707f,roughness:.7,metalness:0,transparent:true,opacity:.45,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+
+/* ================= instancing engine (static scenery = few draw calls) ================= */
+const dummy=new THREE.Object3D(),UB=new THREE.BoxGeometry(1,1,1),UC=new THREE.CylinderGeometry(1,1,1,14),UP=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2);
+const reg=new Map();
+function inst(geo,mat,cast=true){const k=geo.uuid+mat.uuid;let r=reg.get(k);if(!r){r={geo,mat,m:[],c:[],cast};reg.set(k,r)}return r}
+function put(r,x,y,z,sx,sy,sz,rx,ry,rz,col){dummy.position.set(x,y,z);dummy.rotation.set(rx,ry,rz);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();r.m.push(dummy.matrix.clone());r.c.push(col)}
+function box(mat,x,y,z,w,h,d,ry=0,rz=0,col=null,rx=0){put(inst(UB,mat),x,y,z,w,h,d,rx,ry,rz,col)}
+function cyl(mat,x,y,z,r,len,axis="y",col=null){put(inst(UC,mat),x,y,z,r,len,r,axis==="z"?Math.PI/2:0,0,axis==="x"?Math.PI/2:0,col)}
+function decalPlane(mat,x,z,w,d,y=.02){put(inst(UP,mat,false),x,y,z,w,1,d,0,0,0,null)}
+function buildInstances(parent=scene){for(const r of reg.values()){const n=r.m.length;if(!n)continue;const o=new THREE.InstancedMesh(r.geo,r.mat,n);r.m.forEach((m,i)=>o.setMatrixAt(i,m));
+  if(r.c.some(c=>c!==null)){const c=new THREE.Color();r.c.forEach((v,i)=>{c.setHex(v===null?0xffffff:v);o.setColorAt(i,c)})}
+  o.castShadow=r.cast&&!r.mat.transparent;o.receiveShadow=!r.mat.transparent;o.frustumCulled=false;parent.add(o)}reg.clear()}
+const mk=(mat,w,h,d,x,y,z,parent,shadow=true)=>{const o=new THREE.Mesh(UB,mat);o.scale.set(w,h,d);o.position.set(x,y,z);o.castShadow=shadow&&!mobile;o.receiveShadow=true;parent.add(o);return o};
+const mkc=(mat,r,len,x,y,z,parent,axis="y")=>{const o=new THREE.Mesh(UC,mat);o.scale.set(r,len,r);o.position.set(x,y,z);if(axis==="z")o.rotation.x=Math.PI/2;if(axis==="x")o.rotation.z=Math.PI/2;o.castShadow=!mobile;parent.add(o);return o};
+
+/* ---- pallet geometry (EUR-style, long side along X) ---- */
+const palletGeo=(()=>{const p=[],a=(w,h,d,x,y,z)=>{const g=new THREE.BoxGeometry(w,h,d);g.translate(x,y,z);p.push(g)};
+  for(let i=0;i<5;i++)a(1.2,.022,.15,0,.129,-.425+i*.2125);
+  for(const x of[-.55,0,.55])a(.12,.09,1,x,.073,0);
+  for(const z of[-.425,0,.425])a(1.2,.022,.15,0,.011,z);
+  return mergeGeometries(p)})();
+const woods=[0xb48a58,0xa57f4e,0xc39a66,0x94704a,0xad8353];
+const kraft=[0xffffff,0xf4e6cf,0xd9e2ea,0xeadbc0,0xd1dccb,0xe6cfa8,0xc7d2dc];
+const wrapTints=[0xe8f1fa,0xe8f1fa,0xbfd8f2,0xe8f1fa,0xf3e6c8];
+function loadOnPallet(x,y,z,ry,o={}){
+  const rPallet=inst(palletGeo,palletMat),rLoad=inst(UB,cartonMat),rWrap=inst(UB,wrapMat,false);
+  put(rPallet,x,y,z,1,1,1,0,ry,0,pick(woods));
+  if(rnd()<(o.empty??0))return;
+  const c=Math.cos(ry),s=Math.sin(ry),lw=o.w??1.13,ld=o.d??.93;   // load footprint (long side along pallet X)
+  let h=o.h??pick([.6,.9,1.2,1.5,1.7]);const tier=h>1.0&&rnd()<.35,h1=tier?h*.55:h,h2=h-h1;
+  const jy=ry+R(-.04,.04);
+  put(rLoad,x,y+.15+h1/2,z,lw*1,h1,ld,0,jy,0,pick(kraft));
+  if(tier)put(rLoad,x,y+.15+h1+h2/2,z,lw*.9,h2,ld*.9,0,jy+R(-.08,.08),0,pick(kraft));
+  if(o.wrap??rnd()<.38)put(rWrap,x,y+.15+h/2,z,lw*1.035,h*1.01,ld*1.05,0,jy,0,pick(wrapTints));
+}
+// racks: long side along Z, rows are 1.0 deep, back-to-back rows share a run
+function rackRow(cx,z0,bays,N,fill){
+  const bay=2.7,hf=.5,top=.2+N*2+.9,len=bays*bay;
+  for(let b=0;b<=bays;b++){const z=z0+b*bay;
+    for(const s of[-1,1])box(rackBlue,cx+s*hf,top/2,z,.12,top,.09);
+    const panels=(b%4===0||b===bays)?Math.ceil(top/2):0;for(let k=0;k<panels;k++){const y0=k*2,y1=Math.min(top,y0+2),h=y1-y0;box(rackBrace,cx,(y0+y1)/2,z,Math.hypot(1,h),.035,.035,0,Math.atan2(h,1)*(k%2?-1:1));box(rackBrace,cx,y1,z,1,.035,.035)}
+    if(b===0||b===bays)for(const s of[-1,1])box(yellow,cx+s*hf,.28,z,.22,.56,.22);
+  }
+  for(let k=1;k<=N;k++)for(const s of[-1,1])box(rackOrange,cx+s*hf,.2+k*2,z0+len/2,.08,.16,len);
+  for(let b=0;b<bays;b++)for(let p=0;p<2;p++){const pz=z0+b*bay+.7+p*1.3;
+    for(let k=0;k<=N;k++){if(rnd()>fill)continue;loadOnPallet(cx,k?.2+k*2+.07:0,pz,Math.PI/2,{h:pick([.6,.9,1.2,1.2,1.5]),wrap:rnd()<.3})}}
+}
+function floorPallet(x,z,ry=0,o={}){loadOnPallet(x,0,z,ry,o)}
+
+/* ================= building shell (cut-away: near walls and roof disappear from outside) ================= */
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(W,D),floorMat);floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(2600,2600),M(0x101a22,1,0));ground.rotation.x=-Math.PI/2;ground.position.y=-1.21;scene.add(ground);
+for(const s of[-1,1]){const y=new THREE.Mesh(new THREE.PlaneGeometry(W+30,26),M(0x262d35,.96,0));y.rotation.x=-Math.PI/2;y.position.set(0,-1.2,s*(hd+14));y.receiveShadow=true;scene.add(y)}
+function wall(w,x,z,ry,mat){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,H),mat);m.position.set(x,H/2,z);m.rotation.y=ry;m.receiveShadow=true;scene.add(m)}
+const wallNS=M(0xffffff,.55,.45,{map:metalTex(W/4)}),wallEW=M(0xffffff,.55,.45,{map:metalTex(D/4)});
+wall(W,0,-hd,0,wallNS);wall(W,0,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
+const roofGroup=new THREE.Group();scene.add(roofGroup);
+{const roof=new THREE.Mesh(new THREE.PlaneGeometry(W,D),M(0xffffff,.8,.3,{map:roofTex,emissive:0x46515c,emissiveIntensity:1}));roof.rotation.x=Math.PI/2;roof.position.y=H;roofGroup.add(roof);
+ const sky=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,2.6,3.2)});for(let x=-60;x<=60;x+=30){const s=new THREE.Mesh(new THREE.PlaneGeometry(3.4,128),sky);s.rotation.x=Math.PI/2;s.position.set(x,H-.04,0);roofGroup.add(s)}}
+// foundation plinth with gaps for dock bays (yard is 1.2 m lower, so truck beds meet the floor)
+const northDocks=[-68,-56,-44],southDocks=[-10,0,10];
+function segs(a,b,gaps){const o=[];let c=a;for(const[g0,g1]of gaps){if(g0>c)o.push([c,g0]);c=g1}if(c<b)o.push([c,b]);return o}
+for(const[a,b]of segs(-hw-.5,hw+.5,northDocks.map(x=>[x-3.9,x+3.9])))box(plinth,(a+b)/2,-.6,-hd-.25,b-a,1.2,.5);
+for(const[a,b]of segs(-hw-.5,hw+.5,southDocks.map(x=>[x-3.9,x+3.9])))box(plinth,(a+b)/2,-.6,hd+.25,b-a,1.2,.5);
+box(plinth,-hw-.25,-.6,0,.5,1.2,D+1);box(plinth,hw+.25,-.6,0,.5,1.2,D+1);
+// steel frame
+for(let x=-hw;x<=hw;x+=20){box(steel,x,H/2-.6,-hd-.1,.5,H+1.2,.5);box(steel,x,H/2-.6,hd+.1,.5,H+1.2,.5)}
+for(let z=-75;z<=75;z+=25){box(steel,-hw-.1,H/2-.6,z,.5,H+1.2,.5);box(steel,hw+.1,H/2-.6,z,.5,H+1.2,.5)}
+box(steel,0,H+.1,-hd,W+.6,.55,.55);box(steel,0,H+.1,hd,W+.6,.55,.55);box(steel,-hw,H+.1,0,.55,.55,D+.6);box(steel,hw,H+.1,0,.55,.55,D+.6);
+for(let z=-75;z<=75;z+=25)box(darkSteel,0,H-.4,z,W,.55,.3);
+for(let x=-hw+10;x<hw;x+=10)box(darkSteel,x,H-.12,0,.25,.22,D);
+const lightPts=[];
+// industrial LED high-bay lighting + light pools
+for(let x=-60;x<=60;x+=20)for(let z=-60;z<=60;z+=20){box(black,x,14.05,z,.09,1.2,.09);cyl(darkSteel,x,13.95,z,.55,.22);cyl(glowW,x,13.8,z,.46,.06);lightPts.push([x,z])}
+buildInstances(roofGroup);
+for(const[x,z]of lightPts)put(inst(UP,poolMat,false),x,.03,z,17,1,17,0,0,0,null);
+
+/* ================= floor markings, lanes and zone patches ================= */
+const palette={receiving:0x2f8fc4,inspection:0xc8a42a,returns:0x9b5fb0,storage:0x2f78b0,automated_storage:0x3a64d0,replenishment:0x2fa07e,picking:0x7fa02f,sorting:0xc08a2f,packing:0xc87a3f,staging:0x2fa0aa,dispatch:0x2fb09a,control:0x7c6fd0};
+const zones=[...L.zones].sort((a,b)=>a.priority-b.priority),pads=new Map();
+for(const z of zones){
+  const pm=new THREE.MeshBasicMaterial({color:palette[z.kind]||0x34516a,transparent:true,opacity:.12,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+  const p=new THREE.Mesh(new THREE.PlaneGeometry(z.width-.8,z.depth-.8),pm);p.rotation.x=-Math.PI/2;p.position.set(z.x,.012,z.z);scene.add(p);pads.set(z.id,p);
+  box(paintW,z.x,.02,z.minZ+.2,z.width,.02,.22);box(paintW,z.x,.02,z.maxZ-.2,z.width,.02,.22);box(paintW,z.minX+.2,.02,z.z,.22,.02,z.depth);box(paintW,z.maxX-.2,.02,z.z,.22,.02,z.depth);
+}
+function laneX(z,x0,x1,w=3){const len=x1-x0,cx=(x0+x1)/2;decalPlane(laneMat,cx,z,len,w,.014);box(paintY,cx,.025,z-w/2,len,.02,.14);box(paintY,cx,.025,z+w/2,len,.02,.14);for(let x=x0+2;x<x1-2;x+=7)box(paintW,x,.025,z,3,.02,.12)}
+function laneZ(x,z0,z1,w=3){const len=z1-z0,cz=(z0+z1)/2;decalPlane(laneMat,x,cz,w,len,.014);box(paintY,x-w/2,.025,cz,.14,.02,len);box(paintY,x+w/2,.025,cz,.14,.02,len);for(let z=z0+2;z<z1-2;z+=7)box(paintW,x,.025,z,.12,.02,3)}
+for(const z of[-32,10,53])laneX(z,-77,77);for(const x of[-24,27.5])laneZ(x,-72,72);
+for(const z of[-32,10,53]){for(let x=-76;x<76;x+=3)box(paintG,x,.026,z+2.1,1.4,.02,.35,.4)}   // pedestrian crossing stripes (green hatching)
+// bollards at lane crossings
+for(const x of[-24,27.5])for(const z of[-32,10,53])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.4,.55,z+sz*2.4,.13,1.1);cyl(black,x+sx*2.4,.78,z+sz*2.4,.135,.12)}
+
+/* ================= racks ================= */
+for(const cx of[-75,-68,-61,-54,-47,-40,-33]){for(const s of[-.55,.55]){rackRow(cx+s,-31,11,5,.86);rackRow(cx+s,19.2,11,3,.74)}}   // Z03 reserve + Z05 picking
+const AX=[-8.75,-5.25,-1.75,1.75,5.25,8.75];
+for(const a of AX)for(const s of[-1.2,1.2])rackRow(a+s,-31,11,6,.9);                                                                   // Z04 high-bay
+for(const cx of[44,52])for(const s of[-.55,.55])rackRow(cx+s,-31,11,3,.78);                                                           // Z06 replenishment pick faces
+for(const a of AX){box(steel,a,.12,-16,.3,.12,31);box(steel,a,13.45,-16,.35,.22,31)}                                                   // AS/RS crane rails
+// pick carts at the heads of the picking aisles
+for(const cx of[-71.5,-64.5,-57.5,-50.5,-43.5,-36.5]){box(cartMat,cx,.5,17.8,1.5,.18,1.0);for(const[sx,sz]of[[-.65,-.4],[.65,-.4],[-.65,.4],[.65,.4]])cyl(black,cx+sx,.14,17.8+sz,.1,.08,"z");box(cartonMat,cx,1.0,17.8,1.1,.7,.8,0,0,pick(kraft))}
+
+/* ================= zone content ================= */
+function bench(x,z,ry=0,o={}){const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
+  box(deskMat,x,.95,z,3.4,.08,1.2,ry);for(const lx of[-1.6,1.6])for(const lz of[-.5,.5]){const[px,pz]=T(lx,lz);box(darkSteel,px,.47,pz,.07,.95,.07)}
+  box(darkSteel,x,.35,z,3.1,.05,1.0,ry);
+  if(o.monitor!==false){const[mx,mz]=T(-.9,-.35);box(black,mx,1.45,mz,.7,.42,.04,ry);const[sx,sz]=T(-.9,-.33);box(screenOn,sx,1.45,sz,.62,.34,.02,ry);box(black,mx,1.07,mz,.1,.12,.1,ry)}
+  for(let i=0;i<(o.boxes??2);i++){const[bx,bz]=T(.2+i*.9,.1);box(cartonMat,bx,1.25,bz,.7,.42,.55,ry+R(-.2,.2),0,pick(kraft))}}
+function rollCage(x,z,ry=0,full=true){box(wireMat,x,.95,z,.85,1.5,.75,ry);box(darkSteel,x,.18,z,.85,.1,.75,ry);for(const sx of[-1,1])for(const sz of[-1,1]){const c=Math.cos(ry),s=Math.sin(ry);box(darkSteel,x+(sx*.42)*c+(sz*.37)*s,.95,z-(sx*.42)*s+(sz*.37)*c,.04,1.5,.04)}
+  if(full){box(cartonMat,x,.55,z,.7,.6,.6,ry+R(-.2,.2),0,pick(kraft));if(rnd()<.6)box(cartonMat,x,1.05,z,.6,.4,.5,ry+R(-.3,.3),0,pick(kraft))}
+  for(const sx of[-1,1])cyl(black,x+sx*.3*Math.cos(ry),.08,z-sx*.3*Math.sin(ry),.07,.06,"z")}
+function fixture(x,z,ry,len){box(black,x,.9,z,len,.2,.9,ry)}
+// Z01 inbound: staging lanes right behind the dock doors
+for(const z of[-60,-54,-48])for(let x=-74;x<=-36;x+=3.3)if(rnd()<.72)floorPallet(x,z,rnd()<.1?Math.PI/2:0,{wrap:rnd()<.55});
+for(const x of[-68,-56,-44]){box(paintY,x-3.6,.025,-66,.18,.02,18);box(paintY,x+3.6,.025,-66,.18,.02,18)}
+// Z02 quality control
+for(const x of[-11,0,11])for(const z of[-57,-49]){bench(x,z,0);}
+box(yellow,12,.025,-43,9,.02,.18);box(yellow,12,.025,-38.4,9,.02,.18);for(const[x,z]of[[7.6,-43],[16.4,-43],[7.6,-38.4],[16.4,-38.4]])box(yellow,x,1.2,z,.08,2.4,.08);box(wireMat,12,1.2,-40.7,8.8,2.4,4.6);floorPallet(10,-40.7,0,{wrap:true});floorPallet(14,-40.7,0);
+// Z11 returns
+for(let i=0;i<10;i++)rollCage(41+(i%5)*2.3,-58+Math.floor(i/5)*2.6,R(-.3,.3));
+for(const x of[52,62,70])for(const z of[-55,-46])bench(x,z,0,{boxes:3});
+for(let i=0;i<16;i++)floorPallet(40+R(0,30),-42+R(0,3.5)*-1-1,R(-.5,.5),{wrap:rnd()<.2});
+// Z06 replenishment staging
+for(let i=0;i<12;i++)rollCage(58+(i%4)*3.4,-30+Math.floor(i/4)*5.5,R(-.15,.15));
+for(let i=0;i<6;i++)floorPallet(58+R(0,12),-6+R(-1,1)-4,R(-.2,.2),{wrap:true});
+// Z04 AS/RS input/output conveyors + staging
+function conv(x,z,len,ry=0){const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
+  box(beltMat,x,.78,z,len,.06,1.0,ry);for(const lz of[-.55,.55]){const[px,pz]=T(0,lz);box(steel,px,.88,pz,len,.2,.06,ry)}
+  for(let lx=-len/2+.5;lx<=len/2;lx+=2.5)for(const lz of[-.5,.5]){const[px,pz]=T(lx,lz);box(darkSteel,px,.38,pz,.07,.76,.07);}
+  for(let lx=-len/2+1.2;lx<len/2;lx+=1.2){const[px,pz]=T(lx,0);box(rollerMat,px,.82,pz,.04,.03,.95,ry)}}
+conv(0,3.5,22,0);for(const a of AX){box(steel,a,.5,0.6,1.4,.9,1.4)}
+for(const x of[-17,17])for(let i=0;i<3;i++)floorPallet(x+R(-1,1),-24+i*8,Math.PI/2,{wrap:true});
+// Z07 sorting: infeed belt, scan gantry, six divert lanes with roll cages
+conv(0,30,36,0);box(yellow,-15,2.1,28.9,.14,4.2,.14);box(yellow,-15,2.1,31.1,.14,4.2,.14);box(yellow,-15,4.2,30,.18,.18,2.4);box(glowG,-15,3.7,30,.04,.5,.4);
+const laneXs=[-13,-8,-3,3,8,13];
+for(const lx of laneXs){conv(lx,38,16,Math.PI/2);box(steel,lx,.95,30.6,.5,.3,2.0);rollCage(lx,47.2,0,true);rollCage(lx+1.6,47.2,0,rnd()<.5)}
+// Z08 packing stations on both sides of a feed belt
+conv(55,34,30,0);
+for(const x of[44,51,58,65]){bench(x,28,0,{boxes:3});bench(x,40,Math.PI,{boxes:3});box(cartonMat,x,.4,25.3,1.0,.7,.7,0,0,pick(kraft));box(cartonMat,x+1.2,.4,25.3,.9,.6,.7,0,0,pick(kraft));box(cartonMat,x,.45,42.9,1.0,.8,.7,0,0,pick(kraft))}
+for(let i=0;i<5;i++)floorPallet(70,22+i*5.6,Math.PI/2,{wrap:true});
+// Z09 outbound staging lanes
+for(const x of[-69,-57,-45]){box(paintY,x-3.6,.025,65,.18,.02,19);box(paintY,x+3.6,.025,65,.18,.02,19);for(const z of[58.5,62.2,65.9,69.6,73])if(rnd()<.85){floorPallet(x-1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])});floorPallet(x+1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])})}}
+// Z10 dispatch queue
+for(let i=0;i<9;i++)floorPallet(-14+(i%3)*14+R(-1,1),58.5+Math.floor(i/3)*2.9,R(-.1,.1),{wrap:true});
+// Z12 control centre: mezzanine, stairs, desks, video wall
+box(darkSteel,55,5.0,65,28,.5,16);box(deskMat,55,5.27,65,27.6,.05,15.6);
+for(const dx of[-13.5,0,13.5])for(const dz of[-7.5,7.5])box(steel,55+dx,2.5,65+dz,.45,5,.45);
+for(let x=41.2;x<=68.8;x+=1.15){box(glass,x,5.95,57.2,.04,1.1,.04);box(glass,x,5.95,72.8,.04,1.1,.04)}box(steel,55,6.5,57.2,28,.06,.06);box(steel,55,6.5,72.8,28,.06,.06);box(steel,41.1,6.5,65,.06,.06,16);box(steel,68.9,6.5,65,.06,.06,16);box(glass,55,5.95,57.2,28,1.0,.03);box(glass,55,5.95,72.8,28,1.0,.03);
+for(let i=0;i<16;i++)box(darkSteel,39.6,.15+i*.31,72.4-i*.8,1.5,.1,.62);box(steel,39.6,5.1,59.1,1.7,.1,1.6);for(let i=0;i<16;i++){box(steel,38.9,.15+i*.31+.5,72.4-i*.8,.05,1,.05)}
+for(const x of[46,52,58,64])for(const z of[61,67]){bench(x,z,0,{monitor:true,boxes:0});}   // desks (raised below)
+box(black,55,8.0,72.65,22,3.4,.15);{const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(21.4,3.0),dashMat);wallScreen.position.set(55,8.0,72.55);wallScreen.rotation.y=Math.PI;scene.add(wallScreen)}
+for(const x of[44,52,60,68])box(deskMat,x,1.2,66,2.6,2.4,1.6);   // equipment cabinets under the mezzanine
+box(darkSteel,55,.3,68.6,22,.6,1.4);
+
+/* ================= docks, trucks, yard ================= */
+function dock(x,side,trailerCol,cabCol,green=true){
+  const zi=side*(hd-.12),zo=side*(hd+.7);
+  box(black,x,2.2,zi,6.6,4.4,.12);box(steel,x,3.9,side*(hd-.2),6.6,1.5,.1);
+  for(let i=0;i<7;i++)box(darkSteel,x,3.2+i*.23,side*(hd-.28),6.4,.04,.04);
+  for(const sx of[-1,1]){box(yellow,x+sx*3.45,2.3,zi,.2,4.6,.22);box(rubber,x+sx*3.5,.8,side*(hd+.18),.45,.7,.35);box(rubber,x+sx*3.55,2.3,side*(hd+.28),.5,4.4,.5)}
+  box(rubber,x,4.65,side*(hd+.28),7.6,.5,.5);box(yellow,x,.03,zo,6.8,.12,1.5);
+  box(black,x+4.3,3.4,zi,.35,.95,.18);cyl(green?glowG:glowR,x+4.3,3.7,zi-side*.12,.09,.08,"z");cyl(green?glowR:glowG,x+4.3,3.3,zi-side*.12,.09,.08,"z");
+  truck(x,side*(hd+.6),side<0?Math.PI/2:-Math.PI/2,trailerCol,cabCol)}
+function wheel(g,x,y,z,r){const t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.42,18),M(0x101214,.9,0));t.rotation.x=Math.PI/2;t.position.set(x,y,z);t.castShadow=!mobile;g.add(t);const h=new THREE.Mesh(new THREE.CylinderGeometry(r*.55,r*.55,.44,14),steel);h.rotation.x=Math.PI/2;h.position.set(x,y,z);g.add(h)}
+const trailerTex=metalTex(3);
+function truck(x,z,ry,trailerCol,cabCol){const g=new THREE.Group(),tm=M(trailerCol,.5,.35,{map:trailerTex}),cm=M(cabCol,.35,.55);
+  mk(tm,12,3.0,2.5,6.15,2.65,0,g);mk(darkSteel,12,.35,2.2,6.1,1.05,0,g);mk(rubber,.25,.5,2.5,-.1,1.1,0,g);
+  for(const sz of[-1,1]){mk(glowR,.06,.28,.22,-.02,1.55,sz*1.05,g,false);for(let i=1;i<12;i++)mk(steel,.04,2.9,.05,i,2.65,sz*1.26,g,false)}
+  for(const wx of[9.3,10.6])for(const wz of[-1.15,1.15])wheel(g,wx,.5,wz,.5);
+  mk(darkSteel,.1,1.0,.1,3.4,.6,-.9,g);mk(darkSteel,.1,1.0,.1,3.4,.6,.9,g);
+  mk(cm,2.7,2.3,2.4,13.9,2.1,0,g);mk(cm,1.3,.7,2.2,14.2,3.55,0,g);mk(glass,.05,1.0,2.1,15.26,2.85,0,g,false);mk(black,.3,.4,2.5,15.4,.85,0,g);
+  for(const sz of[-1,1]){mk(glowW,.06,.22,.4,15.25,1.4,sz*.9,g,false);mkc(steel,.1,2.6,12.7,3.1,sz*1.0,g)}
+  for(const wx of[13.1,14.9])for(const wz of[-1.1,1.1])wheel(g,wx,.5,wz,.5);
+  mk(darkSteel,2.4,.25,2.2,12.9,1.0,0,g);
+  g.position.set(x,-1.15,z);g.rotation.y=ry;scene.add(g);return g}
+dock(-68,-1,0xf0f4f8,0x2f6ea8);dock(-56,-1,0xdbe6f0,0x2f6ea8);dock(-44,-1,0xe9e1d2,0xa84a2f,false);
+dock(-10,1,0xdde8f1,0x3a8a5e);dock(0,1,0xf0f4f8,0x2f6ea8,false);dock(10,1,0xe9e1d2,0xa84a2f);
+for(const s of[-1,1])for(let x=-76;x<=76;x+=12)box(paintW,x,-1.19,s*(hd+18),.2,.02,14);
+
+/* ================= zone signs ================= */
+const labels=[];
+function makeSign(z){const c=document.createElement("canvas");c.width=512;c.height=200;const q=c.getContext("2d");
+  q.fillStyle="rgba(8,22,36,.95)";q.strokeStyle="#5aaee9";q.lineWidth=6;q.beginPath();q.roundRect(6,6,500,188,26);q.fill();q.stroke();
+  q.fillStyle="#"+(palette[z.kind]||0x5aaee9).toString(16).padStart(6,"0");q.fillRect(26,22,460,10);
+  q.textAlign="center";q.fillStyle="#7fd0ff";q.font="bold 76px Arial";q.fillText(z.code,256,106);q.fillStyle="#eef7ff";q.font="bold 36px Arial";q.fillText(z.name.toUpperCase(),256,162);
+  const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false}));
+  sp.position.set(z.x,12.8,z.z);const k=mobile?1.15:1;sp.scale.set(10*k,3.9*k,1);sp.renderOrder=10;scene.add(sp);labels.push(sp);
+  box(steel,z.x-3,13.9,z.z,.04,2.3,.04);box(steel,z.x+3,13.9,z.z,.04,2.3,.04)}
+zones.forEach(makeSign);
+
+/* ================= vehicles, people, cranes (animated) ================= */
+function forkliftModel(col){const g=new THREE.Group(),b=M(col,.45,.35);
+  mk(b,1.9,.7,1.15,-.1,.7,0,g);mk(darkSteel,.6,.85,1.15,-1.0,.8,0,g);mk(b,.9,.45,1.0,.35,1.2,0,g);mk(black,.5,.12,.55,-.35,1.15,0,g);mk(black,.1,.5,.5,-.62,1.45,0,g);
+  for(const sx of[-.7,.45])for(const sz of[-.5,.5])mk(darkSteel,.06,1.35,.06,sx,1.9,sz,g);mk(darkSteel,1.3,.06,1.15,-.12,2.58,0,g);for(let i=0;i<4;i++)mk(darkSteel,1.3,.05,.06,-.12,2.64,-.45+i*.3,g);
+  mkc(black,.13,.06,.4,1.55,0,g,"x").rotation.z=-.5;mk(glowA,.18,.12,.18,-.1,2.7,0,g,false);
+  for(const sz of[-.55,.55])wheel(g,.55,.38,sz,.38),wheel(g,-.85,.32,sz,.32);
+  for(const sz of[-.32,.32])mk(darkSteel,.09,2.7,.1,1.05,1.45,sz,g);
+  const lift=new THREE.Group();lift.position.set(1.12,.15,0);g.add(lift);mk(darkSteel,.1,.55,1.0,0,.3,0,lift);mk(steel,.07,.9,.8,.08,.7,0,lift);
+  for(const sz of[-.32,.32])mk(steel,1.15,.06,.13,.65,0,sz,lift);
+  const load=new THREE.Group();lift.add(load);load.position.set(.7,.06,0);const pm=new THREE.Mesh(palletGeo,palletMat);pm.material=M(0xb48a58,.9,0);pm.rotation.y=Math.PI/2;load.add(pm);const lb=mk(cartonMat.clone(),.93,1.0,1.13,0,.67,0,load);lb.material.color.setHex(pick(kraft));
+  g.position.y=.02;scene.add(g);return{g,lift,load}}
+const forklifts=[
+ {...forkliftModel(0xf2a31b),x:-71.5,z0:-16,amp:13,sp:.34,ph:0},{...forkliftModel(0xf2a31b),x:-57.5,z0:-16,amp:13,sp:.28,ph:2.1},{...forkliftModel(0x3aa07a),x:-64.5,z0:34,amp:13,sp:.3,ph:1.0},
+ {...forkliftModel(0xf2a31b),x:-3.5,z0:-16,amp:0,sp:0,ph:0,park:true},{...forkliftModel(0xf2a31b),x:-67,z0:-66,amp:7,sp:.3,ph:3.3,axis:"x",az:-66}];
+forklifts[3].g.position.set(-22.5,.02,-20);forklifts[3].g.rotation.y=Math.PI/2;
+forklifts[4]={...forklifts[4],horizontal:true};
+function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);mk(darkSteel,1.4,.08,.9,0,.62,0,g);for(let i=0;i<6;i++)mkc(rollerMat,.05,.88,-.55+i*.22,.68,0,g,"z");
+  mk(orangeSafety,.08,.12,1.15,.88,.4,0,g,false);mk(orangeSafety,.08,.12,1.15,-.88,.4,0,g,false);mkc(glowA,.12,.1,.7,.76,.4,g);
+  const cb=mk(cartonMat.clone(),.9,.6,.8,0,1.0,0,g);cb.material.color.setHex(pick(kraft));g.position.y=.02;scene.add(g);return g}
+const agvs=[];[[-32,0],[-32,2.6],[10,1.3],[10,4.1],[53,.4],[53,3.1]].forEach(([lz,ph])=>agvs.push({g:agvModel(),lz,ph,dir:"x"}));
+[[-24,.8],[27.5,2.2]].forEach(([lx,ph])=>agvs.push({g:agvModel(),lx,ph,dir:"z"}));
+function craneModel(){const g=new THREE.Group();mk(steel,.16,13,.16,-.5,6.6,0,g);mk(steel,.16,13,.16,.5,6.6,0,g);mk(steel,1.2,.28,.5,0,13.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
+  const lift=new THREE.Group();g.add(lift);mk(rackOrange,1.1,.12,1.2,0,0,0,lift);mk(darkSteel,1.2,.5,.12,0,.3,-.55,lift);const pm=new THREE.Mesh(palletGeo,M(0xb48a58,.9,0));pm.rotation.y=Math.PI/2;pm.position.y=.08;lift.add(pm);mk(cartonMat.clone(),.93,.9,1.13,0,.7,0,lift);scene.add(g);return{g,lift}}
+const cranes=AX.map((a,i)=>({...craneModel(),x:a,ph:i*1.1}));
+function workerModel(vest){const g=new THREE.Group(),skin=M(0xd9a47e,.8,0);const legs=[];
+  for(const sx of[-.1,.1]){const l=new THREE.Group();l.position.set(0,.9,sx);g.add(l);mk(M(0x2a3441,.9,0),.16,.9,.18,0,-.45,0,l,false);legs.push(l)}
+  mk(M(vest,.7,0),.3,.6,.5,0,1.25,0,g,false);mk(M(0x1c2630,.9,0),.32,.1,.52,0,1.0,0,g,false);mk(skin,.16,.18,.16,0,1.7,0,g,false);
+  const hat=new THREE.Mesh(new THREE.SphereGeometry(.15,10,6,0,Math.PI*2,0,Math.PI/2),M(0xf4f4f4,.5,0));hat.position.y=1.75;g.add(hat);
+  for(const sz of[-.3,.3])mk(M(0x2a3441,.9,0),.12,.55,.12,0,1.2,sz,g,false);
+  scene.add(g);return{g,legs}}
+const workers=[];
+[[-71.5,-28,-71.5,-3,0xff7a1a],[-64.5,22,-64.5,46,0xf0e030],[-50.5,-28,-50.5,-3,0xff7a1a],[-24,-60,-24,-38,0xf0e030],[27.5,-60,27.5,-40,0xff7a1a],[-12,17,-12,25,0xf0e030],[44,28,66,28,0xff7a1a],[-60,66,-36,66,0xf0e030],[-66,-66,-38,-66,0xff7a1a]]
+ .forEach(([x0,z0,x1,z1,col],i)=>workers.push({...workerModel(col),x0,z0,x1,z1,ph:i*1.7,sp:.05+rnd()*.03}));
+for(const[x,z,col]of[[46,61,0xf0e030],[52,61,0xff7a1a],[58,67,0xf0e030]]){const w=workerModel(col);w.g.position.set(x,5.27,z+.8);w.g.rotation.y=Math.PI}
+for(const[x,z,col]of[[-10,-55,0xf0e030],[11,-47,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,0,z+1.1);w.g.rotation.y=Math.PI}
+for(const[x,z,col]of[[44,26.3,0xf0e030],[58,41.8,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,0,z);w.g.rotation.y=x<50?0:Math.PI}
+// parcels moving on conveyors
+const parcelGeo=UB,parcels=[];
+function pathOf(pts){const seg=[];let tot=0;for(let i=1;i<pts.length;i++){const l=pts[i].distanceTo(pts[i-1]);seg.push(l);tot+=l}return{pts,seg,tot}}
+function posOn(p,s,out){let d=s;for(let i=0;i<p.seg.length;i++){if(d<=p.seg[i]){out.lerpVectors(p.pts[i],p.pts[i+1],d/p.seg[i]);return out}d-=p.seg[i]}return out.copy(p.pts[p.pts.length-1])}
+function parcel(pathFn,speed,off){const m=new THREE.Mesh(parcelGeo,cartonMat.clone());m.material.color.setHex(pick(kraft));const sz=[R(.5,.8),R(.35,.55),R(.45,.7)];m.scale.set(...sz);m.castShadow=!mobile;scene.add(m);const o={m,pathFn,speed,s:off*30,sz,path:pathFn()};parcels.push(o)}
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+for(let i=0;i<16;i++)parcel(()=>{const lx=pick(laneXs);return pathOf([V(-17,.95,30),V(lx,.95,30),V(lx,.95,45)])},1.7,i/16);
+for(let i=0;i<12;i++)parcel(()=>pathOf([V(40,.95,34),V(70,.95,34)]),1.5,i/12);
+for(let i=0;i<8;i++)parcel(()=>pathOf([V(-11,.95,3.5),V(11,.95,3.5)]),1.1,i/8);
+
+buildInstances();
+
+/* ================= camera presets and UI ================= */
+let goal=null;
+function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
+function homePose(){const d=fitDist(112,76)*(mobile?1.0:1.32);const tg=new THREE.Vector3(mobile?0:14,0,mobile?4:8);return{pos:new THREE.Vector3(.5,.7,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
+function topPose(){const d=fitDist(84,80)*1.04;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
+function insidePose(){return{pos:new THREE.Vector3(-72,3.4,10),target:new THREE.Vector3(10,mobile?2.6:5.5,10)}}
+function fly(p,instant){if(instant){camera.position.copy(p.pos);controls.target.copy(p.target);controls.update();goal=null}else goal=p}
+const list=$("#zoneList"),panel=$("#panel"),toggle=$("#toggle");
+function syncToggle(){toggle.textContent=panel.classList.contains("collapsed")?"Zonalar ▲":"Yopish ▼"}
+if(mobile)panel.classList.add("collapsed");syncToggle();
+toggle.onclick=()=>{panel.classList.toggle("collapsed");syncToggle()};
+$("#area").textContent=(W*D).toLocaleString("en-US").replace(/,/g," ")+" m²";
+const roles={INBOUND:"Yuk mashinasidan pallet tushiriladi va qabul qilinadi",QUALITY:"Mahsulot sifati va miqdori tekshiriladi",RETURNS:"Qaytarilgan mahsulotlar ko‘rib chiqiladi",RESERVE:"Asosiy pallet saqlash — stellaj qatorlari",HIGH_BAY:"Avtomatik baland saqlash — stacker kranlar",REPLENISHMENT:"Terish zonasi zaxiradan to‘ldiriladi",PICKING:"Buyurtma bo‘yicha mahsulot yig‘iladi",SORTING:"Konveyerda yo‘nalish bo‘yicha saralanadi",PACKING:"Qadoqlash va yorliq yopishtirish",OUTBOUND:"Jo‘natishga tayyor yuklar to‘planadi",DISPATCH:"Yuk mashinasiga ortish va jo‘natish",CONTROL:"Butun ombor monitoringi va boshqaruvi"};
+for(const z of zones){const b=document.createElement("button");b.className="zone";b.dataset.id=z.id;b.innerHTML="<b>"+z.code+"</b>"+z.name;b.onclick=()=>selectZone(z.id);list.appendChild(b)}
+const defaultDesc="12 zona · sanoat oqimi · geometriya tekshirildi";
+function selectZone(id){const z=L.getZone(id);if(!z)return;
+  $("#zoneTitle").textContent=z.code+" · "+z.name;$("#zoneDesc").textContent=(roles[z.id]||"")+" · "+z.width+" × "+z.depth+" m";
+  for(const el of list.children)el.classList.toggle("selected",el.dataset.id===z.id);
+  for(const[k,p]of pads)p.material.opacity=k===id?.26:.05;
+  const dist=Math.max(z.width,z.depth)*(mobile?1.7:1.25)+22,dir=new THREE.Vector3(.4,.8,.8).normalize(),tg=new THREE.Vector3(z.x,2,z.z);
+  fly({pos:tg.clone().add(dir.multiplyScalar(dist)),target:tg});if(mobile){panel.classList.add("collapsed");syncToggle()}}
+function clearSelection(){$("#zoneTitle").textContent="Industrial Mega Warehouse";$("#zoneDesc").textContent=defaultDesc;for(const el of list.children)el.classList.remove("selected");for(const p of pads.values())p.material.opacity=.12}
+const notice=$("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");setTimeout(()=>notice.classList.remove("show"),1500)}
+$("#reset").onclick=()=>{clearSelection();fly(homePose())};$("#fit").onclick=()=>{clearSelection();fly(homePose())};$("#top").onclick=()=>fly(topPose());$("#inside").onclick=()=>{clearSelection();fly(insidePose());notify("Ombor ichkarisida")};
+let showLabels=true;$("#labels").onclick=()=>{showLabels=!showLabels;labels.forEach(s=>s.visible=showLabels);$("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF");notify(showLabels?"Yorliqlar yoqildi":"Yorliqlar o‘chirildi")};
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h)}camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener("resize",resize);resize();
+const q0=new URLSearchParams(location.search).get("view");fly(q0==="inside"?insidePose():q0==="top"?topPose():homePose(),true);
+const sel=new URLSearchParams(location.search).get("zone");if(sel)selectZone(sel);
+
+/* ================= loop ================= */
+const tmp=new THREE.Vector3();let t=0,last=0,first=true;
+function animate(ms){
+  requestAnimationFrame(animate);
+  const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;
+  for(const c of cranes){const a=t*.2+c.ph;c.g.position.set(c.x,0,-16+Math.sin(a)*13.5);c.lift.position.set(0,1.2+(Math.sin(a*1.9)*.5+.5)*10.5,0);c.lift.children[2].visible=Math.sin(a*.7)>-.3}
+  for(const f of forklifts){if(f.park){f.lift.position.y=.15+(Math.sin(t*.5)*.5+.5)*1.2;continue}
+    const a=t*f.sp+f.ph,v=Math.cos(a);
+    if(f.horizontal){f.g.position.set(f.x+Math.sin(a)*f.amp,.02,f.az);f.g.rotation.y=v>0?0:Math.PI}else{f.g.position.set(f.x,.02,f.z0+Math.sin(a)*f.amp);f.g.rotation.y=v>0?-Math.PI/2:Math.PI/2}
+    f.lift.position.y=.15+(Math.sin(a*3)*.5+.5)*(1.5+(f.z0>0?0:1.8));f.load.visible=v>0}
+  for(const v of agvs){const a=t*.14+v.ph;if(v.dir==="x"){const s=Math.sin(a);v.g.position.set(70*s,.02,v.lz+(Math.cos(a)>0?-.75:.75));v.g.rotation.y=Math.cos(a)>0?0:Math.PI}else{const s=Math.sin(a);v.g.position.set(v.lx+(Math.cos(a)>0?.75:-.75),.02,66*s);v.g.rotation.y=Math.cos(a)>0?-Math.PI/2:Math.PI/2}}
+  for(const w of workers){const a=t*w.sp*Math.PI*2+w.ph,s=Math.sin(a)*.5+.5,x=w.x0+(w.x1-w.x0)*s,z=w.z0+(w.z1-w.z0)*s,dx=(w.x1-w.x0)*Math.cos(a),dz=(w.z1-w.z0)*Math.cos(a);
+    w.g.position.set(x,0,z);w.g.rotation.y=Math.atan2(dx,dz)-Math.PI/2+Math.PI/2;const sw=Math.sin(t*5+w.ph)*.45;w.legs[0].rotation.z=sw;w.legs[1].rotation.z=-sw}
+  for(const p of parcels){p.s+=dt*p.speed;if(p.s>=p.path.tot){p.s=0;p.path=p.pathFn()}posOn(p.path,p.s,tmp);p.m.position.copy(tmp);p.m.position.y=.82+p.sz[1]/2}
+  if(goal){camera.position.lerp(goal.pos,.09);controls.target.lerp(goal.target,.09);if(camera.position.distanceTo(goal.pos)<.3&&controls.target.distanceTo(goal.target)<.15)goal=null}
+  roofGroup.visible=camera.position.y<H+1.5;
+  for(const sp of labels){const d=camera.position.distanceTo(sp.position),k=THREE.MathUtils.clamp(d*.05,4.5,14)*(mobile?1.15:1);sp.scale.set(k,k*.39,1)}
+  controls.update();composer?composer.render():renderer.render(scene,camera);
+  if(first){first=false;$("#loading").classList.add("done");window.__scwReady=true;window.__scwStats={calls:renderer.info.render.calls,tris:renderer.info.render.triangles}}
+}
+requestAnimationFrame(animate);
+const check=L.validate();$("#zoneDesc").textContent=check.valid?defaultDesc:"Layout xatosi: "+check.errors.join(", ");
+</script></body></html>

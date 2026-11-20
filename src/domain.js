@@ -68,5 +68,15 @@ function record(input){
 }
 function aggregate(){return state.products.map(p=>({...p,qty:total(p.sku),status:total(p.sku)<p.min?"LOW":"OK"}))}
 function locationBalances(){return state.locations.map(l=>({...l,used:state.balances.filter(b=>b.location===l.code).reduce((n,b)=>n+b.qty,0)}))}
-window.SCWDomain={snapshot,record,aggregate,locationBalances,total,reset(){state=clone(seed);persist(state);return snapshot()}};
+function ensureLocation(input){
+ const code=String(input&&input.code||"").trim(),name=String(input&&input.name||"").trim(),type=String(input&&input.type||"storage").trim();
+ const capacity=Number(input&&input.capacity);
+ if(!code||!name)throw Error("Lokatsiya kodi va nomi talab qilinadi.");
+ if(!Number.isFinite(capacity)||capacity<=0)throw Error("Lokatsiya sig'imi musbat bo'lishi kerak.");
+ const existing=state.locations.find(x=>x.code===code);
+ if(existing)return clone(existing);
+ const location={code,name,type,capacity};
+ state.locations.push(location);persist(state);return clone(location);
+}
+window.SCWDomain={snapshot,record,aggregate,locationBalances,ensureLocation,total,reset(){state=clone(seed);persist(state);return snapshot()}};
 })();
