@@ -483,11 +483,31 @@ const demoPoints=[
  Vdemo(21,1.05,53),Vdemo(0,1.05,65)
 ];
 const demoRoute=pathOf(demoPoints);
-const journeyPoints=[...demoPoints,Vdemo(0,1.05,69),Vdemo(0,2.65,69),Vdemo(0,2.65,77)];
+// Complete shipment route: every stop corresponds to a real warehouse operation zone.
+const journeyPoints=[
+ Vdemo(-54,.12,-66),Vdemo(-54,.12,-57),                 // Z01 inbound
+ Vdemo(0,.12,-49),                                      // Z02 quality control
+ Vdemo(-40,.12,-24),                                    // Z03 reserve storage
+ Vdemo(-1.75,.12,-24),Vdemo(-1.75,8,-24),Vdemo(-1.75,.12,-24), // Z04 high-bay lift
+ Vdemo(52,.12,-8),                                      // Z06 replenishment
+ Vdemo(-54,.12,20),                                     // Z05 picking
+ Vdemo(-15,.12,30),Vdemo(8,.12,30),Vdemo(8,.12,38),    // Z07 sorting conveyor
+ Vdemo(55,.12,34),                                      // Z08 packing
+ Vdemo(-56,.12,65),                                     // Z09 outbound staging
+ Vdemo(0,.12,65),                                       // Z10 dispatch
+ Vdemo(0,2.7,70),Vdemo(0,2.7,77)                        // lift and truck loading
+];
 const journeyRoute=pathOf(journeyPoints);
-const journeyStages=[...demoStages,"Yuk ko‘taruvchi lift · Z10","Yuk mashinasiga joylash · Yetkazishga tayyor"];
-const demoMilestones=[0,3,8,10,13,16,18,20,22].map(i=>demoPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?arr[j].distanceTo(arr[j-1]):0),0));
-const journeyMilestones=[...demoMilestones,demoRoute.tot,journeyRoute.tot];
+const journeyStages=[
+ "Qabul qilish · Z01","Sifat nazorati · Z02","Zaxira saqlash · Z03",
+ "Baland stellajga ko‘tarish · Z04","Zaxirani to‘ldirish · Z06",
+ "Buyurtmani terish · Z05","Konveyerda saralash · Z07",
+ "Qadoqlash va yorliq · Z08","Jo‘natish oldi · Z09",
+ "Yuklash maydoni · Z10","Forklift palletni ko‘taradi",
+ "Yuk mashinasiga joylash · Jo‘natishga tayyor"
+];
+const journeyStageEndIndices=[1,2,3,6,7,8,11,12,13,14,15,16];
+const journeyMilestones=journeyStageEndIndices.map(i=>journeyPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?p.distanceTo(arr[j-1]):0),0));
 function startBoxDemo(){
  if(demoBox)scene.remove(demoBox);
  const g=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(1.55,1.25,1.45),cartonMat.clone());
@@ -503,6 +523,27 @@ function startBoxDemo(){
 demoButton.onclick=startBoxDemo;
 const journeyButton=$("#journeyRun"),journeySpeedPanel=$("#journeySpeed");
 journeySpeedPanel.querySelectorAll("button[data-speed]").forEach(b=>{b.onclick=()=>{journeySpeedFactor=Number(b.dataset.speed);journeySpeedPanel.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));notify("Sayohat tezligi: "+journeySpeedFactor+"×")}});
+// A visible shipment pallet follows the same route; the first-person camera is positioned at its viewpoint.
+const journeyCargo=new THREE.Group();
+const journeyPallet=new THREE.Mesh(palletGeo,palletMat);journeyPallet.castShadow=!mobile;journeyCargo.add(journeyPallet);
+const journeyCarton=new THREE.Mesh(new THREE.BoxGeometry(1.35,1.05,1.1),cartonMat.clone());
+journeyCarton.material.color.setHex(0xc99b62);journeyCarton.position.y=.72;journeyCarton.castShadow=!mobile;journeyCargo.add(journeyCarton);
+const journeyTape=new THREE.Mesh(new THREE.BoxGeometry(.16,1.07,1.12),new THREE.MeshStandardMaterial({color:0xe8d3a4,roughness:.82}));
+journeyTape.position.y=.72;journeyCargo.add(journeyTape);scene.add(journeyCargo);journeyCargo.visible=false;
+// A dedicated forklift performs the receiving and dispatch lifts, rather than relying on background traffic.
+const journeyForklift=forkliftModel(0xf2a31b);journeyForklift.g.visible=false;
+journeyForklift.g.rotation.y=-Math.PI/2;
+function makeJourneyStacker(){
+ const g=new THREE.Group();g.position.set(-40,0,-16);scene.add(g);
+ for(const x of[-.62,.62])box(rackBlue,-40+x,6.6,-16,.14,13.2,.18);
+ box(steel,-40,13.15,-16,1.45,.18,.3);
+ const lift=new THREE.Group();g.add(lift);
+ box(rackOrange,-40,.12,-16,1.45,.16,1.5);
+ const pallet=new THREE.Mesh(palletGeo,palletMat);pallet.position.set(-40,.2,-16);lift.add(pallet);
+ const load=new THREE.Mesh(new THREE.BoxGeometry(1.15,1.25,1.1),cartonMat.clone());load.material.color.setHex(0xc99b62);load.position.set(-40,.95,-16);lift.add(load);
+ return{g,lift};
+}
+const journeyStacker=makeJourneyStacker();journeyStacker.g.visible=false;
 function startJourney(){
  if(demoBox){scene.remove(demoBox);demoBox=null}demoRunning=false;followBox=false;journeyRunning=true;journeyDistance=0;demoStage=0;journeySpeedFactor=1;journeySpeedPanel.style.display="flex";journeySpeedPanel.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
  if(!firstPerson)setFirstPerson(true);else{controls.enabled=false;main.classList.add("fp")}
@@ -518,15 +559,34 @@ function updateJourney(dt){
  journeyDistance=Math.min(journeyRoute.tot,journeyDistance+dt*2.7*journeySpeedFactor);
  posOn(journeyRoute,journeyDistance,tmp);
  const ahead=Math.min(journeyRoute.tot,journeyDistance+1.8);posOn(journeyRoute,ahead,journeyLook);
- camera.position.set(tmp.x,tmp.y+1.25,tmp.z);
+ camera.position.set(tmp.x,tmp.y+1.35,tmp.z);
  const dx=journeyLook.x-tmp.x,dz=journeyLook.z-tmp.z;
  if(Math.hypot(dx,dz)>.001)fpYaw=Math.atan2(-dx,-dz);
  fpPitch=THREE.MathUtils.clamp(Math.atan2(journeyLook.y-tmp.y,Math.max(.001,Math.hypot(dx,dz))),-.35,.35);
  camera.rotation.set(fpPitch,fpYaw,0);
- while(demoStage<journeyStages.length-1&&journeyDistance>journeyMilestones[demoStage+1])demoStage++;
+ while(demoStage<journeyStages.length-1&&journeyDistance>journeyMilestones[demoStage])demoStage++;
  const pct=Math.round(journeyDistance/journeyRoute.tot*100);
  demoStatus.textContent="Yuk sayohati: "+journeyStages[Math.min(demoStage,journeyStages.length-1)]+" · "+pct+"%";
- if(journeyDistance>=journeyRoute.tot){journeyRunning=false;journeyButton.textContent="Yuk sayohati ↻";journeySpeedPanel.style.display="none";demoStatus.textContent="Yuk mashinasiga joylandi · Sayohat yakunlandi · 100%"}
+ // Pallet + carton are visible in normal camera mode; invisible from the carton-eye camera.
+ journeyCargo.position.copy(tmp);journeyCargo.rotation.y=fpYaw;journeyCargo.visible=!firstPerson;
+ // Reserve/high-bay operation: the dedicated stacker carriage visibly raises and lowers a pallet.
+ const reserveStart=journeyMilestones[2],reserveEnd=journeyMilestones[3];
+ const reserveP=THREE.MathUtils.clamp((journeyDistance-reserveStart)/Math.max(.001,reserveEnd-reserveStart),0,1);
+ journeyStacker.g.visible=demoStage===3;
+ journeyStacker.lift.position.y=.25+Math.sin(reserveP*Math.PI)*8.2;
+ // Receiving forklift unloads the inbound pallet; dispatch forklift lifts and enters the truck.
+ const inboundP=THREE.MathUtils.clamp((journeyDistance-journeyMilestones[0])/(journeyMilestones[1]-journeyMilestones[0]),0,1);
+ const dispatchStart=journeyMilestones[9],liftEnd=journeyMilestones[10],truckEnd=journeyMilestones[11];
+ const liftP=THREE.MathUtils.clamp((journeyDistance-dispatchStart)/Math.max(.001,liftEnd-dispatchStart),0,1);
+ const truckP=THREE.MathUtils.clamp((journeyDistance-liftEnd)/Math.max(.001,truckEnd-liftEnd),0,1);
+ const receiving=demoStage===0,dispatch=demoStage>=10;
+ journeyForklift.g.visible=receiving||dispatch;
+ if(receiving){journeyForklift.g.position.set(-54,.02,-72+inboundP*13);journeyForklift.lift.position.y=.15+inboundP*.55;journeyForklift.load.visible=true}
+ else if(dispatch){journeyForklift.g.position.set(0,.02,69+liftP*4+truckP*3);journeyForklift.lift.position.y=.15+liftP*.95;journeyForklift.load.visible=true}
+ // Packing action: the carton turns slightly as it is sealed and labelled.
+ if(demoStage===7){const packP=THREE.MathUtils.clamp((journeyDistance-journeyMilestones[6])/(journeyMilestones[7]-journeyMilestones[6]),0,1);journeyTape.rotation.y=packP*Math.PI*2}
+ else journeyTape.rotation.y=0;
+ if(journeyDistance>=journeyRoute.tot){journeyRunning=false;journeyButton.textContent="Yuk sayohati ↻";journeySpeedPanel.style.display="none";journeyForklift.g.visible=false;journeyStacker.g.visible=false;demoStatus.textContent="Yuk mashinasiga joylandi · Sayohat yakunlandi · 100%"}
 }
 /* ================= loop ================= */
 const tmp=new THREE.Vector3();let t=0,last=0,first=true;
