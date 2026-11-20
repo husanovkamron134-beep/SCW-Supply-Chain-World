@@ -33,6 +33,20 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .zone b{display:block;color:#8cc9f6;margin-bottom:3px}
 .zone.selected{border-color:#5cbcff;background:#173b59}
 .controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.camera-tools{display:none}
+@media(max-width:700px){
+.camera-tools{display:block;position:absolute;inset:0;z-index:4;pointer-events:none}
+.camera-joystick{position:absolute;left:14px;bottom:18px;width:118px;height:118px;border:1px solid #8ab6d3aa;border-radius:50%;background:radial-gradient(circle,#254b67cc,#0b1928dd 72%);box-shadow:0 8px 24px #0007;pointer-events:auto;touch-action:none;display:grid;place-items:center}
+.camera-joystick:before,.camera-joystick:after{content:"";position:absolute;background:#8ab6d355;border-radius:2px}
+.camera-joystick:before{width:76%;height:1px}.camera-joystick:after{height:76%;width:1px}
+.camera-knob{position:absolute;width:46px;height:46px;border-radius:50%;border:2px solid #b8e2ff;background:linear-gradient(145deg,#3988b8,#174363);box-shadow:0 3px 12px #0009;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
+.camera-joystick-label{position:absolute;left:50%;bottom:-19px;transform:translateX(-50%);font-size:9px;color:#d4e9f8;white-space:nowrap;text-shadow:0 1px 4px #000}
+.camera-zoom{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:44px;height:190px;border:1px solid #8ab6d388;border-radius:18px;background:#0b1928dd;box-shadow:0 8px 24px #0007;display:flex;flex-direction:column;align-items:center;justify-content:space-around;pointer-events:auto;padding:8px 0}
+.camera-zoom button{width:30px;height:30px;border:1px solid #52748d;border-radius:9px;background:#17364e;color:#fff;font-size:18px;font-weight:800;line-height:1}
+.camera-zoom input{writing-mode:vertical-lr;direction:rtl;appearance:slider-vertical;width:24px;height:112px;accent-color:#64c4ff;touch-action:pan-x}
+.camera-zoom small{font-size:8px;color:#c2d8e8;letter-spacing:.04em}
+.main.fp .camera-tools{display:none}
+}
 .fp-pad{display:none;position:absolute;left:14px;bottom:18px;z-index:4;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px;touch-action:none}.fp-pad button{border:1px solid #5b7891;border-radius:13px;background:#10263bdc;color:#fff;font-size:21px;font-weight:800;touch-action:none}.fp-pad button:active{background:#24618b}.fp-hint{display:none;position:absolute;right:12px;bottom:18px;z-index:4;padding:8px 10px;border-radius:10px;background:#0b1928dc;border:1px solid #38536d;color:#dce9f4;font-size:10px;pointer-events:none}.main.fp .fp-pad{display:grid}.main.fp .fp-hint{display:block}.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
 .notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
 .notice.show{opacity:1}
@@ -64,7 +78,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
 <div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn" id="inside">Ichkarida</button><button class="btn" id="labels">Yorliqlar: ON</button><button class="btn" id="boxRun">Quti ▶</button></div></div>
 </aside>
-<div class="fp-pad" id="fpPad"><span></span><button data-move="forward">↑</button><span></span><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div><div class="fp-hint" id="fpHint">Surish: qarash · Tugmalar: yurish</div><div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div><div class="journey-speed" id="journeySpeed" aria-label="Sayohat tezligi"><button type="button" data-speed="2">2×</button><button type="button" data-speed="4">4×</button><button type="button" data-speed="8">8×</button></div><div id="boxStatus" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 24px);background:#0b1928ed;border:1px solid #4c83aa;border-radius:12px;padding:10px 14px;font-size:12px;color:#e8f2fb;display:none;z-index:3;text-align:center;pointer-events:none">Quti harakati</div></main></div>
+<div class="camera-tools" id="cameraTools"><div class="camera-joystick" id="cameraJoystick" aria-label="Kamera yo‘nalishini boshqarish"><div class="camera-knob" id="cameraKnob"></div><span class="camera-joystick-label">KAMERA HARAKATI</span></div><div class="camera-zoom"><button type="button" id="cameraZoomIn" aria-label="Yaqinlashtirish">+</button><input id="cameraZoomSlider" type="range" min="0" max="100" value="0" aria-label="Zoom masofasi"><small>ZOOM</small><button type="button" id="cameraZoomOut" aria-label="Uzoqlashtirish">−</button></div></div><div class="fp-pad" id="fpPad"><span></span><button data-move="forward">↑</button><span></span><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div><div class="fp-hint" id="fpHint">Surish: qarash · Tugmalar: yurish</div><div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div><div class="journey-speed" id="journeySpeed" aria-label="Sayohat tezligi"><button type="button" data-speed="2">2×</button><button type="button" data-speed="4">4×</button><button type="button" data-speed="8">8×</button></div><div id="boxStatus" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 24px);background:#0b1928ed;border:1px solid #4c83aa;border-radius:12px;padding:10px 14px;font-size:12px;color:#e8f2fb;display:none;z-index:3;text-align:center;pointer-events:none">Quti harakati</div></main></div>
 <script src="src/core/industrial_layout.js"></script>
 <script type="module">
 import * as THREE from "three";
@@ -425,6 +439,45 @@ addEventListener("resize",resize);resize();
 const q0=new URLSearchParams(location.search).get("view");fly(q0==="inside"?insidePose():q0==="top"?topPose():homePose(),true);
 const sel=new URLSearchParams(location.search).get("zone");if(sel)selectZone(sel);
 
+/* ================= mobile camera joystick + precision zoom ================= */
+const cameraJoystick=$("#cameraJoystick"),cameraKnob=$("#cameraKnob"),cameraZoomSlider=$("#cameraZoomSlider");
+let cameraStickPointer=null,cameraStickX=0,cameraStickY=0;
+const stickLimit=34;
+function moveCameraStick(ev){
+ const r=cameraJoystick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ let dx=ev.clientX-cx,dy=ev.clientY-cy,mag=Math.hypot(dx,dy);
+ if(mag>stickLimit){dx=dx/mag*stickLimit;dy=dy/mag*stickLimit}
+ cameraStickX=dx/stickLimit;cameraStickY=dy/stickLimit;
+ cameraKnob.style.left=`calc(50% + ${dx}px)`;cameraKnob.style.top=`calc(50% + ${dy}px)`;
+}
+function stopCameraStick(){cameraStickPointer=null;cameraStickX=0;cameraStickY=0;cameraKnob.style.left="50%";cameraKnob.style.top="50%"}
+cameraJoystick.addEventListener("pointerdown",ev=>{if(firstPerson)return;cameraStickPointer=ev.pointerId;cameraJoystick.setPointerCapture(ev.pointerId);goal=null;moveCameraStick(ev);ev.preventDefault()});
+cameraJoystick.addEventListener("pointermove",ev=>{if(ev.pointerId===cameraStickPointer)moveCameraStick(ev)});
+cameraJoystick.addEventListener("pointerup",ev=>{if(ev.pointerId===cameraStickPointer)stopCameraStick()});
+cameraJoystick.addEventListener("pointercancel",stopCameraStick);
+function setCameraDistance(distance){
+ const dir=camera.position.clone().sub(controls.target).normalize();
+ const d=THREE.MathUtils.clamp(distance,controls.minDistance,controls.maxDistance);
+ camera.position.copy(controls.target).addScaledVector(dir,d);controls.update();
+}
+function distanceToSlider(d){return Math.round(100*Math.log(THREE.MathUtils.clamp(d,controls.minDistance,controls.maxDistance)/controls.minDistance)/Math.log(controls.maxDistance/controls.minDistance))}
+function sliderToDistance(v){return controls.minDistance*Math.pow(controls.maxDistance/controls.minDistance,Number(v)/100)}
+cameraZoomSlider.addEventListener("input",()=>{if(!firstPerson){goal=null;setCameraDistance(sliderToDistance(cameraZoomSlider.value))}});
+$("#cameraZoomIn").onclick=()=>{if(!firstPerson){goal=null;controls.dollyIn(1.7);controls.update()}};
+$("#cameraZoomOut").onclick=()=>{if(!firstPerson){goal=null;controls.dollyOut(1.5);controls.update()}};
+function updateMobileCamera(){
+ if(!mobile||firstPerson)return;
+ const mag=Math.hypot(cameraStickX,cameraStickY);
+ if(mag>.04){
+  const forward=controls.target.clone().sub(camera.position);forward.y=0;
+  if(forward.lengthSq()<.0001)forward.set(0,0,-1);forward.normalize();
+  const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0)).normalize();
+  const speed=Math.max(7,controls.getDistance()*.42);
+  const delta=right.clone().multiplyScalar(cameraStickX).addScaledVector(forward,-cameraStickY).multiplyScalar(speed);
+  camera.position.add(delta);controls.target.add(delta);
+ }
+ cameraZoomSlider.value=String(distanceToSlider(controls.getDistance()));
+}
 /* ================= click-to-inspect + comfortable camera zoom ================= */
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const elementGuide={
@@ -595,7 +648,7 @@ function updateJourney(dt){
 const tmp=new THREE.Vector3();let t=0,last=0,first=true;
 function animate(ms){
   requestAnimationFrame(animate);
-  const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;if(!journeyRunning)fpMove(dt);updateJourney(dt);
+  const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;if(!journeyRunning)fpMove(dt);updateMobileCamera();updateJourney(dt);
   for(const c of cranes){const a=t*.2+c.ph;c.g.position.set(c.x,0,-16+Math.sin(a)*13.5);c.lift.position.set(0,1.2+(Math.sin(a*1.9)*.5+.5)*10.5,0);c.lift.children[2].visible=Math.sin(a*.7)>-.3}
   for(const f of forklifts){if(f.park){f.lift.position.y=.15+(Math.sin(t*.5)*.5+.5)*1.2;continue}
     const a=t*f.sp+f.ph,v=Math.cos(a);
