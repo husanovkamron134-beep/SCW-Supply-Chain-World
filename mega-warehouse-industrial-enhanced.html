@@ -36,6 +36,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .fp-pad{display:none;position:absolute;left:14px;bottom:18px;z-index:4;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px;touch-action:none}.fp-pad button{border:1px solid #5b7891;border-radius:13px;background:#10263bdc;color:#fff;font-size:21px;font-weight:800;touch-action:none}.fp-pad button:active{background:#24618b}.fp-hint{display:none;position:absolute;right:12px;bottom:18px;z-index:4;padding:8px 10px;border-radius:10px;background:#0b1928dc;border:1px solid #38536d;color:#dce9f4;font-size:10px;pointer-events:none}.main.fp .fp-pad{display:grid}.main.fp .fp-hint{display:block}.help{position:absolute;left:14px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
 .notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
 .notice.show{opacity:1}
+.journey-speed{display:none;position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:4;gap:7px;padding:7px;background:#0b1928ed;border:1px solid #4c83aa;border-radius:14px;box-shadow:0 8px 24px #0006}.journey-speed button{min-width:48px;border:1px solid #38536d;border-radius:9px;background:#13283d;color:#e8f2fb;padding:9px 11px;font-weight:800;font-size:13px;cursor:pointer}.journey-speed button.active{background:#17608a;border-color:#78caff;color:#fff}.journey-speed button:active{background:#1c3b57}
 .loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
 .loading.done{opacity:0;pointer-events:none}
  @media(max-width:700px){#boxStatus{bottom:calc(52% + 16px)!important;max-width:calc(100% - 24px);font-size:10px!important;padding:7px 10px!important}}
@@ -63,7 +64,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
 <div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn" id="inside">Ichkarida</button><button class="btn" id="labels">Yorliqlar: ON</button><button class="btn" id="boxRun">Quti ▶</button></div></div>
 </aside>
-<div class="fp-pad" id="fpPad"><span></span><button data-move="forward">↑</button><span></span><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div><div class="fp-hint" id="fpHint">Surish: qarash · Tugmalar: yurish</div><div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div><div id="boxStatus" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 24px);background:#0b1928ed;border:1px solid #4c83aa;border-radius:12px;padding:10px 14px;font-size:12px;color:#e8f2fb;display:none;z-index:3;text-align:center;pointer-events:none">Quti harakati</div></main></div>
+<div class="fp-pad" id="fpPad"><span></span><button data-move="forward">↑</button><span></span><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div><div class="fp-hint" id="fpHint">Surish: qarash · Tugmalar: yurish</div><div class="help">Barmoq bilan aylantiring · ikki barmoq bilan yaqinlashtiring · zonani paneldan tanlang.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div><div class="journey-speed" id="journeySpeed" aria-label="Sayohat tezligi"><button type="button" data-speed="2">2×</button><button type="button" data-speed="4">4×</button><button type="button" data-speed="8">8×</button></div><div id="boxStatus" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:calc(100% - 24px);background:#0b1928ed;border:1px solid #4c83aa;border-radius:12px;padding:10px 14px;font-size:12px;color:#e8f2fb;display:none;z-index:3;text-align:center;pointer-events:none">Quti harakati</div></main></div>
 <script src="src/core/industrial_layout.js"></script>
 <script type="module">
 import * as THREE from "three";
@@ -384,7 +385,7 @@ buildInstances();
 let goal=null,followBox=false,firstPerson=false;
 const main=$(".main"),fpButton=$("#firstPerson"),fpKeys=new Set();let fpYaw=-Math.PI/2,fpPitch=0,fpLook=null;
 const fpSpeed=mobile?8:10;
-function setFirstPerson(on){if(!on){journeyRunning=false;const jb=$("#journeyRun");if(jb)jb.textContent="Yuk sayohati ▶"}firstPerson=on;main.classList.toggle("fp",on);controls.enabled=!on;goal=null;followBox=false;fpKeys.clear();if(on){camera.position.set(-72,1.35,10);camera.rotation.order="YXZ";fpYaw=-Math.PI/2;fpPitch=0;camera.rotation.set(0,fpYaw,0);camera.updateMatrixWorld();notify("Yuk ko‘zi rejimi yoqildi")}else{camera.rotation.set(0,0,0);fly(insidePose());notify("Oddiy kamera rejimi")};fpButton.textContent=on?"Yuk ko‘zi: ON":"Yuk ko‘zi ▶"}
+function setFirstPerson(on){if(!on){journeyRunning=false;const jb=$("#journeyRun");if(jb)jb.textContent="Yuk sayohati ▶";const js=$("#journeySpeed");if(js)js.style.display="none"}firstPerson=on;main.classList.toggle("fp",on);controls.enabled=!on;goal=null;followBox=false;fpKeys.clear();if(on){camera.position.set(-72,1.35,10);camera.rotation.order="YXZ";fpYaw=-Math.PI/2;fpPitch=0;camera.rotation.set(0,fpYaw,0);camera.updateMatrixWorld();notify("Yuk ko‘zi rejimi yoqildi")}else{camera.rotation.set(0,0,0);fly(insidePose());notify("Oddiy kamera rejimi")};fpButton.textContent=on?"Yuk ko‘zi: ON":"Yuk ko‘zi ▶"}
 fpButton.onclick=()=>setFirstPerson(!firstPerson);
 controls.addEventListener("start",()=>{goal=null;followBox=false});
 function fpMove(dt){if(!firstPerson)return;const f=(fpKeys.has("forward")||fpKeys.has("w")?1:0)-(fpKeys.has("back")||fpKeys.has("s")?1:0),r=(fpKeys.has("right")||fpKeys.has("d")?1:0)-(fpKeys.has("left")||fpKeys.has("a")?1:0);if(!f&&!r)return;const forward=new THREE.Vector3(-Math.sin(fpYaw),0,-Math.cos(fpYaw)),right=new THREE.Vector3(Math.cos(fpYaw),0,-Math.sin(fpYaw));const move=forward.multiplyScalar(f).add(right.multiplyScalar(r));if(move.lengthSq()>1)move.normalize();camera.position.addScaledVector(move,fpSpeed*dt);camera.position.x=THREE.MathUtils.clamp(camera.position.x,-77,77);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-72,72);camera.position.y=1.35;}
@@ -463,7 +464,7 @@ canvas.addEventListener("pointerup",ev=>{
  if(z){const zone=L.getZone(z.id);if(zone){$("#zoneTitle").textContent=zone.code+" · "+zone.name;$("#zoneDesc").textContent=(roles[zone.id]||"")+" · "+zone.width+" × "+zone.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.dataset.id===zone.id);for(const[k,p]of pads)p.material.opacity=k===zone.id?.26:.05;}}
 },{passive:true});
 /* ================= single-carton process-flow demonstration ================= */
-let demoBox=null,demoDistance=0,demoRunning=false,demoStage=0,journeyRunning=false,journeyDistance=0;
+let demoBox=null,demoDistance=0,demoRunning=false,demoStage=0,journeyRunning=false,journeyDistance=0,journeySpeedFactor=1;
 const demoStatus=$("#boxStatus"),demoButton=$("#boxRun");
 const demoStages=[
  "Qabul qilish · Z01","Sifat nazorati · Z02","Zaxira saqlash · Z03 / Z04",
@@ -500,9 +501,10 @@ function startBoxDemo(){
  controls.target.copy(demoBox.position);camera.position.set(demoBox.position.x+34,demoBox.position.y+24,demoBox.position.z+34);controls.update();
 }
 demoButton.onclick=startBoxDemo;
-const journeyButton=$("#journeyRun");
+const journeyButton=$("#journeyRun"),journeySpeedPanel=$("#journeySpeed");
+journeySpeedPanel.querySelectorAll("button[data-speed]").forEach(b=>{b.onclick=()=>{journeySpeedFactor=Number(b.dataset.speed);journeySpeedPanel.querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));notify("Sayohat tezligi: "+journeySpeedFactor+"×")}});
 function startJourney(){
- if(demoBox){scene.remove(demoBox);demoBox=null}demoRunning=false;followBox=false;journeyRunning=true;journeyDistance=0;demoStage=0;
+ if(demoBox){scene.remove(demoBox);demoBox=null}demoRunning=false;followBox=false;journeyRunning=true;journeyDistance=0;demoStage=0;journeySpeedFactor=1;journeySpeedPanel.style.display="flex";journeySpeedPanel.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
  if(!firstPerson)setFirstPerson(true);else{controls.enabled=false;main.classList.add("fp")}
  fpKeys.clear();const p=journeyPoints[0],n=journeyPoints[1],dx=n.x-p.x,dz=n.z-p.z;fpYaw=Math.atan2(-dx,-dz);fpPitch=0;
  camera.position.set(p.x,p.y+1.25,p.z);camera.rotation.set(0,fpYaw,0);camera.updateMatrixWorld();
@@ -513,7 +515,7 @@ journeyButton.onclick=()=>{if(journeyRunning){journeyRunning=false;journeyButton
 const journeyLook=new THREE.Vector3();
 function updateJourney(dt){
  if(!journeyRunning)return;
- journeyDistance=Math.min(journeyRoute.tot,journeyDistance+dt*2.7);
+ journeyDistance=Math.min(journeyRoute.tot,journeyDistance+dt*2.7*journeySpeedFactor);
  posOn(journeyRoute,journeyDistance,tmp);
  const ahead=Math.min(journeyRoute.tot,journeyDistance+1.8);posOn(journeyRoute,ahead,journeyLook);
  camera.position.set(tmp.x,tmp.y+1.25,tmp.z);
@@ -524,7 +526,7 @@ function updateJourney(dt){
  while(demoStage<journeyStages.length-1&&journeyDistance>journeyMilestones[demoStage+1])demoStage++;
  const pct=Math.round(journeyDistance/journeyRoute.tot*100);
  demoStatus.textContent="Yuk sayohati: "+journeyStages[Math.min(demoStage,journeyStages.length-1)]+" · "+pct+"%";
- if(journeyDistance>=journeyRoute.tot){journeyRunning=false;journeyButton.textContent="Yuk sayohati ↻";demoStatus.textContent="Yuk mashinasiga joylandi · Sayohat yakunlandi · 100%"}
+ if(journeyDistance>=journeyRoute.tot){journeyRunning=false;journeyButton.textContent="Yuk sayohati ↻";journeySpeedPanel.style.display="none";demoStatus.textContent="Yuk mashinasiga joylandi · Sayohat yakunlandi · 100%"}
 }
 /* ================= loop ================= */
 const tmp=new THREE.Vector3();let t=0,last=0,first=true;
