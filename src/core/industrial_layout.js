@@ -39,7 +39,8 @@ function validate(){
  const all=[...docks.inbound,...docks.outbound];
  if(all.length!==6||new Set(all).size!==6)errors.push("Expected six unique south docks");
  if(docks.north.length)errors.push("North wall must not have docks");
- for(const x of all)if(x< -80||x>80)errors.push("Dock outside building");\n for(const c of corridors)for(const p of[c.from,c.to])if(p.x< -80||p.x>80||p.z< -75||p.z>75)errors.push(c.id+" corridor outside building");
+ for(const x of all)if(x< -80||x>80)errors.push("Dock outside building");
+ for(const c of corridors)for(const p of[c.from,c.to])if(p.x< -80||p.x>80||p.z< -75||p.z>75)errors.push(c.id+" corridor outside building");
  return{valid:!errors.length,zoneCount:raw.length,errors,docks:{count:all.length,side:docks.side}};
 }
 root.SCWIndustrialLayout=Object.freeze({BUILDING,zones:Object.freeze(raw),corridors,docks,getZone,contains,validate});
