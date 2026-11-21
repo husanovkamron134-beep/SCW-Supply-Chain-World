@@ -328,9 +328,9 @@ for(let x=-16.8;x<=16.8;x+=1.15){box(glass,x,5.95,52,.04,1.1,.04);box(glass,x,5.
 box(steel,0,6.5,52,34,.06,.06);box(steel,0,6.5,68,34,.06,.06);box(steel,-17,6.5,60,.06,.06,16);box(steel,17,6.5,60,.06,.06,16);
 box(glass,0,5.95,52,34,1,.03);box(glass,0,5.95,68,34,1,.03);
 for(let i=0;i<16;i++)box(darkSteel,-16,.15+i*.31,66-i*.8,1.5,.1,.62);
-for(const x of[-10,-3,3,10])for(const z of[56,64])bench(x,z,0,{monitor:true,boxes:0});
+
 box(black,0,8.0,67.65,22,3.4,.15);{const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(21.4,3.0),dashMat);wallScreen.position.set(0,8,67.55);wallScreen.rotation.y=Math.PI;wallScreen.name="WMS video wall";scene.add(wallScreen)}
-for(const x of[-12,-4,4,12])box(deskMat,x,1.2,62,2.6,2.4,1.6);
+for(const x of[-12,-4,4,12]){box(deskMat,x,5.85,62,2.6,.15,1.6);box(black,x,6.55,61.35,.9,.65,.06);box(dashMat,x,6.55,61.31,.82,.56,.025);box(darkSteel,x,5.45,63,.55,.75,.55)}
 box(darkSteel,0,.3,66.6,22,.6,1.4);
 
 /* ================= docks, trucks, yard ================= */
