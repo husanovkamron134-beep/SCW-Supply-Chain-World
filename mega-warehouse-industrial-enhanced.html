@@ -350,8 +350,8 @@ function truck(x,z,ry,trailerCol,cabCol){const g=new THREE.Group(),tm=M(trailerC
   for(const wx of[13.1,14.9])for(const wz of[-1.1,1.1])wheel(g,wx,.5,wz,.5);
   mk(darkSteel,2.4,.25,2.2,12.9,1.0,0,g);
   g.position.set(x,-1.15,z);g.rotation.y=ry;scene.add(g);return g}
-dock(-68,-1,0xf0f4f8,0x2f6ea8);dock(-56,-1,0xdbe6f0,0x2f6ea8);dock(-44,-1,0xe9e1d2,0xa84a2f,false);
-dock(-10,1,0xdde8f1,0x3a8a5e);dock(0,1,0xf0f4f8,0x2f6ea8,false);dock(10,1,0xe9e1d2,0xa84a2f);
+dock(-66,1,0xf0f4f8,0x2f6ea8);dock(-54,1,0xdbe6f0,0x2f6ea8);dock(-42,1,0xe9e1d2,0xa84a2f,false);
+dock(42,1,0xdde8f1,0x3a8a5e);dock(54,1,0xf0f4f8,0x2f6ea8,false);dock(66,1,0xe9e1d2,0xa84a2f);
 for(const s of[-1,1])for(let x=-76;x<=76;x+=12)box(paintW,x,-1.19,s*(hd+18),.2,.02,14);
 
 /* ================= zone signs disabled: remove oversized floating labels ================= */
