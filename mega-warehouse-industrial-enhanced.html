@@ -354,8 +354,19 @@ dock(-66,1,0xf0f4f8,0x2f6ea8);dock(-54,1,0xdbe6f0,0x2f6ea8);dock(-42,1,0xe9e1d2,
 dock(42,1,0xdde8f1,0x3a8a5e);dock(54,1,0xf0f4f8,0x2f6ea8,false);dock(66,1,0xe9e1d2,0xa84a2f);
 for(const s of[-1,1])for(let x=-76;x<=76;x+=12)box(paintW,x,-1.19,s*(hd+18),.2,.02,14);
 
-/* ================= zone signs disabled: remove oversized floating labels ================= */
+/* ================= 3D CanvasTexture zone sprite labels ================= */
 const labels=[];
+function makeZoneLabel(z){
+ const c=document.createElement("canvas");c.width=512;c.height=112;const q=c.getContext("2d");
+ q.fillStyle="rgba(7,22,38,.94)";q.strokeStyle="#69c5ff";q.lineWidth=5;
+ q.beginPath();q.roundRect(5,5,502,102,22);q.fill();q.stroke();
+ q.fillStyle="#eaf7ff";q.font="bold 38px Arial";q.textAlign="center";q.textBaseline="middle";q.fillText(z.code+" · "+z.name.toUpperCase(),256,56);
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=aniso;
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false}));
+ sp.position.set(z.x,z.id==="HIGH_BAY"?14.2:(z.id==="CONTROL"?7.2:8.5),z.z);
+ sp.scale.set(Math.max(13,z.width*.52),Math.max(2.8,z.width*.11),1);sp.renderOrder=20;scene.add(sp);labels.push(sp);
+}
+zones.forEach(makeZoneLabel);
 /* ================= vehicles, people, cranes (animated) ================= */
 function forkliftModel(col){const g=new THREE.Group(),b=M(col,.45,.35);
   mk(b,1.9,.7,1.15,-.1,.7,0,g);mk(darkSteel,.6,.85,1.15,-1.0,.8,0,g);mk(b,.9,.45,1.0,.35,1.2,0,g);mk(black,.5,.12,.55,-.35,1.15,0,g);mk(black,.1,.5,.5,-.62,1.45,0,g);
