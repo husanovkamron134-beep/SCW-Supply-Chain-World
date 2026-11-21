@@ -454,7 +454,7 @@ const coldBoard=document.createElement("canvas");coldBoard.width=512;coldBoard.h
 const coldTex=new THREE.CanvasTexture(coldBoard);coldTex.colorSpace=THREE.SRGBColorSpace;
 const coldScreen=new THREE.Mesh(new THREE.PlaneGeometry(5.8,1.45),new THREE.MeshBasicMaterial({map:coldTex}));coldScreen.name="Cold Storage temperature display";coldScreen.position.set(0,5.45,12.45);coldStore.add(coldScreen);
 const coldMist=[];
-for(let i=0;i<48;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.16+Math.random()*.22,7,6),new THREE.MeshBasicMaterial({color:0xb8eaff,transparent:true,opacity:.12,depthWrite:false}));m.position.set(-3+Math.random()*6,.08+Math.random()*.45,13+Math.random()*4);scene.add(m);coldMist.push({m,vx:(Math.random()-.5)*.35,vz:.3+Math.random()*.5,phase:Math.random()*6.28})}
+for(let i=0;i<48;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.16+Math.random()*.22,7,6),new THREE.MeshBasicMaterial({color:0xb8eaff,transparent:true,opacity:.12,depthWrite:false}));m.position.set(-65+Math.random()*6,.08+Math.random()*.45,-42+Math.random()*4);scene.add(m);coldMist.push({m,vx:(Math.random()-.5)*.35,vz:.3+Math.random()*.5,phase:Math.random()*6.28})}
 let coldTemp=-18.4,coldOpen=0,coldBoardTimer=0;
 function drawColdBoard(){coldCtx.fillStyle="#061a2b";coldCtx.fillRect(0,0,512,128);coldCtx.strokeStyle="#38bdf8";coldCtx.lineWidth=4;coldCtx.strokeRect(3,3,506,122);coldCtx.fillStyle="#e9f8ff";coldCtx.font="bold 30px Arial";coldCtx.fillText("COLD STORAGE",18,38);coldCtx.font="bold 32px Arial";coldCtx.fillStyle="#64d6ff";coldCtx.fillText("TEMP: "+coldTemp.toFixed(1)+"°C",18,82);coldCtx.font="bold 21px Arial";coldCtx.fillStyle="#e9f8ff";coldCtx.fillText("HUM: 78%  |  FEFO",300,82);coldTex.needsUpdate=true}
 drawColdBoard();
@@ -465,7 +465,7 @@ function updateColdStorage(dt,time){
  coldOpen=THREE.MathUtils.damp(coldOpen,target,3.4,dt);doorPanel.position.y=coldOpen*4.7;
  coldTemp=THREE.MathUtils.damp(coldTemp,active?-16.9:-18.4,active?.42:.22,dt);
  coldFans.forEach((fan,i)=>{fan.rotation.y=time*(1.2+i*.07)});
- coldMist.forEach((p,i)=>{p.m.visible=coldOpen>.06;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.material.opacity=.05+coldOpen*.22*(.5+.5*Math.sin(time*2+p.phase));if(p.m.position.z>18){p.m.position.z=-42;p.m.position.x=-65+Math.random()*6}});
+ coldMist.forEach((p,i)=>{p.m.visible=coldOpen>.06;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.material.opacity=.05+coldOpen*.22*(.5+.5*Math.sin(time*2+p.phase));if(p.m.position.z>-37){p.m.position.z=-42;p.m.position.x=-65+Math.random()*6}});
  coldBoardTimer+=dt;if(coldBoardTimer>.3){coldBoardTimer=0;drawColdBoard()}
 }
 let wmsTimer=0,wmsTick=0;
@@ -641,6 +641,8 @@ const demoPoints=[
  Vdemo(-57,1.05,55),Vdemo(-57,1.05,40),Vdemo(-42,1.05,23),Vdemo(-42,1.05,8),Vdemo(-42,1.05,-18),Vdemo(-18,1.05,-18),Vdemo(8,1.05,-18),Vdemo(8,1.05,-50),Vdemo(8,1.05,-18),Vdemo(31,1.05,-18),Vdemo(54,1.05,-18),Vdemo(54,1.05,0),Vdemo(54,1.05,15),Vdemo(40,1.05,32),Vdemo(40,1.05,42),Vdemo(67,1.05,42),Vdemo(67,1.05,53),Vdemo(30,1.05,62),Vdemo(54,1.05,62),Vdemo(54,1.05,72)
 ];
 const demoRoute=pathOf(demoPoints);
+const demoStageEndIndices=[1,3,8,10,12,14,15,17,19];
+const demoMilestones=[0,...demoStageEndIndices.map(i=>demoPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?p.distanceTo(arr[j-1]):0),0))];
 // Complete shipment route: every stop corresponds to a real warehouse operation zone.
 const journeyPoints=[
  Vdemo(-57,.12,55),Vdemo(-57,.12,40),Vdemo(-42,.12,23),Vdemo(-42,.12,8),Vdemo(-42,.12,-18),Vdemo(8,.12,-18),Vdemo(8,.12,-50),Vdemo(8,14.2,-50),Vdemo(8,.12,-50),Vdemo(8,.12,-18),Vdemo(54,.12,-18),Vdemo(54,.12,15),Vdemo(40,.12,32),Vdemo(40,.12,42),Vdemo(67,.12,42),Vdemo(30,.12,62),Vdemo(54,.12,62),Vdemo(54,2.7,72),Vdemo(54,2.7,78)
