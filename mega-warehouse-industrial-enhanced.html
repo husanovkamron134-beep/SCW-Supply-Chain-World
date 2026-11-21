@@ -614,8 +614,9 @@ canvas.addEventListener("pointerup",ev=>{
  raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(scene.children,true);if(!hits.length)return;
  const hit=hits.find(h=>h.object.visible&&h.object!==canvas);if(!hit)return;
  const mat=Array.isArray(hit.object.material)?hit.object.material[0]:hit.object.material;
- const label=mat?.name||"Ombor elementi",guide=elementGuide[label]||["Ombor elementi","Bu element omborning tegishli operatsion zonasida ishlatiladi. Uning vazifasi zona jarayoniga bog‘liq."];
- const z=nearestZone(hit.point.x,hit.point.z);$("#inspectTitle").textContent=guide[0];$("#inspectDesc").textContent=guide[1]+(z?" · Hudud: "+z.code+" — "+z.name:"");
+ const label=hit.object.name||mat?.name||"Ombor elementi",guide=elementGuide[label]||["Ombor elementi","Bu element omborning tegishli operatsion zonasida ishlatiladi. Uning vazifasi zona jarayoniga bog‘liq."];
+ const z=nearestZone(hit.point.x,hit.point.z);$("#inspectTitle").textContent=guide[0];const live=z?({INBOUND:"Qabul: +1,420 PLT",QUALITY:"Tekshiruv: 98.7% OK",RETURNS:"Qaytgan yuk: 36 PLT",RESERVE:"Bandlik: 78%",HIGH_BAY:"AS/RS: 6 yo‘lak · 14 m",REPLENISHMENT:"Bufer: 64% band",PICKING:"Terish: 91% faol",SORTING:"Saralash: 1,285 PLT",PACKING:"Qadoqlash: 94% liniya",OUTBOUND:"Tayyor: 1,285 PLT",DISPATCH:"Doklar: 3 ta outbound",CONTROL:"WMS: LIVE"})[z.id]:"";
+ $("#inspectDesc").textContent=guide[1]+(z?" · Hudud: "+z.code+" — "+z.name:"")+(live?" · LIVE: "+live:"")+(label.includes("Cold Storage")?" · TEMP: "+coldTemp.toFixed(1)+"°C · HUM: 78% · FEFO":"");
  const focusTarget=hit.point.clone();const viewOffset=camera.position.clone().sub(controls.target);if(viewOffset.lengthSq()<.001)viewOffset.set(.4,.8,.8);viewOffset.normalize();const focusDistance=THREE.MathUtils.clamp(camera.position.distanceTo(controls.target)*.46,6,22);fly({pos:focusTarget.clone().addScaledVector(viewOffset,focusDistance),target:focusTarget});notify("Obyektga fokuslandi");if(z){const zone=L.getZone(z.id);if(zone){$("#zoneTitle").textContent=zone.code+" · "+zone.name;$("#zoneDesc").textContent=(roles[zone.id]||"")+" · "+zone.width+" × "+zone.depth+" m";for(const el of list.children)el.classList.toggle("selected",el.dataset.id===zone.id);for(const[k,p]of pads)p.material.opacity=k===zone.id?.26:.05;}}
 },{passive:true});
 /* ================= single-carton process-flow demonstration ================= */
@@ -644,7 +645,7 @@ const journeyStages=[
  "Yuklash maydoni · Z10","Forklift palletni ko‘taradi",
  "Yuk mashinasiga joylash · Jo‘natishga tayyor"
 ];
-const journeyStageEndIndices=[1,2,4,7,8,9,11,12,13,14,15,16];
+const journeyStageEndIndices=[1,2,4,8,10,11,13,14,15,16,17,18];
 const journeyMilestones=journeyStageEndIndices.map(i=>journeyPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?p.distanceTo(arr[j-1]):0),0));
 function startBoxDemo(){
  if(demoBox)scene.remove(demoBox);
