@@ -224,7 +224,7 @@ const ground=new THREE.Mesh(new THREE.PlaneGeometry(2600,2600),M(0x101a22,1,0));
 for(const s of[-1,1]){const y=new THREE.Mesh(new THREE.PlaneGeometry(W+30,26),M(0x262d35,.96,0));y.rotation.x=-Math.PI/2;y.position.set(0,-1.2,s*(hd+14));y.receiveShadow=true;scene.add(y)}
 function wall(w,x,z,ry,mat){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,H),mat);m.position.set(x,H/2,z);m.rotation.y=ry;m.receiveShadow=true;scene.add(m)}
 const wallNS=M(0xffffff,.55,.45,{map:metalTex(W/4)}),wallEW=M(0xffffff,.55,.45,{map:metalTex(D/4)});
-wall(W,0,-hd,0,wallNS);for(const[a,b]of segs(-hw,hw,southDocks.map(x=>[x-4,x+4])))wall(b-a,(a+b)/2,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
+wall(W,0,-hd,0,wallNS);wall(10,-75,hd,Math.PI,wallNS);wall(4,-60,hd,Math.PI,wallNS);wall(4,-48,hd,Math.PI,wallNS);wall(76,0,hd,Math.PI,wallNS);wall(4,48,hd,Math.PI,wallNS);wall(4,60,hd,Math.PI,wallNS);wall(10,75,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
 const roofGroup=new THREE.Group();scene.add(roofGroup);
 {const roof=new THREE.Mesh(new THREE.PlaneGeometry(W,D),M(0xffffff,.72,.28,{map:roofTex,emissive:0x667887,emissiveIntensity:.72}));roof.rotation.x=Math.PI/2;roof.position.y=H;roofGroup.add(roof);
  const sky=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,2.6,3.2)});for(let x=-60;x<=60;x+=30){const s=new THREE.Mesh(new THREE.PlaneGeometry(3.4,128),sky);s.rotation.x=Math.PI/2;s.position.set(x,H-.04,0);roofGroup.add(s)}}
