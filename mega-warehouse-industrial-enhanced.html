@@ -263,13 +263,13 @@ for(const x of[-57,54,67])for(const z of[-18,32,53])for(const sx of[-1,1])for(co
 
 /* ================= racks ================= */
 // Z03 reserve: west/north-west pallet storage.
-for(const cx of[-73,-66,-59,-52,-45,-38,-31])for(const side of[-.55,.55])rackRow(cx+side,-30,12,6,.84);
+for(const cx of[-44,-37,-30])for(const side of[-.55,.55])rackRow(cx+side,-67,10,6,.84);for(const cx of[-73,-66,-59,-52])for(const side of[-.55,.55])rackRow(cx+side,-30,12,6,.84);
 // Z04 high-bay: six 14 m automated aisles.
 const AX=[-10.5,-3.5,3.5,10.5,18,25];
-for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-29,11,6,.9);
+for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-67,11,6,.9);
 for(const a of AX){box(steel,a,.12,-13,.3,.12,33);box(steel,a,14.05,-13,.35,.22,33)}
 // Z06 replenishment buffer.
-for(const cx of[36,44,52,60,68,75])for(const side of[-.55,.55])rackRow(cx+side,-29,10,5,.76);
+for(const cx of[36,44,52,60,68,75])for(const side of[-.55,.55])rackRow(cx+side,-67,10,5,.76);
 // Z05 picking racks and order-picking carts.
 for(const cx of[38,45,52,59,66,73])for(const side of[-.55,.55])rackRow(cx+side,2,8,3,.72);
 for(const cx of[38,45,52,59,66,73]){box(cartMat,cx,.5,1.2,1.5,.18,1);for(const[sx,sz]of[[-.65,-.4],[.65,-.4],[-.65,.4],[.65,.4]])cyl(black,cx+sx,.14,1.2+sz,.1,.08,"z");box(cartonMat,cx,1,1.2,1.1,.7,.8,0,0,pick(kraft))}
@@ -383,9 +383,9 @@ function forkliftModel(col){const g=new THREE.Group(),b=M(col,.45,.35);
   const load=new THREE.Group();lift.add(load);load.position.set(.7,.06,0);const pm=new THREE.Mesh(palletGeo,palletMat);pm.material=M(0xb48a58,.9,0);pm.rotation.y=Math.PI/2;load.add(pm);const lb=mk(cartonMat.clone(),.93,1.0,1.13,0,.67,0,load);lb.material.color.setHex(pick(kraft));
   g.position.y=.02;scene.add(g);return{g,lift,load}}
 const forklifts=[
- {...forkliftModel(0xf2a31b),x:-73,z0:50,amp:8,sp:.22,ph:0},{...forkliftModel(0xf2a31b),x:-61,z0:18,amp:7,sp:.2,ph:2.1},{...forkliftModel(0x3aa07a),x:37,z0:15,amp:9,sp:.24,ph:1.0},
- {...forkliftModel(0xf2a31b),x:67,z0:40,amp:7,sp:.2,ph:0},{...forkliftModel(0xf2a31b),x:53,z0:62,amp:5,sp:.22,ph:3.3,axis:"x",az:62}];
- forklifts[3].g.position.set(67,.02,40);forklifts[3].g.rotation.y=Math.PI/2;
+ {...forkliftModel(0xf2a31b),x:-32,z0:50,amp:8,sp:.22,ph:0},{...forkliftModel(0xf2a31b),x:-21,z0:18,amp:7,sp:.2,ph:2.1},{...forkliftModel(0x3aa07a),x:32,z0:15,amp:9,sp:.24,ph:1.0},
+ {...forkliftModel(0xf2a31b),x:78,z0:40,amp:7,sp:.2,ph:0},{...forkliftModel(0xf2a31b),x:70,z0:72,amp:7,sp:.22,ph:3.3,axis:"x",az:62}];
+ forklifts[3].g.position.set(78,.02,40);forklifts[3].g.rotation.y=Math.PI/2;
  forklifts[4]={...forklifts[4],horizontal:true};
 function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);mk(darkSteel,1.4,.08,.9,0,.62,0,g);for(let i=0;i<6;i++)mkc(rollerMat,.05,.88,-.55+i*.22,.68,0,g,"z");
   mk(orangeSafety,.08,.12,1.15,.88,.4,0,g,false);mk(orangeSafety,.08,.12,1.15,-.88,.4,0,g,false);mkc(glowA,.12,.1,.7,.76,.4,g);
@@ -624,12 +624,12 @@ const demoStages=[
 ];
 const Vdemo=(x,y,z)=>new THREE.Vector3(x,y,z);
 const demoPoints=[
- Vdemo(-57,1.05,55),Vdemo(-57,1.05,40),Vdemo(-42,1.05,23),Vdemo(-42,1.05,8),Vdemo(-42,1.05,-18),Vdemo(-18,1.05,-18),Vdemo(8,1.05,-18),Vdemo(31,1.05,-18),Vdemo(54,1.05,-18),Vdemo(54,1.05,0),Vdemo(54,1.05,15),Vdemo(40,1.05,32),Vdemo(40,1.05,42),Vdemo(67,1.05,42),Vdemo(67,1.05,53),Vdemo(30,1.05,62),Vdemo(54,1.05,62),Vdemo(54,1.05,72)
+ Vdemo(-57,1.05,55),Vdemo(-57,1.05,40),Vdemo(-42,1.05,23),Vdemo(-42,1.05,8),Vdemo(-42,1.05,-18),Vdemo(-18,1.05,-18),Vdemo(8,1.05,-50),Vdemo(31,1.05,-18),Vdemo(54,1.05,-18),Vdemo(54,1.05,0),Vdemo(54,1.05,15),Vdemo(40,1.05,32),Vdemo(40,1.05,42),Vdemo(67,1.05,42),Vdemo(67,1.05,53),Vdemo(30,1.05,62),Vdemo(54,1.05,62),Vdemo(54,1.05,72)
 ];
 const demoRoute=pathOf(demoPoints);
 // Complete shipment route: every stop corresponds to a real warehouse operation zone.
 const journeyPoints=[
- Vdemo(-57,.12,55),Vdemo(-57,.12,40),Vdemo(-42,.12,23),Vdemo(-42,.12,8),Vdemo(-42,.12,-18),Vdemo(8,.12,-18),Vdemo(8,14.2,-18),Vdemo(8,.12,-18),Vdemo(54,.12,-18),Vdemo(54,.12,15),Vdemo(40,.12,32),Vdemo(40,.12,42),Vdemo(67,.12,42),Vdemo(30,.12,62),Vdemo(54,.12,62),Vdemo(54,2.7,72),Vdemo(54,2.7,78)
+ Vdemo(-57,.12,55),Vdemo(-57,.12,40),Vdemo(-42,.12,23),Vdemo(-42,.12,8),Vdemo(-42,.12,-18),Vdemo(8,.12,-50),Vdemo(8,14.2,-50),Vdemo(8,.12,-50),Vdemo(54,.12,-18),Vdemo(54,.12,15),Vdemo(40,.12,32),Vdemo(40,.12,42),Vdemo(67,.12,42),Vdemo(30,.12,62),Vdemo(54,.12,62),Vdemo(54,2.7,72),Vdemo(54,2.7,78)
 ];
 const journeyRoute=pathOf(journeyPoints);
 const journeyStages=[
@@ -728,7 +728,7 @@ const tmp=new THREE.Vector3();let t=0,last=0,first=true;
 function animate(ms){
   requestAnimationFrame(animate);
   const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;if(!journeyRunning)fpMove(dt);updateMobileCamera();updateJourney(dt);updateColdStorage(dt,t);updateWMS(dt);
-  for(const c of cranes){const a=t*.2+c.ph;c.g.position.set(c.x,0,-16+Math.sin(a)*13.5);c.lift.position.set(0,1.2+(Math.sin(a*1.9)*.5+.5)*10.5,0);c.lift.children[2].visible=Math.sin(a*.7)>-.3}
+  for(const c of cranes){const a=t*.2+c.ph;c.g.position.set(c.x,0,-50+Math.sin(a)*13);c.lift.position.set(0,1.2+(Math.sin(a*1.9)*.5+.5)*10.5,0);c.lift.children[2].visible=Math.sin(a*.7)>-.3}
   for(const f of forklifts){if(f.park){f.lift.position.y=.15+(Math.sin(t*.5)*.5+.5)*1.2;continue}
     const a=t*f.sp+f.ph,v=Math.cos(a);
     if(f.horizontal){f.g.position.set(f.x+Math.sin(a)*f.amp,.02,f.az);f.g.rotation.y=v>0?0:Math.PI}else{f.g.position.set(f.x,.02,f.z0+Math.sin(a)*f.amp);f.g.rotation.y=v>0?-Math.PI/2:Math.PI/2}
