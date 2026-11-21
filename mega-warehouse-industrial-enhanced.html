@@ -337,6 +337,10 @@ function dock(x,side,trailerCol,cabCol,green=true){
   for(const sx of[-1,1]){box(yellow,x+sx*3.45,2.3,zi,.2,4.6,.22);box(rubber,x+sx*3.5,.8,side*(hd+.18),.45,.7,.35);box(rubber,x+sx*3.55,2.3,side*(hd+.28),.5,4.4,.5)}
   box(rubber,x,4.65,side*(hd+.28),7.6,.5,.5);box(yellow,x,.03,zo,6.8,.12,1.5);
   box(black,x+4.3,3.4,zi,.35,.95,.18);cyl(green?glowG:glowR,x+4.3,3.7,zi-side*.12,.09,.08,"z");cyl(green?glowR:glowG,x+4.3,3.3,zi-side*.12,.09,.08,"z");
+  const ramp=new THREE.Mesh(new THREE.BoxGeometry(5.8,.28,4.8),M(0x596773,.48,.72));ramp.position.set(x,.2,73);ramp.rotation.x=-.08;ramp.name="Dock leveler ramp";ramp.castShadow=!mobile;scene.add(ramp);
+  for(let k=0;k<8;k++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.34,.012,4.4),M(k%2?0xf4c542:0x171c22,.8,.1));stripe.position.set(x-2.45+k*.7,.35,73);stripe.rotation.x=-.08;scene.add(stripe)}
+  for(const sx of[-1,1]){const chock=new THREE.Mesh(new THREE.BoxGeometry(.65,.28,.42),M(0x15191d,.9,.05));chock.position.set(x+sx*2.4,.18,84.8);chock.name="Wheel chock";scene.add(chock)}
+  if(x<0){for(const sx of[-1,1]){const post=new THREE.Mesh(new THREE.BoxGeometry(.14,2.8,.14),steel);post.position.set(x+sx*2.45,1.4,73.4);post.name="Inbound barcode scanner";scene.add(post)}const beam=new THREE.Mesh(new THREE.BoxGeometry(4.9,.12,.12),glowA);beam.position.set(x,2.75,73.4);scene.add(beam)}
   truck(x,side*(hd+.6),side<0?Math.PI/2:-Math.PI/2,trailerCol,cabCol)}
 function wheel(g,x,y,z,r){const t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.42,18),M(0x101214,.9,0));t.rotation.x=Math.PI/2;t.position.set(x,y,z);t.castShadow=!mobile;g.add(t);const h=new THREE.Mesh(new THREE.CylinderGeometry(r*.55,r*.55,.44,14),steel);h.rotation.x=Math.PI/2;h.position.set(x,y,z);g.add(h)}
 const trailerTex=metalTex(3);
@@ -387,7 +391,7 @@ function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);m
   mk(orangeSafety,.08,.12,1.15,.88,.4,0,g,false);mk(orangeSafety,.08,.12,1.15,-.88,.4,0,g,false);mkc(glowA,.12,.1,.7,.76,.4,g);
   const cb=mk(cartonMat.clone(),.9,.6,.8,0,1.0,0,g);cb.material.color.setHex(pick(kraft));g.position.y=.02;scene.add(g);return g}
 const agvs=[];[[-18,0],[-18,2.6],[-18,1.3],[-18,4.1],[32,.4],[32,3.1]].forEach(([lz,ph])=>agvs.push({g:agvModel(),lz,ph,dir:"x"}));
-[[-57,.8],[54,2.2],[67,1.6]].forEach(([lx,ph])=>agvs.push({g:agvModel(),lx,ph,dir:"z"}));
+[[-21,.8],[54,2.2],[67,1.6]].forEach(([lx,ph])=>agvs.push({g:agvModel(),lx,ph,dir:"z"}));
 function craneModel(){const g=new THREE.Group();mk(steel,.16,13,.16,-.5,6.6,0,g);mk(steel,.16,13,.16,.5,6.6,0,g);mk(steel,1.2,.28,.5,0,13.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
   const lift=new THREE.Group();g.add(lift);mk(rackOrange,1.1,.12,1.2,0,0,0,lift);mk(darkSteel,1.2,.5,.12,0,.3,-.55,lift);const pm=new THREE.Mesh(palletGeo,M(0xb48a58,.9,0));pm.rotation.y=Math.PI/2;pm.position.y=.08;lift.add(pm);mk(cartonMat.clone(),.93,.9,1.13,0,.7,0,lift);scene.add(g);return{g,lift}}
 const cranes=AX.map((a,i)=>({...craneModel(),x:a,ph:i*1.1}));
@@ -439,12 +443,12 @@ for(let i=0;i<12;i++){const p=new THREE.Group();p.position.set(-9+(i%4)*6,.15,-7
  const pallet=new THREE.Mesh(palletGeo,palletMat);p.add(pallet);
  const cargo=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.6,1.3),M(0x9abbd0,.8,.05,{emissive:0x102d43,emissiveIntensity:.25}));cargo.position.y=.95;p.add(cargo)}
 const coldDoor=new THREE.Group();coldDoor.position.set(0,2.25,12.05);coldStore.add(coldDoor);
-const doorPanel=new THREE.Mesh(new THREE.BoxGeometry(4.8,4.5,.22),M(0x2477a8,.42,.35,{emissive:0x092c46,emissiveIntensity:.3}));coldDoor.add(doorPanel);
+const doorPanel=new THREE.Mesh(new THREE.BoxGeometry(4.8,4.5,.22),M(0x2477a8,.42,.35,{emissive:0x092c46,emissiveIntensity:.3}));doorPanel.name="Cold Storage roll door";coldDoor.add(doorPanel);
 for(let x=-2.1;x<=2.1;x+=.7){const rib=new THREE.Mesh(new THREE.BoxGeometry(.045,4.35,.24),steel);rib.position.x=x;coldDoor.add(rib)}
 const doorRail=new THREE.Mesh(new THREE.BoxGeometry(5.3,.16,.35),yellow);doorRail.position.set(0,4.7,12.15);coldStore.add(doorRail);
 const coldBoard=document.createElement("canvas");coldBoard.width=512;coldBoard.height=128;const coldCtx=coldBoard.getContext("2d");
 const coldTex=new THREE.CanvasTexture(coldBoard);coldTex.colorSpace=THREE.SRGBColorSpace;
-const coldScreen=new THREE.Mesh(new THREE.PlaneGeometry(5.8,1.45),new THREE.MeshBasicMaterial({map:coldTex}));coldScreen.position.set(0,5.45,12.45);coldStore.add(coldScreen);
+const coldScreen=new THREE.Mesh(new THREE.PlaneGeometry(5.8,1.45),new THREE.MeshBasicMaterial({map:coldTex}));coldScreen.name="Cold Storage temperature display";coldScreen.position.set(0,5.45,12.45);coldStore.add(coldScreen);
 const coldMist=[];
 for(let i=0;i<48;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.16+Math.random()*.22,7,6),new THREE.MeshBasicMaterial({color:0xb8eaff,transparent:true,opacity:.12,depthWrite:false}));m.position.set(-3+Math.random()*6,.08+Math.random()*.45,13+Math.random()*4);scene.add(m);coldMist.push({m,vx:(Math.random()-.5)*.35,vz:.3+Math.random()*.5,phase:Math.random()*6.28})}
 let coldTemp=-18.4,coldOpen=0,coldBoardTimer=0;
