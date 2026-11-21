@@ -415,6 +415,69 @@ for(let i=0;i<8;i++)parcel(()=>pathOf([V(-11,.95,3.5),V(11,.95,3.5)]),1.1,i/8);
 
 buildInstances();
 
+/* ================= Cold Storage -18.4C visual environment ================= */
+const coldStore=new THREE.Group();coldStore.position.set(-62,0,-55);scene.add(coldStore);
+const coldWall=M(0xdceaf2,.72,.08),coldInner=M(0x91c9e5,.55,.12,{emissive:0x123d58,emissiveIntensity:.32}),coldFloor=M(0x9bb8ca,.38,.12);
+const coldPart=(mat,w,h,d,x,y,z)=>mk(mat,w,h,d,x,y,z,coldStore);
+coldPart(coldFloor,27.5,.22,23.5,0,.05,0);
+coldPart(coldWall,.55,6.4,24,-14,3.2,0);coldPart(coldWall,.55,6.4,24,14,3.2,0);
+coldPart(coldWall,28,6.4,.55,0,3.2,-12);coldPart(coldWall,10.5,6.4,.55,-8.75,3.2,12);
+coldPart(coldWall,10.5,6.4,.55,8.75,3.2,12);
+const coldRoof=new THREE.Mesh(new THREE.BoxGeometry(28,0.65,24),coldWall);coldRoof.position.set(0,6.55,0);coldRoof.castShadow=!mobile;coldStore.add(coldRoof);
+const coldGlow=new THREE.PointLight(0x38bdf8,2.2,28);coldGlow.position.set(0,4.8,0);coldStore.add(coldGlow);
+const coldLED=new THREE.Mesh(new THREE.BoxGeometry(18,.08,.08),new THREE.MeshBasicMaterial({color:0x38bdf8}));coldLED.position.set(0,5.9,-10);coldStore.add(coldLED);
+const coldFans=[];
+for(const [x,z] of[[-8,-6],[8,-6],[-8,5],[8,5]]){
+ const fan=new THREE.Group();fan.position.set(x,5.9,z);coldStore.add(fan);
+ const housing=new THREE.Mesh(new THREE.BoxGeometry(3.4,.5,2.4),darkSteel);fan.add(housing);
+ const rotor=new THREE.Group();rotor.position.y=-.3;fan.add(rotor);
+ const hub=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.18,16),steel);hub.rotation.x=Math.PI/2;rotor.add(hub);
+ for(let k=0;k<4;k++){const blade=new THREE.Mesh(new THREE.BoxGeometry(.22,.08,1.25),coldInner);blade.position.z=.68;blade.rotation.y=k*Math.PI/2;rotor.add(blade)}
+ coldFans.push(rotor);
+}
+for(let i=0;i<12;i++){const p=new THREE.Group();p.position.set(-9+(i%4)*6,.15,-7+Math.floor(i/4)*4.2);coldStore.add(p);
+ const pallet=new THREE.Mesh(palletGeo,palletMat);p.add(pallet);
+ const cargo=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.6,1.3),M(0x9abbd0,.8,.05,{emissive:0x102d43,emissiveIntensity:.25}));cargo.position.y=.95;p.add(cargo)}
+const coldDoor=new THREE.Group();coldDoor.position.set(0,2.25,12.05);coldStore.add(coldDoor);
+const doorPanel=new THREE.Mesh(new THREE.BoxGeometry(4.8,4.5,.22),M(0x2477a8,.42,.35,{emissive:0x092c46,emissiveIntensity:.3}));coldDoor.add(doorPanel);
+for(let x=-2.1;x<=2.1;x+=.7){const rib=new THREE.Mesh(new THREE.BoxGeometry(.045,4.35,.24),steel);rib.position.x=x;coldDoor.add(rib)}
+const doorRail=new THREE.Mesh(new THREE.BoxGeometry(5.3,.16,.35),yellow);doorRail.position.set(0,4.7,12.15);coldStore.add(doorRail);
+const coldBoard=document.createElement("canvas");coldBoard.width=512;coldBoard.height=128;const coldCtx=coldBoard.getContext("2d");
+const coldTex=new THREE.CanvasTexture(coldBoard);coldTex.colorSpace=THREE.SRGBColorSpace;
+const coldScreen=new THREE.Mesh(new THREE.PlaneGeometry(5.8,1.45),new THREE.MeshBasicMaterial({map:coldTex}));coldScreen.position.set(0,5.45,12.45);coldStore.add(coldScreen);
+const coldMist=[];
+for(let i=0;i<48;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.16+Math.random()*.22,7,6),new THREE.MeshBasicMaterial({color:0xb8eaff,transparent:true,opacity:.12,depthWrite:false}));m.position.set(-3+Math.random()*6,.08+Math.random()*.45,13+Math.random()*4);scene.add(m);coldMist.push({m,vx:(Math.random()-.5)*.35,vz:.3+Math.random()*.5,phase:Math.random()*6.28})}
+let coldTemp=-18.4,coldOpen=0,coldBoardTimer=0;
+function drawColdBoard(){coldCtx.fillStyle="#061a2b";coldCtx.fillRect(0,0,512,128);coldCtx.strokeStyle="#38bdf8";coldCtx.lineWidth=4;coldCtx.strokeRect(3,3,506,122);coldCtx.fillStyle="#e9f8ff";coldCtx.font="bold 30px Arial";coldCtx.fillText("COLD STORAGE",18,38);coldCtx.font="bold 32px Arial";coldCtx.fillStyle="#64d6ff";coldCtx.fillText("TEMP: "+coldTemp.toFixed(1)+"°C",18,82);coldCtx.font="bold 21px Arial";coldCtx.fillStyle="#e9f8ff";coldCtx.fillText("HUM: 78%  |  FEFO",300,82);coldTex.needsUpdate=true}
+drawColdBoard();
+function updateColdStorage(dt,time){
+ const doorWorld=new THREE.Vector3(-62,0,-43),nearCamera=camera.position.distanceTo(doorWorld)<9;
+ let nearForklift=false;for(const f of forklifts)if(f.g.position.distanceTo(doorWorld)<9){nearForklift=true;break}
+ const active=nearCamera||nearForklift,target=active?1:0;
+ coldOpen=THREE.MathUtils.damp(coldOpen,target,3.4,dt);doorPanel.position.y=coldOpen*4.7;
+ coldTemp=THREE.MathUtils.damp(coldTemp,active?-16.9:-18.4,active?.42:.22,dt);
+ coldFans.forEach((fan,i)=>{fan.rotation.y=time*(1.2+i*.07)});
+ coldMist.forEach((p,i)=>{p.m.visible=coldOpen>.06;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.material.opacity=.05+coldOpen*.22*(.5+.5*Math.sin(time*2+p.phase));if(p.m.position.z>18){p.m.position.z=13;p.m.position.x=-3+Math.random()*6}});
+ coldBoardTimer+=dt;if(coldBoardTimer>.3){coldBoardTimer=0;drawColdBoard()}
+}
+
+/* ================= 2D minimap radar ================= */
+const miniCanvas=$("#minimapCanvas"),mini=miniCanvas.getContext("2d");
+function drawMinimap(){
+ const w=miniCanvas.width,h=miniCanvas.height;mini.clearRect(0,0,w,h);mini.fillStyle="#071624";mini.fillRect(0,0,w,h);
+ const sx=x=>(x+80)/160*w,sy=z=>(z+75)/150*h;
+ mini.strokeStyle="#7392aa";mini.lineWidth=4;mini.strokeRect(3,3,w-6,h-6);
+ const colors={INBOUND:"#2f8fc4",QUALITY:"#c8a42a",RETURNS:"#9b5fb0",RESERVE:"#2f78b0",HIGH_BAY:"#3a64d0",REPLENISHMENT:"#2fa07e",PICKING:"#7fa02f",SORTING:"#c08a2f",PACKING:"#c87a3f",OUTBOUND:"#2fa0aa",DISPATCH:"#2fb09a",CONTROL:"#7c6fd0"};
+ for(const z of L.zones){mini.fillStyle=colors[z.id]||"#557";mini.globalAlpha=.42;mini.fillRect(sx(z.minX),sy(z.minZ),z.width/160*w,z.depth/150*h);mini.globalAlpha=1;mini.strokeStyle="#b9d8ef";mini.lineWidth=1.4;mini.strokeRect(sx(z.minX),sy(z.minZ),z.width/160*w,z.depth/150*h);mini.fillStyle="#fff";mini.font="bold 12px Arial";mini.fillText(z.code,sx(z.x)-12,sy(z.z)+4)}
+ for(const x of[-66,-54,-42,42,54,66]){mini.fillStyle="#e7eff6";mini.fillRect(sx(x)-5,sy(75)-4,10,7)}
+ const drawDot=(x,z,color,r=4)=>{mini.fillStyle=color;mini.beginPath();mini.arc(sx(x),sy(z),r,0,Math.PI*2);mini.fill()};
+ for(const a of agvs)drawDot(a.g.position.x,a.g.position.z,"#45e5c2",4);
+ for(const f of forklifts)drawDot(f.g.position.x,f.g.position.z,"#ffbd4a",4);
+ const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);const cx=sx(camera.position.x),cz=sy(camera.position.z);
+ mini.strokeStyle="#fff";mini.lineWidth=2;mini.beginPath();mini.moveTo(cx,cz);mini.lineTo(cx+dir.x*18,cz+dir.z*18);mini.stroke();drawDot(camera.position.x,camera.position.z,"#ffffff",5);
+ mini.fillStyle="#d8e8f4";mini.font="bold 11px Arial";mini.fillText("SCW RADAR · AGV / FL",10,18);
+}
+ 
 /* ================= camera presets and UI ================= */
 let goal=null,followBox=false,firstPerson=false;
 const main=$(".main"),fpButton=$("#firstPerson"),fpKeys=new Set();let fpYaw=-Math.PI/2,fpPitch=0,fpLook=null;
