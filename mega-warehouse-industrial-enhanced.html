@@ -546,29 +546,12 @@ const demoStages=[
 ];
 const Vdemo=(x,y,z)=>new THREE.Vector3(x,y,z);
 const demoPoints=[
- Vdemo(-54,1.05,-66),Vdemo(-24,1.05,-66),Vdemo(-24,1.05,-32),
- Vdemo(0,1.05,-32),Vdemo(21,1.05,-32),Vdemo(21,1.05,-13),
- Vdemo(21,1.05,10),Vdemo(-21,1.05,10),Vdemo(-54,1.05,10),
- Vdemo(-21,1.05,10),Vdemo(-21,1.05,-13),Vdemo(-21,1.05,-32),
- Vdemo(21,1.05,-32),Vdemo(21,1.05,10),Vdemo(21,1.05,53),
- Vdemo(-21,1.05,53),Vdemo(-54,1.05,53),Vdemo(-21,1.05,53),
- Vdemo(0,1.05,53),Vdemo(21,1.05,53),Vdemo(55,1.05,53),
- Vdemo(21,1.05,53),Vdemo(0,1.05,65)
+ Vdemo(-57,1.05,55),Vdemo(-57,1.05,40),Vdemo(-42,1.05,23),Vdemo(-42,1.05,8),Vdemo(-42,1.05,-18),Vdemo(-18,1.05,-18),Vdemo(8,1.05,-18),Vdemo(31,1.05,-18),Vdemo(54,1.05,-18),Vdemo(54,1.05,0),Vdemo(54,1.05,15),Vdemo(40,1.05,32),Vdemo(40,1.05,42),Vdemo(67,1.05,42),Vdemo(67,1.05,53),Vdemo(30,1.05,62),Vdemo(54,1.05,62),Vdemo(54,1.05,72)
 ];
 const demoRoute=pathOf(demoPoints);
 // Complete shipment route: every stop corresponds to a real warehouse operation zone.
 const journeyPoints=[
- Vdemo(-54,.12,-66),Vdemo(-54,.12,-57),                 // Z01 inbound
- Vdemo(0,.12,-49),                                      // Z02 quality control
- Vdemo(-40,.12,-24),                                    // Z03 reserve storage
- Vdemo(-1.75,.12,-24),Vdemo(-1.75,8,-24),Vdemo(-1.75,.12,-24), // Z04 high-bay lift
- Vdemo(52,.12,-8),                                      // Z06 replenishment
- Vdemo(-54,.12,20),                                     // Z05 picking
- Vdemo(-15,.12,30),Vdemo(8,.12,30),Vdemo(8,.12,38),    // Z07 sorting conveyor
- Vdemo(55,.12,34),                                      // Z08 packing
- Vdemo(-56,.12,65),                                     // Z09 outbound staging
- Vdemo(0,.12,65),                                       // Z10 dispatch
- Vdemo(0,2.7,70),Vdemo(0,2.7,77)                        // lift and truck loading
+ Vdemo(-57,.12,55),Vdemo(-57,.12,40),Vdemo(-42,.12,23),Vdemo(-42,.12,8),Vdemo(-42,.12,-18),Vdemo(8,.12,-18),Vdemo(8,14.2,-18),Vdemo(8,.12,-18),Vdemo(54,.12,-18),Vdemo(54,.12,15),Vdemo(40,.12,32),Vdemo(40,.12,42),Vdemo(67,.12,42),Vdemo(30,.12,62),Vdemo(54,.12,62),Vdemo(54,2.7,72),Vdemo(54,2.7,78)
 ];
 const journeyRoute=pathOf(journeyPoints);
 const journeyStages=[
@@ -579,7 +562,7 @@ const journeyStages=[
  "Yuklash maydoni · Z10","Forklift palletni ko‘taradi",
  "Yuk mashinasiga joylash · Jo‘natishga tayyor"
 ];
-const journeyStageEndIndices=[1,2,3,6,7,8,11,12,13,14,15,16];
+const journeyStageEndIndices=[1,2,4,6,7,8,10,11,12,13,14,15];
 const journeyMilestones=journeyStageEndIndices.map(i=>journeyPoints.slice(0,i+1).reduce((sum,p,j,arr)=>sum+(j?p.distanceTo(arr[j-1]):0),0));
 function startBoxDemo(){
  if(demoBox)scene.remove(demoBox);
@@ -655,8 +638,8 @@ function updateJourney(dt){
  const truckP=THREE.MathUtils.clamp((journeyDistance-liftEnd)/Math.max(.001,truckEnd-liftEnd),0,1);
  const receiving=demoStage===0,dispatch=demoStage>=10;
  journeyForklift.g.visible=receiving||dispatch;
- if(receiving){journeyForklift.g.position.set(-54,.02,-72+inboundP*13);journeyForklift.lift.position.y=.15+inboundP*.55;journeyForklift.load.visible=true}
- else if(dispatch){journeyForklift.g.position.set(0,.02,69+liftP*4+truckP*3);journeyForklift.lift.position.y=.15+liftP*.95;journeyForklift.load.visible=true}
+ if(receiving){journeyForklift.g.position.set(-66,.02,73-inboundP*12);journeyForklift.lift.position.y=.15+inboundP*.55;journeyForklift.load.visible=true}
+ else if(dispatch){journeyForklift.g.position.set(54,.02,69+liftP*4+truckP*3);journeyForklift.lift.position.y=.15+liftP*.95;journeyForklift.load.visible=true}
  // Packing action: the carton turns slightly as it is sealed and labelled.
  if(demoStage===7){const packP=THREE.MathUtils.clamp((journeyDistance-journeyMilestones[6])/(journeyMilestones[7]-journeyMilestones[6]),0,1);journeyTape.rotation.y=packP*Math.PI*2}
  else journeyTape.rotation.y=0;
