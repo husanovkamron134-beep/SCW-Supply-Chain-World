@@ -51,7 +51,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
 .notice.show{opacity:1}
 .journey-speed{display:none;position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:4;gap:7px;padding:7px;background:#0b1928ed;border:1px solid #4c83aa;border-radius:14px;box-shadow:0 8px 24px #0006}.journey-speed button{min-width:48px;border:1px solid #38536d;border-radius:9px;background:#13283d;color:#e8f2fb;padding:9px 11px;font-weight:800;font-size:13px;cursor:pointer}.journey-speed button.active{background:#17608a;border-color:#78caff;color:#fff}.journey-speed button:active{background:#1c3b57}
-.minimap{position:absolute;left:14px;bottom:14px;width:210px;height:174px;z-index:2;border:1px solid #5b86a8;border-radius:12px;background:#081624ef;box-shadow:0 8px 26px #0008;pointer-events:none}.minimap canvas{width:100%;height:100%;border-radius:12px}.loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
+.minimap{position:absolute;right:14px;top:66px;left:auto;bottom:auto;width:210px;height:174px;z-index:2;border:1px solid #5b86a8;border-radius:12px;background:#081624ef;box-shadow:0 8px 26px #0008;pointer-events:none}.minimap canvas{width:100%;height:100%;border-radius:12px}.loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
 .loading.done{opacity:0;pointer-events:none}
  @media(max-width:700px){#boxStatus{bottom:calc(52% + 16px)!important;max-width:calc(100% - 24px);font-size:10px!important;padding:7px 10px!important}}
 @media(max-width:700px){
@@ -263,7 +263,7 @@ for(const x of[-57,54,67])for(const z of[-18,32,53])for(const sx of[-1,1])for(co
 
 /* ================= racks ================= */
 // Z03 reserve: west/north-west pallet storage.
-for(const cx of[-44,-37,-30])for(const side of[-.55,.55])rackRow(cx+side,-67,10,6,.84);for(const cx of[-73,-66,-59,-52])for(const side of[-.55,.55])rackRow(cx+side,-30,12,6,.84);
+for(const cx of[-44,-37,-30])for(const side of[-.55,.55])rackRow(cx+side,-67,10,6,.84);for(const cx of[-73,-66,-59,-52])for(const side of[-.55,.55])rackRow(cx+side,-12,6,6,.84);
 // Z04 high-bay: six 14 m automated aisles.
 const AX=[-10.5,-3.5,3.5,10.5,18,25];
 for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-67,11,6,.9);
@@ -388,9 +388,9 @@ function forkliftModel(col){const g=new THREE.Group(),b=M(col,.45,.35);
   g.position.y=.02;scene.add(g);return{g,lift,load}}
 const forklifts=[
  {...forkliftModel(0xf2a31b),x:-32,z0:50,amp:8,sp:.22,ph:0},{...forkliftModel(0xf2a31b),x:-21,z0:18,amp:7,sp:.2,ph:2.1},{...forkliftModel(0x3aa07a),x:32,z0:15,amp:9,sp:.24,ph:1.0},
- {...forkliftModel(0xf2a31b),x:78,z0:40,amp:7,sp:.2,ph:0},{...forkliftModel(0xf2a31b),x:70,z0:72,amp:7,sp:.22,ph:3.3,axis:"x",az:62}];
+ {...forkliftModel(0xf2a31b),x:78,z0:40,amp:7,sp:.2,ph:0},{...forkliftModel(0xf2a31b),x:30,z0:72,amp:7,sp:.22,ph:3.3,axis:"x",az:62}];
  forklifts[3].g.position.set(78,.02,40);forklifts[3].g.rotation.y=Math.PI/2;
- forklifts[4]={...forklifts[4],horizontal:true};
+ forklifts[4]={...forklifts[4],horizontal:true,az:72};
 function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);mk(darkSteel,1.4,.08,.9,0,.62,0,g);for(let i=0;i<6;i++)mkc(rollerMat,.05,.88,-.55+i*.22,.68,0,g,"z");
   mk(orangeSafety,.08,.12,1.15,.88,.4,0,g,false);mk(orangeSafety,.08,.12,1.15,-.88,.4,0,g,false);mkc(glowA,.12,.1,.7,.76,.4,g);
   const cb=mk(cartonMat.clone(),.9,.6,.8,0,1.0,0,g);cb.material.color.setHex(pick(kraft));g.position.y=.02;scene.add(g);return g}
@@ -465,7 +465,7 @@ function updateColdStorage(dt,time){
  coldOpen=THREE.MathUtils.damp(coldOpen,target,3.4,dt);doorPanel.position.y=coldOpen*4.7;
  coldTemp=THREE.MathUtils.damp(coldTemp,active?-16.9:-18.4,active?.42:.22,dt);
  coldFans.forEach((fan,i)=>{fan.rotation.y=time*(1.2+i*.07)});
- coldMist.forEach((p,i)=>{p.m.visible=coldOpen>.06;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.material.opacity=.05+coldOpen*.22*(.5+.5*Math.sin(time*2+p.phase));if(p.m.position.z>18){p.m.position.z=13;p.m.position.x=-3+Math.random()*6}});
+ coldMist.forEach((p,i)=>{p.m.visible=coldOpen>.06;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.material.opacity=.05+coldOpen*.22*(.5+.5*Math.sin(time*2+p.phase));if(p.m.position.z>18){p.m.position.z=-42;p.m.position.x=-65+Math.random()*6}});
  coldBoardTimer+=dt;if(coldBoardTimer>.3){coldBoardTimer=0;drawColdBoard()}
 }
 let wmsTimer=0,wmsTick=0;
