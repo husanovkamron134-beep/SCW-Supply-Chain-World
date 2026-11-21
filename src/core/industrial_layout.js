@@ -18,14 +18,14 @@ const raw=[
 ].map(z=>Object.freeze({...z,minX:z.x-z.width/2,maxX:z.x+z.width/2,minZ:z.z-z.depth/2,maxZ:z.z+z.depth/2}));
 const docks=Object.freeze({side:"south",z:75,inbound:Object.freeze([-66,-54,-42]),outbound:Object.freeze([42,54,66]),north: Object.freeze([])});
 const corridors=Object.freeze([
-{id:"WEST-RETURN",from:{x:-70,z:34},to:{x:-70,z:42},width:4},
-{id:"INBOUND-SPINE",from:{x:-57,z:40},to:{x:-57,z:12},width:4},
-{id:"WEST-NORTH",from:{x:-57,z:12},to:{x:-57,z:-18},width:4},
-{id:"NORTH-CROSS",from:{x:-57,z:-18},to:{x:54,z:-18},width:5},
-{id:"EAST-SPINE",from:{x:54,z:-18},to:{x:54,z:32},width:5},
-{id:"SORT-PACK",from:{x:40,z:30},to:{x:67,z:30},width:4},
-{id:"OUTBOUND-SPINE",from:{x:67,z:54},to:{x:67,z:72},width:4},
-{id:"SOUTH-CROSS",from:{x:-57,z:72},to:{x:67,z:72},width:5}
+{id:"WEST-SPINE",from:{x:-21,z:-18},to:{x:-21,z:53},width:4},
+{id:"CENTRE-SPINE",from:{x:32,z:-18},to:{x:32,z:53},width:5},
+{id:"EAST-SPINE",from:{x:78,z:-18},to:{x:78,z:72},width:4},
+{id:"NORTH-CROSS",from:{x:-21,z:-18},to:{x:32,z:-18},width:5},
+{id:"MID-CROSS",from:{x:-21,z:32},to:{x:78,z:32},width:4},
+{id:"SOUTH-CROSS",from:{x:-21,z:53},to:{x:78,z:53},width:5},
+{id:"INBOUND-APPROACH",from:{x:-32,z:40},to:{x:-32,z:72},width:4},
+{id:"OUTBOUND-APPROACH",from:{x:30,z:53},to:{x:30,z:72},width:4}
 ]);
 function getZone(id){return raw.find(z=>z.id===id||z.code===id)||null}
 function contains(id,x,z){const a=getZone(id);return !!a&&x>=a.minX&&x<=a.maxX&&z>=a.minZ&&z<=a.maxZ}
@@ -39,7 +39,7 @@ function validate(){
  const all=[...docks.inbound,...docks.outbound];
  if(all.length!==6||new Set(all).size!==6)errors.push("Expected six unique south docks");
  if(docks.north.length)errors.push("North wall must not have docks");
- for(const x of all)if(x< -80||x>80)errors.push("Dock outside building");
+ for(const x of all)if(x< -80||x>80)errors.push("Dock outside building");\n for(const c of corridors)for(const p of[c.from,c.to])if(p.x< -80||p.x>80||p.z< -75||p.z>75)errors.push(c.id+" corridor outside building");
  return{valid:!errors.length,zoneCount:raw.length,errors,docks:{count:all.length,side:docks.side}};
 }
 root.SCWIndustrialLayout=Object.freeze({BUILDING,zones:Object.freeze(raw),corridors,docks,getZone,contains,validate});
