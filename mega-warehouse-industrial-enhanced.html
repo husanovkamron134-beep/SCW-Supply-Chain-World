@@ -278,7 +278,7 @@ for(const cx of[38,45,52,59,66,73]){box(cartMat,cx,.5,1.2,1.5,.18,1);for(const[s
 function bench(x,z,ry=0,o={}){const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
   box(deskMat,x,.95,z,3.4,.08,1.2,ry);for(const lx of[-1.6,1.6])for(const lz of[-.5,.5]){const[px,pz]=T(lx,lz);box(darkSteel,px,.47,pz,.07,.95,.07)}
   box(darkSteel,x,.35,z,3.1,.05,1.0,ry);
-  if(o.monitor!==false){const[mx,mz]=T(-.9,-.35);box(black,mx,1.45,mz,.7,.42,.04,ry);const[sx,sz]=T(-.9,-.33);box(screenOn,sx,1.45,sz,.62,.34,.02,ry);box(black,mx,1.07,mz,.1,.12,.1,ry)}
+  if(o.monitor!==false){const[mx,mz]=T(-.9,-.35);box(black,mx,1.45,mz,.7,.42,.04,ry);const[sx,sz]=T(-.9,-.33);box(dashMat,sx,1.45,sz,.62,.34,.02,ry);box(black,mx,1.07,mz,.1,.12,.1,ry)}
   for(let i=0;i<(o.boxes??2);i++){const[bx,bz]=T(.2+i*.9,.1);box(cartonMat,bx,1.25,bz,.7,.42,.55,ry+R(-.2,.2),0,pick(kraft))}}
 function rollCage(x,z,ry=0,full=true){box(wireMat,x,.95,z,.85,1.5,.75,ry);box(darkSteel,x,.18,z,.85,.1,.75,ry);for(const sx of[-1,1])for(const sz of[-1,1]){const c=Math.cos(ry),s=Math.sin(ry);box(darkSteel,x+(sx*.42)*c+(sz*.37)*s,.95,z-(sx*.42)*s+(sz*.37)*c,.04,1.5,.04)}
   if(full){box(cartonMat,x,.55,z,.7,.6,.6,ry+R(-.2,.2),0,pick(kraft));if(rnd()<.6)box(cartonMat,x,1.05,z,.6,.4,.5,ry+R(-.3,.3),0,pick(kraft))}
@@ -295,10 +295,10 @@ for(const x of[-66,-54,-42]){box(paintY,x-3.6,.025,55,.18,.02,22);box(paintY,x+3
 for(const x of[-54,-43,-32])for(const z of[17,27])bench(x,z,0);
 conv(-42,21,24,0);
 for(const x of[-48,-36])box(yellow,x,2.1,20,.14,4.2,.14);
-box(yellow,-42,4.2,20,12,.18,.18);for(const x of[-48,-36])box(glowR,x,3.6,20,.04,.55,.04);
+box(yellow,-42,4.2,20,12,.18,.18);for(const x of[-48,-36])box(glowR,x,3.6,20,.04,.55,.04);box(glowR,-42,3.7,20,11,.025,.025);
 box(darkSteel,-42,.18,28,4,.36,4);box(steel,-42,.38,28,3.5,.08,3.5);
 for(const x of[-31,-25])for(const z of[15,27])box(yellow,x,1,z,.12,2,.12);
-box(wireMat,-28,1,21,6,2,12);for(const x of[-30,-26])for(const z of[16,26])box(yellow,x,1.1,z,.18,2,.18);
+box(wireMat,-28,1,21,6,2,12);for(const x of[-30,-26])for(const z of[16,26])box(yellow,x,1.1,z,.18,2,.18);const quarantineRed=M(0xd83a3a,.62,.12),quarantineWhite=M(0xeaf0f5,.62,.08);for(let i=0;i<12;i++){box(i%2?quarantineRed:quarantineWhite,-31+i*.55,1.1,15,.5,.18,.18);box(i%2?quarantineWhite:quarantineRed,-31+i*.55,1.1,27,.5,.18,.18)}
 // Z11 returns.
 for(let i=0;i<10;i++)rollCage(-74+(i%3)*3,12+Math.floor(i/3)*5,R(-.3,.3));
 for(const x of[-75,-69])for(const z of[10,20,30])bench(x,z,0,{boxes:2});
@@ -329,7 +329,7 @@ box(steel,0,6.5,52,34,.06,.06);box(steel,0,6.5,68,34,.06,.06);box(steel,-17,6.5,
 box(glass,0,5.95,52,34,1,.03);box(glass,0,5.95,68,34,1,.03);
 for(let i=0;i<16;i++)box(darkSteel,-16,.15+i*.31,66-i*.8,1.5,.1,.62);
 for(const x of[-10,-3,3,10])for(const z of[56,64])bench(x,z,0,{monitor:true,boxes:0});
-box(black,0,8.0,67.65,22,3.4,.15);{const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(21.4,3.0),dashMat);wallScreen.position.set(0,8,67.55);wallScreen.rotation.y=Math.PI;scene.add(wallScreen)}
+box(black,0,8.0,67.65,22,3.4,.15);{const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(21.4,3.0),dashMat);wallScreen.position.set(0,8,67.55);wallScreen.rotation.y=Math.PI;wallScreen.name="WMS video wall";scene.add(wallScreen)}
 for(const x of[-12,-4,4,12])box(deskMat,x,1.2,62,2.6,2.4,1.6);
 box(darkSteel,0,.3,66.6,22,.6,1.4);
 
