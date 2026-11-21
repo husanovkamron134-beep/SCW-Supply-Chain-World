@@ -600,7 +600,12 @@ const elementGuide={
 "Yo‘lak chizig‘i":["Transport yo‘lagi","Ombor ichida texnika harakat yo‘nalishini va xavfsiz hududlarni belgilaydi."],
 "Yo‘l belgisi":["Yo‘l belgisi","Harakat yo‘nalishi va hudud chegaralarini ko‘rsatadi."],
 "Xavfsizlik yo‘lagi":["Piyodalar xavfsizlik yo‘lagi","Xodimlar yurishi uchun ajratilgan hududni belgilaydi."],
-"Rezina g‘ildirak":["G‘ildirak","Forklift, AGV yoki transport vositasining harakatlanish qismi."]
+"Rezina g‘ildirak":["G‘ildirak","Forklift, AGV yoki transport vositasining harakatlanish qismi."],
+"Cold Storage roll door":["Muzlatkich tezkor eshigi","Yaqinlashganda avtomatik ko‘tariladi; ochilganda sovuq kamera harorati vaqtincha ko‘tariladi."],
+"Cold Storage temperature display":["Muzlatkich harorat tablosi","Harorat, namlik va FEFO saqlash rejimini jonli ko‘rsatadi."],
+"Dock leveler ramp":["Gidravlik dock rampasi","Fura kuzovi va ombor polining balandligini bog‘lovchi yuklash platformasi."],
+"Inbound barcode scanner":["Shtrix-kod skaneri","Qabul qilinayotgan pallet va yuk identifikatsiyasini tekshirish uchun."],
+"Wheel chock":["G‘ildirak tirgagi","Yuklash vaqtida transport vositasining siljishini cheklash uchun."]
 };
 function nearestZone(x,z){let best=null,score=Infinity;for(const q of zones){const d=(q.x-x)*(q.x-x)+(q.z-z)*(q.z-z);if(d<score){score=d;best=q}}return best}
 let inspectStart=null;
