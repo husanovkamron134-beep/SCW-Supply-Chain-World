@@ -256,10 +256,10 @@ for(const z of zones){
 }
 function laneX(z,x0,x1,w=3){const len=x1-x0,cx=(x0+x1)/2;decalPlane(laneMat,cx,z,len,w,.014);box(paintY,cx,.025,z-w/2,len,.02,.14);box(paintY,cx,.025,z+w/2,len,.02,.14);for(let x=x0+2;x<x1-2;x+=7)box(paintW,x,.025,z,3,.02,.12)}
 function laneZ(x,z0,z1,w=3){const len=z1-z0,cz=(z0+z1)/2;decalPlane(laneMat,x,cz,w,len,.014);box(paintY,x-w/2,.025,cz,.14,.02,len);box(paintY,x+w/2,.025,cz,.14,.02,len);for(let z=z0+2;z<z1-2;z+=7)box(paintW,x,.025,z,.12,.02,3)}
-for(const z of[-18,32,53])laneX(z,-77,77);for(const x of[-57,54,67])laneZ(x,-72,72);
+for(const z of[-18,32,53])laneX(z,-77,77);for(const x of[-21,32,78])laneZ(x,-72,72);
 for(const z of[-18,32,53]){for(let x=-76;x<76;x+=3)box(paintG,x,.026,z+2.1,1.4,.02,.35,.4)}   // pedestrian crossing stripes (green hatching)
 // bollards at lane crossings
-for(const x of[-57,54,67])for(const z of[-18,32,53])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.4,.55,z+sz*2.4,.13,1.1);cyl(black,x+sx*2.4,.78,z+sz*2.4,.135,.12)}
+for(const x of[-21,32,78])for(const z of[-18,32,53])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.4,.55,z+sz*2.4,.13,1.1);cyl(black,x+sx*2.4,.78,z+sz*2.4,.135,.12)}
 
 /* ================= racks ================= */
 // Z03 reserve: west/north-west pallet storage.
