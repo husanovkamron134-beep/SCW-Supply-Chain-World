@@ -262,13 +262,17 @@ for(const z of[-18,32,53]){for(let x=-76;x<76;x+=3)box(paintG,x,.026,z+2.1,1.4,.
 for(const x of[-57,54,67])for(const z of[-18,32,53])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.4,.55,z+sz*2.4,.13,1.1);cyl(black,x+sx*2.4,.78,z+sz*2.4,.135,.12)}
 
 /* ================= racks ================= */
-for(const cx of[-75,-68,-61,-54,-47,-40,-33]){for(const s of[-.55,.55]){rackRow(cx+s,-31,11,5,.86);rackRow(cx+s,19.2,11,3,.74)}}   // Z03 reserve + Z05 picking
-const AX=[-8.75,-5.25,-1.75,1.75,5.25,8.75];
-for(const a of AX)for(const s of[-1.2,1.2])rackRow(a+s,-31,11,6,.9);                                                                   // Z04 high-bay
-for(const cx of[44,52])for(const s of[-.55,.55])rackRow(cx+s,-31,11,3,.78);                                                           // Z06 replenishment pick faces
-for(const a of AX){box(steel,a,.12,-16,.3,.12,31);box(steel,a,13.45,-16,.35,.22,31)}                                                   // AS/RS crane rails
-// pick carts at the heads of the picking aisles
-for(const cx of[-71.5,-64.5,-57.5,-50.5,-43.5,-36.5]){box(cartMat,cx,.5,17.8,1.5,.18,1.0);for(const[sx,sz]of[[-.65,-.4],[.65,-.4],[-.65,.4],[.65,.4]])cyl(black,cx+sx,.14,17.8+sz,.1,.08,"z");box(cartonMat,cx,1.0,17.8,1.1,.7,.8,0,0,pick(kraft))}
+// Z03 reserve: west/north-west pallet storage.
+for(const cx of[-73,-66,-59,-52,-45,-38,-31])for(const side of[-.55,.55])rackRow(cx+side,-30,12,6,.84);
+// Z04 high-bay: six 14 m automated aisles.
+const AX=[-10.5,-3.5,3.5,10.5,18,25];
+for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-29,11,6,.9);
+for(const a of AX){box(steel,a,.12,-13,.3,.12,33);box(steel,a,14.05,-13,.35,.22,33)}
+// Z06 replenishment buffer.
+for(const cx of[36,44,52,60,68,75])for(const side of[-.55,.55])rackRow(cx+side,-29,10,5,.76);
+// Z05 picking racks and order-picking carts.
+for(const cx of[38,45,52,59,66,73])for(const side of[-.55,.55])rackRow(cx+side,2,8,3,.72);
+for(const cx of[38,45,52,59,66,73]){box(cartMat,cx,.5,1.2,1.5,.18,1);for(const[sx,sz]of[[-.65,-.4],[.65,-.4],[-.65,.4],[.65,.4]])cyl(black,cx+sx,.14,1.2+sz,.1,.08,"z");box(cartonMat,cx,1,1.2,1.1,.7,.8,0,0,pick(kraft))}
 
 /* ================= zone content ================= */
 function bench(x,z,ry=0,o={}){const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
@@ -280,47 +284,50 @@ function rollCage(x,z,ry=0,full=true){box(wireMat,x,.95,z,.85,1.5,.75,ry);box(da
   if(full){box(cartonMat,x,.55,z,.7,.6,.6,ry+R(-.2,.2),0,pick(kraft));if(rnd()<.6)box(cartonMat,x,1.05,z,.6,.4,.5,ry+R(-.3,.3),0,pick(kraft))}
   for(const sx of[-1,1])cyl(black,x+sx*.3*Math.cos(ry),.08,z-sx*.3*Math.sin(ry),.07,.06,"z")}
 function fixture(x,z,ry,len){box(black,x,.9,z,len,.2,.9,ry)}
-// Z01 inbound: staging lanes right behind the dock doors
-for(const z of[-60,-54,-48])for(let x=-74;x<=-36;x+=3.3)if(rnd()<.72)floorPallet(x,z,rnd()<.1?Math.PI/2:0,{wrap:rnd()<.55});
-for(const x of[-68,-56,-44]){box(paintY,x-3.6,.025,-66,.18,.02,18);box(paintY,x+3.6,.025,-66,.18,.02,18)}
-// Z02 quality control
-for(const x of[-11,0,11])for(const z of[-57,-49]){bench(x,z,0);}
-box(yellow,12,.025,-43,9,.02,.18);box(yellow,12,.025,-38.4,9,.02,.18);for(const[x,z]of[[7.6,-43],[16.4,-43],[7.6,-38.4],[16.4,-38.4]])box(yellow,x,1.2,z,.08,2.4,.08);box(wireMat,12,1.2,-40.7,8.8,2.4,4.6);floorPallet(10,-40.7,0,{wrap:true});floorPallet(14,-40.7,0);
-// Z11 returns
-for(let i=0;i<10;i++)rollCage(41+(i%5)*2.3,-58+Math.floor(i/5)*2.6,R(-.3,.3));
-for(const x of[52,62,70])for(const z of[-55,-46])bench(x,z,0,{boxes:3});
-for(let i=0;i<16;i++)floorPallet(40+R(0,30),-42+R(0,3.5)*-1-1,R(-.5,.5),{wrap:rnd()<.2});
-// Z06 replenishment staging
-for(let i=0;i<12;i++)rollCage(58+(i%4)*3.4,-30+Math.floor(i/4)*5.5,R(-.15,.15));
-for(let i=0;i<6;i++)floorPallet(58+R(0,12),-6+R(-1,1)-4,R(-.2,.2),{wrap:true});
-// Z04 AS/RS input/output conveyors + staging
-function conv(x,z,len,ry=0){const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
-  box(beltMat,x,.78,z,len,.06,1.0,ry);for(const lz of[-.55,.55]){const[px,pz]=T(0,lz);box(steel,px,.88,pz,len,.2,.06,ry)}
-  for(let lx=-len/2+.5;lx<=len/2;lx+=2.5)for(const lz of[-.5,.5]){const[px,pz]=T(lx,lz);box(darkSteel,px,.38,pz,.07,.76,.07);}
-  for(let lx=-len/2+1.2;lx<len/2;lx+=1.2){const[px,pz]=T(lx,0);box(rollerMat,px,.82,pz,.04,.03,.95,ry)}}
-conv(0,3.5,22,0);for(const a of AX){box(steel,a,.5,0.6,1.4,.9,1.4)}
-for(const x of[-17,17])for(let i=0;i<3;i++)floorPallet(x+R(-1,1),-24+i*8,Math.PI/2,{wrap:true});
-// Z07 sorting: infeed belt, scan gantry, six divert lanes with roll cages
-conv(0,30,36,0);box(yellow,-15,2.1,28.9,.14,4.2,.14);box(yellow,-15,2.1,31.1,.14,4.2,.14);box(yellow,-15,4.2,30,.18,.18,2.4);box(glowG,-15,3.7,30,.04,.5,.4);
-const laneXs=[-13,-8,-3,3,8,13];
-for(const lx of laneXs){conv(lx,38,16,Math.PI/2);box(steel,lx,.95,30.6,.5,.3,2.0);rollCage(lx,47.2,0,true);rollCage(lx+1.6,47.2,0,rnd()<.5)}
-// Z08 packing stations on both sides of a feed belt
-conv(55,34,30,0);
-for(const x of[44,51,58,65]){bench(x,28,0,{boxes:3});bench(x,40,Math.PI,{boxes:3});box(cartonMat,x,.4,25.3,1.0,.7,.7,0,0,pick(kraft));box(cartonMat,x+1.2,.4,25.3,.9,.6,.7,0,0,pick(kraft));box(cartonMat,x,.45,42.9,1.0,.8,.7,0,0,pick(kraft))}
-for(let i=0;i<5;i++)floorPallet(70,22+i*5.6,Math.PI/2,{wrap:true});
-// Z09 outbound staging lanes
-for(const x of[-69,-57,-45]){box(paintY,x-3.6,.025,65,.18,.02,19);box(paintY,x+3.6,.025,65,.18,.02,19);for(const z of[58.5,62.2,65.9,69.6,73])if(rnd()<.85){floorPallet(x-1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])});floorPallet(x+1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])})}}
-// Z10 dispatch queue
-for(let i=0;i<9;i++)floorPallet(-14+(i%3)*14+R(-1,1),58.5+Math.floor(i/3)*2.9,R(-.1,.1),{wrap:true});
-// Z12 control centre: mezzanine, stairs, desks, video wall
-box(darkSteel,55,5.0,65,28,.5,16);box(deskMat,55,5.27,65,27.6,.05,15.6);
-for(const dx of[-13.5,0,13.5])for(const dz of[-7.5,7.5])box(steel,55+dx,2.5,65+dz,.45,5,.45);
-for(let x=41.2;x<=68.8;x+=1.15){box(glass,x,5.95,57.2,.04,1.1,.04);box(glass,x,5.95,72.8,.04,1.1,.04)}box(steel,55,6.5,57.2,28,.06,.06);box(steel,55,6.5,72.8,28,.06,.06);box(steel,41.1,6.5,65,.06,.06,16);box(steel,68.9,6.5,65,.06,.06,16);box(glass,55,5.95,57.2,28,1.0,.03);box(glass,55,5.95,72.8,28,1.0,.03);
-for(let i=0;i<16;i++)box(darkSteel,39.6,.15+i*.31,72.4-i*.8,1.5,.1,.62);box(steel,39.6,5.1,59.1,1.7,.1,1.6);for(let i=0;i<16;i++){box(steel,38.9,.15+i*.31+.5,72.4-i*.8,.05,1,.05)}
-for(const x of[46,52,58,64])for(const z of[61,67]){bench(x,z,0,{monitor:true,boxes:0});}   // desks (raised below)
-box(black,55,8.0,72.65,22,3.4,.15);{const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(21.4,3.0),dashMat);wallScreen.position.set(55,8.0,72.55);wallScreen.rotation.y=Math.PI;scene.add(wallScreen)}
-for(const x of[44,52,60,68])box(deskMat,x,1.2,66,2.6,2.4,1.6);   // equipment cabinets under the mezzanine
-box(darkSteel,55,.3,68.6,22,.6,1.4);
+// Z01 inbound: south-west receiving lanes.
+for(const z of[48,55,62])for(let x=-77;x<=-37;x+=3.3)if(rnd()<.72)floorPallet(x,z,rnd()<.1?Math.PI/2:0,{wrap:rnd()<.55});
+for(const x of[-66,-54,-42]){box(paintY,x-3.6,.025,55,.18,.02,22);box(paintY,x+3.6,.025,55,.18,.02,22);}
+// Z02 quality control: weighing, laser scan portal and quarantine cage.
+for(const x of[-54,-43,-32])for(const z of[17,27])bench(x,z,0);
+conv(-42,21,24,0);
+for(const x of[-48,-36])box(yellow,x,2.1,20,.14,4.2,.14);
+box(yellow,-42,4.2,20,12,.18,.18);for(const x of[-48,-36])box(glowR,x,3.6,20,.04,.55,.04);
+box(darkSteel,-42,.18,28,4,.36,4);box(steel,-42,.38,28,3.5,.08,3.5);
+for(const x of[-31,-25])for(const z of[15,27])box(yellow,x,1,z,.12,2,.12);
+box(wireMat,-28,1,21,6,2,12);for(const x of[-30,-26])for(const z of[16,26])box(yellow,x,1.1,z,.18,2,.18);
+// Z11 returns.
+for(let i=0;i<10;i++)rollCage(-74+(i%3)*3,12+Math.floor(i/3)*5,R(-.3,.3));
+for(const x of[-75,-69])for(const z of[10,20,30])bench(x,z,0,{boxes:2});
+// Z06 replenishment buffer.
+for(let i=0;i<12;i++)rollCage(35+(i%4)*10,-12+Math.floor(i/4)*5.5,R(-.15,.15));
+for(let i=0;i<8;i++)floorPallet(38+R(0,35),-2+R(-1,1),R(-.2,.2),{wrap:true});
+// Z04 AS/RS input/output conveyor and six aisles.
+conv(8,3,34,0);for(const a of AX)box(steel,a,.5,4,1.4,.9,1.4);
+for(const x of[-14,28])for(let i=0;i<3;i++)floorPallet(x+R(-1,1),-22+i*8,Math.PI/2,{wrap:true});
+// Z05 picking transfer.
+for(const x of[38,46,54,62,70]){conv(x,18,8,Math.PI/2);for(const z of[8,22])rollCage(x,z,0,true)}
+// Z07 sorting loop and divert lanes.
+conv(40,37,24,0);box(yellow,29,2.1,37,.14,4.2,.14);box(yellow,29,4.2,37,.18,.18,2.4);box(glowG,29,3.7,37,.04,.5,.4);
+const laneXs=[29,34,39,44,49,54];
+for(const lx of laneXs){conv(lx,44,12,Math.PI/2);rollCage(lx,49,0,true)}
+// Z08 packing stations.
+conv(67,38,18,0);
+for(const x of[59,65,71,77]){bench(x,34,0,{boxes:3});bench(x,48,Math.PI,{boxes:3});box(cartonMat,x,.4,33,1,.7,.7,0,0,pick(kraft));box(cartonMat,x+1.2,.4,33,.9,.6,.7,0,0,pick(kraft))}
+// Z09 outbound staging lanes.
+for(const x of[20,30,40]){box(paintY,x-3.6,.025,62,.18,.02,18);box(paintY,x+3.6,.025,62,.18,.02,18);for(const z of[56,60,64,68])if(rnd()<.85){floorPallet(x-1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])});floorPallet(x+1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])})}}
+// Z10 dispatch queue.
+for(let i=0;i<9;i++)floorPallet(48+(i%3)*10+R(-1,1),57+Math.floor(i/3)*4,R(-.1,.1),{wrap:true});
+// Z12 elevated glass control mezzanine centred between inbound/outbound docks.
+box(darkSteel,0,5.0,60,34,.5,18);box(deskMat,0,5.27,60,33.6,.05,17.6);
+for(const dx of[-16,0,16])for(const dz of[-8,8])box(steel,dx,2.5,60+dz,.45,5,.45);
+for(let x=-16.8;x<=16.8;x+=1.15){box(glass,x,5.95,52,.04,1.1,.04);box(glass,x,5.95,68,.04,1.1,.04)}
+box(steel,0,6.5,52,34,.06,.06);box(steel,0,6.5,68,34,.06,.06);box(steel,-17,6.5,60,.06,.06,16);box(steel,17,6.5,60,.06,.06,16);
+box(glass,0,5.95,52,34,1,.03);box(glass,0,5.95,68,34,1,.03);
+for(let i=0;i<16;i++)box(darkSteel,-16,.15+i*.31,66-i*.8,1.5,.1,.62);
+for(const x of[-10,-3,3,10])for(const z of[56,64])bench(x,z,0,{monitor:true,boxes:0});
+box(black,0,8.0,67.65,22,3.4,.15);{const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(21.4,3.0),dashMat);wallScreen.position.set(0,8,67.55);wallScreen.rotation.y=Math.PI;scene.add(wallScreen)}
+for(const x of[-12,-4,4,12])box(deskMat,x,1.2,62,2.6,2.4,1.6);
+box(darkSteel,0,.3,66.6,22,.6,1.4);
 
 /* ================= docks, trucks, yard ================= */
 function dock(x,side,trailerCol,cabCol,green=true){
