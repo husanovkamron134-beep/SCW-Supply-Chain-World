@@ -51,7 +51,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none}
 .notice.show{opacity:1}
 .journey-speed{display:none;position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:4;gap:7px;padding:7px;background:#0b1928ed;border:1px solid #4c83aa;border-radius:14px;box-shadow:0 8px 24px #0006}.journey-speed button{min-width:48px;border:1px solid #38536d;border-radius:9px;background:#13283d;color:#e8f2fb;padding:9px 11px;font-weight:800;font-size:13px;cursor:pointer}.journey-speed button.active{background:#17608a;border-color:#78caff;color:#fff}.journey-speed button:active{background:#1c3b57}
-.loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
+.minimap{position:absolute;left:14px;bottom:14px;width:210px;height:174px;z-index:2;border:1px solid #5b86a8;border-radius:12px;background:#081624ef;box-shadow:0 8px 26px #0008;pointer-events:none}.minimap canvas{width:100%;height:100%;border-radius:12px}.loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
 .loading.done{opacity:0;pointer-events:none}
  @media(max-width:700px){#boxStatus{bottom:calc(52% + 16px)!important;max-width:calc(100% - 24px);font-size:10px!important;padding:7px 10px!important}}
 @media(max-width:700px){
@@ -69,9 +69,9 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><div style="display:flex;gap:6px;align-items:center"><button class="btn" id="firstPerson" style="padding:8px 10px;font-size:11px">Yuk ko‘zi ▶</button><button class="btn" id="journeyRun" style="padding:8px 10px;font-size:11px">Yuk sayohati ▶</button><button class="btn" id="zoomOut" aria-label="Uzoqlashtirish">−</button><button class="btn" id="zoomIn" aria-label="Yaqinlashtirish">+</button><button class="btn" id="reset">Tiklash</button></div></header>
-<main class="main"><canvas id="scene"></canvas><div class="loading" id="loading">OMBOR YUKLANMOQDA…</div>
+<main class="main"><canvas id="scene"></canvas><div class="minimap"><canvas id="minimapCanvas" width="420" height="348"></canvas></div><div class="loading" id="loading">OMBOR YUKLANMOQDA…</div>
 <div class="inspect" id="inspect"><b>ELEMENT INSPECTOR</b><strong id="inspectTitle">Jihozni tanlang</strong><div class="muted" id="inspectDesc">Ombordagi uskuna yoki element ustiga bosing — vazifasi va ishlash prinsipi shu yerda ko‘rsatiladi.</div></div>
-<div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLAHUV <b>PROCESS FLOW</b></div></div>
+<div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLASHUV <b>U-FLOW</b></div></div>
 <aside class="panel" id="panel">
 <div class="sheet-head"><div><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">Oqimga asoslangan 12 zonali logistika markazi.</div></div><button class="tg" id="toggle">Zonalar ▲</button></div>
 <div class="body"><div class="stats"><div class="stat"><small>Maydon</small><strong id="area">24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Qator</small><strong>3 qanot</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
@@ -224,12 +224,12 @@ const ground=new THREE.Mesh(new THREE.PlaneGeometry(2600,2600),M(0x101a22,1,0));
 for(const s of[-1,1]){const y=new THREE.Mesh(new THREE.PlaneGeometry(W+30,26),M(0x262d35,.96,0));y.rotation.x=-Math.PI/2;y.position.set(0,-1.2,s*(hd+14));y.receiveShadow=true;scene.add(y)}
 function wall(w,x,z,ry,mat){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,H),mat);m.position.set(x,H/2,z);m.rotation.y=ry;m.receiveShadow=true;scene.add(m)}
 const wallNS=M(0xffffff,.55,.45,{map:metalTex(W/4)}),wallEW=M(0xffffff,.55,.45,{map:metalTex(D/4)});
-wall(W,0,-hd,0,wallNS);wall(W,0,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
+wall(W,0,-hd,0,wallNS);for(const[a,b]of segs(-hw,hw,southDocks.map(x=>[x-4,x+4])))wall(b-a,(a+b)/2,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
 const roofGroup=new THREE.Group();scene.add(roofGroup);
 {const roof=new THREE.Mesh(new THREE.PlaneGeometry(W,D),M(0xffffff,.72,.28,{map:roofTex,emissive:0x667887,emissiveIntensity:.72}));roof.rotation.x=Math.PI/2;roof.position.y=H;roofGroup.add(roof);
  const sky=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,2.6,3.2)});for(let x=-60;x<=60;x+=30){const s=new THREE.Mesh(new THREE.PlaneGeometry(3.4,128),sky);s.rotation.x=Math.PI/2;s.position.set(x,H-.04,0);roofGroup.add(s)}}
 // foundation plinth with gaps for dock bays (yard is 1.2 m lower, so truck beds meet the floor)
-const northDocks=[-68,-56,-44],southDocks=[-10,0,10];
+const northDocks=[],southDocks=[-66,-54,-42,42,54,66];
 function segs(a,b,gaps){const o=[];let c=a;for(const[g0,g1]of gaps){if(g0>c)o.push([c,g0]);c=g1}if(c<b)o.push([c,b]);return o}
 for(const[a,b]of segs(-hw-.5,hw+.5,northDocks.map(x=>[x-3.9,x+3.9])))box(plinth,(a+b)/2,-.6,-hd-.25,b-a,1.2,.5);
 for(const[a,b]of segs(-hw-.5,hw+.5,southDocks.map(x=>[x-3.9,x+3.9])))box(plinth,(a+b)/2,-.6,hd+.25,b-a,1.2,.5);
@@ -256,10 +256,10 @@ for(const z of zones){
 }
 function laneX(z,x0,x1,w=3){const len=x1-x0,cx=(x0+x1)/2;decalPlane(laneMat,cx,z,len,w,.014);box(paintY,cx,.025,z-w/2,len,.02,.14);box(paintY,cx,.025,z+w/2,len,.02,.14);for(let x=x0+2;x<x1-2;x+=7)box(paintW,x,.025,z,3,.02,.12)}
 function laneZ(x,z0,z1,w=3){const len=z1-z0,cz=(z0+z1)/2;decalPlane(laneMat,x,cz,w,len,.014);box(paintY,x-w/2,.025,cz,.14,.02,len);box(paintY,x+w/2,.025,cz,.14,.02,len);for(let z=z0+2;z<z1-2;z+=7)box(paintW,x,.025,z,.12,.02,3)}
-for(const z of[-32,10,53])laneX(z,-77,77);for(const x of[-24,27.5])laneZ(x,-72,72);
-for(const z of[-32,10,53]){for(let x=-76;x<76;x+=3)box(paintG,x,.026,z+2.1,1.4,.02,.35,.4)}   // pedestrian crossing stripes (green hatching)
+for(const z of[-18,32,53])laneX(z,-77,77);for(const x of[-57,54,67])laneZ(x,-72,72);
+for(const z of[-18,32,53]){for(let x=-76;x<76;x+=3)box(paintG,x,.026,z+2.1,1.4,.02,.35,.4)}   // pedestrian crossing stripes (green hatching)
 // bollards at lane crossings
-for(const x of[-24,27.5])for(const z of[-32,10,53])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.4,.55,z+sz*2.4,.13,1.1);cyl(black,x+sx*2.4,.78,z+sz*2.4,.135,.12)}
+for(const x of[-57,54,67])for(const z of[-18,32,53])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.4,.55,z+sz*2.4,.13,1.1);cyl(black,x+sx*2.4,.78,z+sz*2.4,.135,.12)}
 
 /* ================= racks ================= */
 for(const cx of[-75,-68,-61,-54,-47,-40,-33]){for(const s of[-.55,.55]){rackRow(cx+s,-31,11,5,.86);rackRow(cx+s,19.2,11,3,.74)}}   // Z03 reserve + Z05 picking
