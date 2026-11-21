@@ -266,7 +266,7 @@ for(const x of[-21,32,78])for(const z of[-18,32,53])for(const sx of[-1,1])for(co
 for(const cx of[-44,-37,-30])for(const side of[-.55,.55])rackRow(cx+side,-67,10,6,.84);for(const cx of[-73,-66,-59,-52])for(const side of[-.55,.55])rackRow(cx+side,-12,6,6,.84);
 // Z04 high-bay: six 14 m automated aisles.
 const AX=[-10.5,-3.5,3.5,10.5,18,25];
-for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-67,11,6,.9);
+for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-67,11,6.45,.9);
 for(const a of AX){box(steel,a,.12,-13,.3,.12,33);box(steel,a,14.05,-13,.35,.22,33)}
 // Z06 replenishment buffer.
 for(const cx of[42,49,56,63,70,77])for(const side of[-.55,.55])rackRow(cx+side,-67,10,5,.76);
@@ -396,7 +396,7 @@ function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);m
   const cb=mk(cartonMat.clone(),.9,.6,.8,0,1.0,0,g);cb.material.color.setHex(pick(kraft));g.position.y=.02;scene.add(g);return g}
 const agvs=[];[[-18,0],[-18,2.6],[-18,1.3],[-18,4.1],[32,.4],[32,3.1]].forEach(([lz,ph])=>agvs.push({g:agvModel(),lz,ph,dir:"x"}));
 [[-21,.8],[32,2.2],[78,1.6]].forEach(([lx,ph])=>agvs.push({g:agvModel(),lx,ph,dir:"z"}));
-function craneModel(){const g=new THREE.Group();mk(steel,.16,13,.16,-.5,6.6,0,g);mk(steel,.16,13,.16,.5,6.6,0,g);mk(steel,1.2,.28,.5,0,13.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
+function craneModel(){const g=new THREE.Group();mk(steel,.16,14.2,.16,-.5,7.1,0,g);mk(steel,.16,14.2,.16,.5,7.1,0,g);mk(steel,1.2,.28,.5,0,14.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
   const lift=new THREE.Group();g.add(lift);mk(rackOrange,1.1,.12,1.2,0,0,0,lift);mk(darkSteel,1.2,.5,.12,0,.3,-.55,lift);const pm=new THREE.Mesh(palletGeo,M(0xb48a58,.9,0));pm.rotation.y=Math.PI/2;pm.position.y=.08;lift.add(pm);mk(cartonMat.clone(),.93,.9,1.13,0,.7,0,lift);scene.add(g);return{g,lift}}
 const cranes=AX.map((a,i)=>({...craneModel(),x:a,ph:i*1.1}));
 function workerModel(vest){const g=new THREE.Group(),skin=M(0xd9a47e,.8,0);const legs=[];
@@ -689,8 +689,8 @@ journeyForklift.g.rotation.y=-Math.PI/2;
 function makeJourneyStacker(){
  const g=new THREE.Group();g.position.set(-40,0,-16);scene.add(g);
  const part=(parent,mat,w,h,d,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=!mobile;parent.add(m);return m};
- for(const x of[-.62,.62])part(g,rackBlue,.14,13.2,.18,x,6.6,0);
- part(g,steel,1.45,.18,.3,0,13.15,0);
+ for(const x of[-.62,.62])part(g,rackBlue,.14,14.2,.18,x,7.1,0);
+ part(g,steel,1.45,.18,.3,0,14.15,0);
  const lift=new THREE.Group();g.add(lift);
  part(lift,rackOrange,1.45,.16,1.5,0,.12,0);
  const pallet=new THREE.Mesh(palletGeo,palletMat);pallet.position.set(0,.2,0);pallet.castShadow=!mobile;lift.add(pallet);
@@ -727,7 +727,7 @@ function updateJourney(dt){
  const reserveStart=journeyMilestones[2],reserveEnd=journeyMilestones[3];
  const reserveP=THREE.MathUtils.clamp((journeyDistance-reserveStart)/Math.max(.001,reserveEnd-reserveStart),0,1);
  journeyStacker.g.visible=demoStage===3;
- journeyStacker.lift.position.y=.25+Math.sin(reserveP*Math.PI)*8.2;
+ journeyStacker.lift.position.y=.25+Math.sin(reserveP*Math.PI)*12.2;
  // Receiving forklift unloads the inbound pallet; dispatch forklift lifts and enters the truck.
  const inboundP=THREE.MathUtils.clamp(journeyDistance/Math.max(.001,journeyMilestones[0]),0,1);
  const dispatchStart=journeyMilestones[9],liftEnd=journeyMilestones[10],truckEnd=journeyMilestones[11];
