@@ -269,10 +269,10 @@ const AX=[-10.5,-3.5,3.5,10.5,18,25];
 for(const a of AX)for(const side of[-1.05,1.05])rackRow(a+side,-67,11,6,.9);
 for(const a of AX){box(steel,a,.12,-13,.3,.12,33);box(steel,a,14.05,-13,.35,.22,33)}
 // Z06 replenishment buffer.
-for(const cx of[36,44,52,60,68,75])for(const side of[-.55,.55])rackRow(cx+side,-67,10,5,.76);
+for(const cx of[42,49,56,63,70,77])for(const side of[-.55,.55])rackRow(cx+side,-67,10,5,.76);
 // Z05 picking racks and order-picking carts.
-for(const cx of[38,45,52,59,66,73])for(const side of[-.55,.55])rackRow(cx+side,2,8,3,.72);
-for(const cx of[38,45,52,59,66,73]){box(cartMat,cx,.5,1.2,1.5,.18,1);for(const[sx,sz]of[[-.65,-.4],[.65,-.4],[-.65,.4],[.65,.4]])cyl(black,cx+sx,.14,1.2+sz,.1,.08,"z");box(cartonMat,cx,1,1.2,1.1,.7,.8,0,0,pick(kraft))}
+for(const cx of[41,48,55,62,69,76])for(const side of[-.55,.55])rackRow(cx+side,12,7,3,.72);
+undefined
 
 /* ================= zone content ================= */
 function bench(x,z,ry=0,o={}){const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
@@ -303,8 +303,8 @@ box(wireMat,-28,1,21,6,2,12);for(const x of[-30,-26])for(const z of[16,26])box(y
 for(let i=0;i<10;i++)rollCage(-74+(i%3)*3,12+Math.floor(i/3)*5,R(-.3,.3));
 for(const x of[-75,-69])for(const z of[10,20,30])bench(x,z,0,{boxes:2});
 // Z06 replenishment buffer.
-for(let i=0;i<12;i++)rollCage(35+(i%4)*10,-12+Math.floor(i/4)*5.5,R(-.15,.15));
-for(let i=0;i<8;i++)floorPallet(38+R(0,35),-2+R(-1,1),R(-.2,.2),{wrap:true});
+for(let i=0;i<12;i++)rollCage(42+(i%4)*9,-12+Math.floor(i/4)*5.5,R(-.15,.15));
+for(let i=0;i<8;i++)floorPallet(42+R(0,35),-2+R(-1,1),R(-.2,.2),{wrap:true});
 // Z04 AS/RS input/output conveyor and six aisles.
 conv(8,3,34,0);for(const a of AX)box(steel,a,.5,4,1.4,.9,1.4);
 for(const x of[-14,28])for(let i=0;i<3;i++)floorPallet(x+R(-1,1),-22+i*8,Math.PI/2,{wrap:true});
