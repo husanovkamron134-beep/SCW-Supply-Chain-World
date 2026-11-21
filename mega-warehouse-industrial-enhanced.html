@@ -395,7 +395,7 @@ function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);m
   mk(orangeSafety,.08,.12,1.15,.88,.4,0,g,false);mk(orangeSafety,.08,.12,1.15,-.88,.4,0,g,false);mkc(glowA,.12,.1,.7,.76,.4,g);
   const cb=mk(cartonMat.clone(),.9,.6,.8,0,1.0,0,g);cb.material.color.setHex(pick(kraft));g.position.y=.02;scene.add(g);return g}
 const agvs=[];[[-18,0],[-18,2.6],[-18,1.3],[-18,4.1],[32,.4],[32,3.1]].forEach(([lz,ph])=>agvs.push({g:agvModel(),lz,ph,dir:"x"}));
-[[-21,.8],[54,2.2],[67,1.6]].forEach(([lx,ph])=>agvs.push({g:agvModel(),lx,ph,dir:"z"}));
+[[-21,.8],[32,2.2],[78,1.6]].forEach(([lx,ph])=>agvs.push({g:agvModel(),lx,ph,dir:"z"}));
 function craneModel(){const g=new THREE.Group();mk(steel,.16,13,.16,-.5,6.6,0,g);mk(steel,.16,13,.16,.5,6.6,0,g);mk(steel,1.2,.28,.5,0,13.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
   const lift=new THREE.Group();g.add(lift);mk(rackOrange,1.1,.12,1.2,0,0,0,lift);mk(darkSteel,1.2,.5,.12,0,.3,-.55,lift);const pm=new THREE.Mesh(palletGeo,M(0xb48a58,.9,0));pm.rotation.y=Math.PI/2;pm.position.y=.08;lift.add(pm);mk(cartonMat.clone(),.93,.9,1.13,0,.7,0,lift);scene.add(g);return{g,lift}}
 const cranes=AX.map((a,i)=>({...craneModel(),x:a,ph:i*1.1}));
@@ -406,20 +406,20 @@ function workerModel(vest){const g=new THREE.Group(),skin=M(0xd9a47e,.8,0);const
   for(const sz of[-.3,.3])mk(M(0x2a3441,.9,0),.12,.55,.12,0,1.2,sz,g,false);
   scene.add(g);return{g,legs}}
 const workers=[];
-[[-71.5,-28,-71.5,-3,0xff7a1a],[-64.5,22,-64.5,46,0xf0e030],[-50.5,-28,-50.5,-3,0xff7a1a],[-24,-60,-24,-38,0xf0e030],[27.5,-60,27.5,-40,0xff7a1a],[-12,17,-12,25,0xf0e030],[44,28,66,28,0xff7a1a],[-60,66,-36,66,0xf0e030],[-66,-66,-38,-66,0xff7a1a]]
+[[-74,46,-40,46,0xff7a1a],[-70,14,-70,28,0xf0e030],[-50,-26,-50,-2,0xff7a1a],[-12,-62,-12,-38,0xf0e030],[30,-60,30,-38,0xff7a1a],[54,5,54,25,0xf0e030],[59,35,75,35,0xff7a1a],[18,62,42,62,0xf0e030],[48,58,72,58,0xff7a1a]]
  .forEach(([x0,z0,x1,z1,col],i)=>workers.push({...workerModel(col),x0,z0,x1,z1,ph:i*1.7,sp:.05+rnd()*.03}));
-for(const[x,z,col]of[[46,61,0xf0e030],[52,61,0xff7a1a],[58,67,0xf0e030]]){const w=workerModel(col);w.g.position.set(x,5.27,z+.8);w.g.rotation.y=Math.PI}
-for(const[x,z,col]of[[-10,-55,0xf0e030],[11,-47,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,0,z+1.1);w.g.rotation.y=Math.PI}
-for(const[x,z,col]of[[44,26.3,0xf0e030],[58,41.8,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,0,z);w.g.rotation.y=x<50?0:Math.PI}
+for(const[x,z,col]of[[-10,58,0xf0e030],[0,58,0xff7a1a],[10,62,0xf0e030]]){const w=workerModel(col);w.g.position.set(x,5.27,z+.8);w.g.rotation.y=Math.PI}
+for(const[x,z,col]of[[-12,-50,0xf0e030],[11,-48,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,0,z+1.1);w.g.rotation.y=Math.PI}
+for(const[x,z,col]of[[45,38,0xf0e030],[72,46,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,0,z);w.g.rotation.y=x<50?0:Math.PI}
 // parcels moving on conveyors
 const parcelGeo=UB,parcels=[];
 function pathOf(pts){const seg=[];let tot=0;for(let i=1;i<pts.length;i++){const l=pts[i].distanceTo(pts[i-1]);seg.push(l);tot+=l}return{pts,seg,tot}}
 function posOn(p,s,out){let d=s;for(let i=0;i<p.seg.length;i++){if(d<=p.seg[i]){out.lerpVectors(p.pts[i],p.pts[i+1],d/p.seg[i]);return out}d-=p.seg[i]}return out.copy(p.pts[p.pts.length-1])}
 function parcel(pathFn,speed,off){const m=new THREE.Mesh(parcelGeo,cartonMat.clone());m.material.color.setHex(pick(kraft));const sz=[R(.5,.8),R(.35,.55),R(.45,.7)];m.scale.set(...sz);m.castShadow=!mobile;scene.add(m);const o={m,pathFn,speed,s:off*30,sz,path:pathFn()};parcels.push(o)}
 const V=(x,y,z)=>new THREE.Vector3(x,y,z);
-for(let i=0;i<16;i++)parcel(()=>{const lx=pick(laneXs);return pathOf([V(-17,.95,30),V(lx,.95,30),V(lx,.95,45)])},1.7,i/16);
-for(let i=0;i<12;i++)parcel(()=>pathOf([V(40,.95,34),V(70,.95,34)]),1.5,i/12);
-for(let i=0;i<8;i++)parcel(()=>pathOf([V(-11,.95,3.5),V(11,.95,3.5)]),1.1,i/8);
+for(let i=0;i<16;i++)parcel(()=>{const lx=pick(laneXs);return pathOf([V(28,.95,37),V(lx,.95,37),V(lx,.95,48)])},1.7,i/16);
+for(let i=0;i<12;i++)parcel(()=>pathOf([V(58,.95,38),V(76,.95,38)]),1.5,i/12);
+for(let i=0;i<8;i++)parcel(()=>pathOf([V(-14,.95,-18),V(29,.95,-18)]),1.1,i/8);
 
 buildInstances();
 
