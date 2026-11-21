@@ -372,7 +372,7 @@ function makeZoneLabel(z){
  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=aniso;
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false}));
  sp.position.set(z.x,z.id==="HIGH_BAY"?14.2:(z.id==="CONTROL"?7.2:8.5),z.z);
- sp.scale.set(Math.max(13,z.width*.52),Math.max(2.8,z.width*.11),1);sp.renderOrder=20;scene.add(sp);labels.push(sp);
+ sp.scale.set(Math.max(13,z.width*.52),Math.max(2.8,z.width*.11),1);sp.userData.baseScale=sp.scale.clone();sp.renderOrder=20;scene.add(sp);labels.push(sp);
 }
 zones.forEach(makeZoneLabel);
 /* ================= vehicles, people, cranes (animated) ================= */
@@ -608,6 +608,7 @@ const elementGuide={
 "Yo‘l belgisi":["Yo‘l belgisi","Harakat yo‘nalishi va hudud chegaralarini ko‘rsatadi."],
 "Xavfsizlik yo‘lagi":["Piyodalar xavfsizlik yo‘lagi","Xodimlar yurishi uchun ajratilgan hududni belgilaydi."],
 "Rezina g‘ildirak":["G‘ildirak","Forklift, AGV yoki transport vositasining harakatlanish qismi."],
+"WMS video wall":["Jonli WMS video-devor","Kirish-chiqish yuk oqimi, bandlik foizlari va sovuq ombor holatini kuzatadi."],
 "Cold Storage roll door":["Muzlatkich tezkor eshigi","Yaqinlashganda avtomatik ko‘tariladi; ochilganda sovuq kamera harorati vaqtincha ko‘tariladi."],
 "Cold Storage temperature display":["Muzlatkich harorat tablosi","Harorat, namlik va FEFO saqlash rejimini jonli ko‘rsatadi."],
 "Dock leveler ramp":["Gidravlik dock rampasi","Fura kuzovi va ombor polining balandligini bog‘lovchi yuklash platformasi."],
@@ -766,7 +767,7 @@ function animate(ms){
     if(demoDistance>=demoRoute.tot){demoRunning=false;demoStatus.textContent="Yuk jo‘natildi · Jarayon yakunlandi · 100%";demoButton.textContent="Quti ↻";followBox=false}
   }
   if(goal){const ease=1-Math.exp(-dt*5.5);camera.position.lerp(goal.pos,ease);controls.target.lerp(goal.target,ease);if(camera.position.distanceTo(goal.pos)<.08&&controls.target.distanceTo(goal.target)<.05){camera.position.copy(goal.pos);controls.target.copy(goal.target);goal=null}}
-  roofGroup.visible=firstPerson?false:camera.position.y<H+1.5;
+  roofGroup.visible=firstPerson?false:camera.position.y<H+1.5;for(const sp of labels){const b=sp.userData.baseScale,d=camera.position.distanceTo(sp.position),f=THREE.MathUtils.clamp(d/110,.8,3.2);sp.scale.set(b.x*f,b.y*f,1)}
   /* Fixed screen-space zone labels; do not rescale them with camera distance. */
   if(!firstPerson)controls.update();drawMinimap();composer?composer.render():renderer.render(scene,camera);
   if(first){first=false;$("#loading").classList.add("done");window.__scwReady=true;window.__scwStats={calls:renderer.info.render.calls,tris:renderer.info.render.triangles}}
