@@ -42,7 +42,12 @@ function complete(taskId){
  if(t.kind==="PUTAWAY"){
   SCWDomain.record({type:"TRANSFER",sku:t.sku,qty:t.qty,lot:t.lot,from:t.from,to:t.to,reference:t.id,note:"WMS putaway"});
  }else if(t.kind==="PICK"){
+  const ops=window.SCWOperations;if(!ops)throw Error("Buyurtmalar moduli yuklanmagan.");
+  const order=ops.snapshot().salesOrders.find(o=>o.id===t.reference);if(!order||order.status!=="NEW")throw Error("WMS bilan bog'langan buyurtma endi NEW holatda emas.");
+  const d=SCWDomain.snapshot();
+  t.lines.forEach(line=>{const b=d.balances.find(x=>x.sku===t.sku&&x.location===line.from&&x.lot===line.lot);if(!b||b.qty<line.qty)throw Error("Picking manbasida zaxira yetarli emas: "+line.from+" / "+line.lot)});
   t.lines.forEach(line=>SCWDomain.record({type:"TRANSFER",sku:t.sku,qty:line.qty,lot:line.lot,from:line.from,to:"DSP-01",reference:t.id,note:"WMS picking · "+t.reference}));
+  ops.completeWarehousePick({id:t.reference,lines:t.lines});
  }else throw Error("Topshiriq turi tanilmadi.");
  t.status="DONE";t.completedAt=new Date().toISOString();state.completed++;save();return clone(t);
 }

@@ -57,10 +57,21 @@ function packOrder(input){
 function dispatchOrder(input){
  const o=state.salesOrders.find(x=>x.id===input.id);if(!o)throw Error("Buyurtma topilmadi.");if(o.status!=="PACKED")throw Error("Jo'natishdan oldin qadoqlash bajarilishi kerak.");
  const ref=String(input.reference||o.id).trim();
- SCWDomain.record({type:"ISSUE",sku:o.sku,qty:o.qty,lot:o.pick.lot,from:o.pick.location,reference:ref,note:"Mijozga jo'natildi: "+o.customer});
+ const pickLines=Array.isArray(o.pick.lines)&&o.pick.lines.length?o.pick.lines:[{location:o.pick.location,lot:o.pick.lot,qty:o.qty}];
+ pickLines.forEach(line=>SCWDomain.record({type:"ISSUE",sku:o.sku,qty:line.qty,lot:line.lot,from:line.location||o.pick.location||"DSP-01",reference:ref,note:"Mijozga jo'natildi: "+o.customer}));
  o.dispatch={carrier:requireText(input.carrier||"O'quv transporti","Tashuvchi"),trackingRef:ref,at:new Date().toISOString()};o.status="DISPATCHED";save();return clone(o)
+}
+function completeWarehousePick(input){
+ const o=state.salesOrders.find(x=>x.id===input.id);if(!o)throw Error("Mijoz buyurtmasi topilmadi.");
+ if(o.status!=="NEW")throw Error("WMS picking faqat yangi buyurtmaga bajariladi.");
+ const lines=Array.isArray(input.lines)?input.lines.map(x=>({location:"DSP-01",lot:requireText(x.lot,"LOT"),qty:positive(x.qty)})):[];
+ if(!lines.length||lines.reduce((n,x)=>n+x.qty,0)!==o.qty)throw Error("WMS picking miqdori buyurtma miqdoriga teng bo'lishi kerak.");
+ const d=SCWDomain.snapshot();
+ lines.forEach(line=>{const b=d.balances.find(x=>x.sku===o.sku&&x.location==="DSP-01"&&x.lot===line.lot);if(!b||b.qty<line.qty)throw Error("Jo'natish zonasida LOT zaxirasi yetarli emas: "+line.lot)});
+ o.pick={location:"DSP-01",lot:lines.map(x=>x.lot).join(", "),lines,qty:o.qty,at:new Date().toISOString(),method:"WMS"};
+ o.status="PICKED";save();return clone(o)
 }
 function snapshot(){return clone(state)}
 function reset(){state=clone(seed);save();return snapshot()}
-window.SCWOperations={snapshot,createPurchaseOrder,receivePurchaseOrder,cancelPurchaseOrder,createSalesOrder,pickOrder,packOrder,dispatchOrder,reset}
+window.SCWOperations={snapshot,createPurchaseOrder,receivePurchaseOrder,cancelPurchaseOrder,createSalesOrder,pickOrder,completeWarehousePick,packOrder,dispatchOrder,reset}
 })();

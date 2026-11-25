@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08111d">
+<title>SCW · Browser Runtime Test</title>
+<style>
+:root{color-scheme:dark;--bg:#08111d;--panel:#101d2d;--line:#294057;--text:#edf5ff;--muted:#91a8bf;--blue:#63b5ff;--green:#63d6a5;--red:#ff858c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#193754,transparent 48%),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;padding:20px}
+main{max-width:900px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px}.brand{font-weight:800;letter-spacing:.5px}.brand small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:4px}
+h1{font-size:clamp(22px,4vw,32px);margin:24px 0 8px}.muted{color:var(--muted);font-size:13px;line-height:1.6}
+.panel{margin-top:18px;background:#0d1928;border:1px solid var(--line);border-radius:16px;padding:16px}
+button,a{display:inline-flex;align-items:center;justify-content:center;border:1px solid #3b6386;background:#173654;color:#eef7ff;border-radius:10px;padding:11px 14px;font-weight:700;text-decoration:none;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.status{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#101f32;font-size:12px}
+.logs{display:grid;gap:7px;margin-top:12px}.log{padding:10px 11px;border:1px solid #263d55;border-radius:9px;background:#0a1523;font-size:12px;line-height:1.5}.pass{color:var(--green)}.fail{color:var(--red)}.foot{margin-top:16px;color:var(--muted);font-size:11px;line-height:1.6}
+@media(max-width:600px){body{padding:12px}.panel{padding:12px}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="brand">SCW · AUTOMATED TEST LAB<small>Browser-based integration check · isolated memory</small></div><a href="mega-warehouse-5xl-ops.html">Mega Warehouse 5XL</a></header>
+<h1>12 ta modulni real brauzerda tekshirish</h1>
+<p class="muted">Test barcha modullarni vaqtinchalik xotira bilan ishga tushiradi va bitta namunaviy yukni qabul qilishdan qaytarishgacha olib boradi. Asosiy saytning localStorage ma'lumotlariga tegmaydi.</p>
+<section class="panel">
+<button id="run">To‘liq testni boshlash</button>
+<div class="status" id="status">Tayyor. Test tugmasini bosing.</div>
+<div class="logs" id="logs"></div>
+<p class="foot">Test yakunida modullar teskari tartibda to‘xtatiladi. Bu sahifa test ma'lumotlarini serverga yubormaydi.</p>
+</section>
+</main>
+<script>
+const scriptList=[
+ "src/core/shared_core.js","src/domain.js","src/operations.js","src/warehouse_sim.js",
+ "src/adapters/inventory_adapter.js","src/adapters/wms_adapter.js","src/adapters/operations_adapter.js",
+ "src/modules/inbound/inbound.js","src/modules/quality_control/quality_control.js",
+ "src/modules/reserve_storage/reserve_storage.js","src/modules/high_bay_asrs/high_bay_asrs.js",
+ "src/modules/picking/picking.js","src/modules/replenishment/replenishment.js",
+ "src/modules/sorting/sorting.js","src/modules/packing/packing.js",
+ "src/modules/outbound_staging/outbound_staging.js","src/modules/dispatch/dispatch.js",
+ "src/modules/returns/returns.js","src/modules/control_center/control_center.js","src/core/module_bootstrap.js"
+];
+const logs=document.querySelector("#logs"),status=document.querySelector("#status"),button=document.querySelector("#run");
+function log(message,ok=true){const row=document.createElement("div");row.className="log "+(ok?"pass":"fail");row.textContent=(ok?"PASS · ":"FAIL · ")+message;logs.appendChild(row)}
+function check(value,message){if(!value)throw new Error(message);log(message)}
+function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement("script");script.src=src;script.onload=resolve;script.onerror=()=>reject(new Error("Script yuklanmadi: "+src));document.body.appendChild(script)})}
+async function run(){
+ button.disabled=true;logs.textContent="";status.textContent="Izolyatsiyalangan test muhiti tayyorlanmoqda...";
+ let started=false;
+ try{
+  const memory=new Map();
+  const isolatedStorage={getItem:key=>memory.has(key)?memory.get(key):null,setItem:(key,value)=>memory.set(key,String(value)),removeItem:key=>memory.delete(key)};
+  Object.defineProperty(window,"localStorage",{configurable:true,value:isolatedStorage});
+  for(const src of scriptList)await loadScript(src);
+  log("20 ta Core / legacy / adapter / module script yuklandi");
+  const result=await SCWBootstrap.startAll();started=true;
+  check(result.started.length===15,"3 ta adapter va 12 ta operatsion modul ishga tushdi");
+  const po=SCWOperationsAdapter.createPurchaseOrder({supplierId:"SUP-001",sku:"SCW-001",qty:10,unitCost:1,currency:"USD"});
+  SCWInbound.receive({id:po.id,qty:10,lot:"LOT-TEST-01",location:"RCV-01"});
+  check(SCWDomain.snapshot().balances.some(x=>x.sku==="SCW-001"&&x.lot==="LOT-TEST-01"&&x.location==="RCV-01"&&x.qty===10),"Inbound 10 dona LOTni inventarga bir marta qabul qildi");
+  const qc=SCWQualityControl.inspectInbound({purchaseOrderId:po.id,receiptIndex:0,qty:10,decision:"ACCEPTED"});
+  check(qc.decision==="ACCEPTED","QC qabul qilingan LOTni tasdiqladi");
+  const reserveTask=SCWReserveStorage.snapshot().tasks.find(x=>x.status==="OPEN");
+  check(!!reserveTask,"QC tasdiqlagan yuk uchun Reserve Storage topshirig‘i yaratildi");
+  SCWReserveStorage.complete(reserveTask.id);
+  const asrsStore=SCWHBASRS.createPutaway({sku:"SCW-001",lot:"LOT-TEST-01",from:reserveTask.to,qty:10});
+  asrsStore.forEach(x=>SCWHBASRS.complete(x.id));
+  check(SCWHBASRS.snapshot().metrics.storedUnits===10,"AS/RS 10 donani High-Bay biniga joylashtirdi");
+  const replen=SCWReplenishment.request({sku:"SCW-001",lot:"LOT-TEST-01",qty:8});
+  check(replen.waiting.length===1,"Replenishment High-Bay'dan AS/RS retrieval yaratdi");
+  replen.waiting[0].asrsTaskIds.forEach(id=>SCWHBASRS.complete(id));
+  SCWReplenishment.refresh();
+  check(SCWReplenishment.snapshot().metrics.waitingASRS===0,"AS/RS retrieval tugagach replenishment tasdiqlandi");
+  const order=SCWOperationsAdapter.createSalesOrder({sku:"SCW-001",qty:8,customer:"SCW Test Customer"});
+  const pick=SCWPicking.snapshot().tasks.find(x=>x.orderId===order.id);
+  check(!!pick,"Sales Order uchun Picking topshirig‘i yaratildi");
+  SCWPicking.complete(pick.id);
+  const sort=SCWSorting.snapshot().tasks.find(x=>x.orderId===order.id);
+  check(!!sort,"Picking tugagach Sorting topshirig‘i yaratildi");
+  SCWSorting.complete(sort.id);
+  const pack=SCWPacking.snapshot().tasks.find(x=>x.orderId===order.id);
+  check(!!pack,"Sorting tugagach Packing topshirig‘i yaratildi");
+  SCWPacking.complete(pack.id,{packageType:"Test carton",reference:"PK-TEST-01"});
+  const stage=SCWOutboundStaging.snapshot().tasks.find(x=>x.orderId===order.id);
+  check(!!stage,"Packing tugagach Outbound Staging topshirig‘i yaratildi");
+  SCWOutboundStaging.complete(stage.id);
+  const dispatch=SCWDispatch.snapshot().tasks.find(x=>x.orderId===order.id);
+  check(!!dispatch,"Staging tugagach Dispatch topshirig‘i yaratildi");
+  const shipped=SCWDispatch.complete(dispatch.id,{carrier:"SCW Test Carrier",reference:"TRACK-TEST-01"});
+  check(shipped.order.status==="DISPATCHED","Dispatch buyurtmani jo‘natdi va inventarni chiqim qildi");
+  const returned=SCWReturns.receive({orderId:order.id,qty:2,lot:"LOT-TEST-01",reason:"Browser test"});
+  const returnQC=SCWQualityControl.inspectReturn({returnId:returned.id,sku:returned.sku,lot:returned.lot,qty:2,decision:"ACCEPTED",inspector:"Browser test"});
+  check(returnQC.decision==="ACCEPTED"&&SCWReturns.get(returned.id).status==="QC_COMPLETE","Returns va qaytarilgan mahsulot QC tekshiruvi yakunlandi");
+  const dashboard=SCWControlCenter.snapshot();
+  check(dashboard.orders.metrics.dispatched===1&&dashboard.returns.metrics.completed===1,"Control Center buyurtma va qaytarish KPIlarini ko‘rsatdi");
+  status.textContent="MUVAFFAQIYAT · 12 modul va to‘liq namuna workflow tekshirildi.";
+  log("End-to-end workflow muvaffaqiyatli yakunlandi");
+ }catch(error){
+  status.textContent="TESTDA XATOLIK · "+error.message;log(error.stack||error.message,false);
+ }finally{
+  if(started){try{const result=await SCWBootstrap.stopAll();log("Barcha modullar to‘xtatildi: "+result.core.runningModules+" faol modul qoldi",result.core.runningModules===0)}catch(error){log("Modullarni to‘xtatishda xatolik: "+error.message,false)}}
+  button.disabled=false;
+ }
+}
+button.addEventListener("click",run);
+</script>
+</body></html>

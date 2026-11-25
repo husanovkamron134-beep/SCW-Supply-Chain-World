@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>SCW Industrial Mega Warehouse</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111e;color:#e8f2fb;font-family:Inter,Arial,sans-serif}
+.app{height:100%;display:flex;flex-direction:column}
+.top{height:72px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px;background:#0b1725;border-bottom:1px solid #263c51;z-index:3}
+.brand{display:flex;gap:12px;align-items:center;min-width:0}
+.logo{width:44px;height:44px;flex:none;border-radius:12px;background:linear-gradient(135deg,#56b9ff,#2467a5);display:grid;place-items:center;font-weight:900}
+.brand strong{display:block;font-size:14px;letter-spacing:.07em}
+.brand small{color:#91a8bc}
+.btn{border:1px solid #38536d;border-radius:12px;background:#13283d;color:#e8f2fb;padding:10px 14px;font-weight:700;cursor:pointer}
+.btn:active{background:#1c3b57}
+.main{position:relative;flex:1;min-height:0}
+canvas#scene{width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;top:12px;left:14px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.chip{background:#0b1a2bdc;border:1px solid #38536d;border-radius:22px;padding:9px 13px;font-size:12px;color:#b6c9d9}
+.chip b{color:#fff;margin-left:6px}
+.panel{position:absolute;right:14px;top:14px;width:min(340px,calc(100% - 28px));max-height:calc(100% - 28px);overflow:auto;background:#0b1928f2;border:1px solid #38536d;border-radius:18px;padding:15px;backdrop-filter:blur(12px)}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.eyebrow{color:#61d7ce;font-size:11px;letter-spacing:.16em;font-weight:900;margin:5px 0 9px}
+.panel h1{font-size:20px;margin:0 0 7px}
+.muted{font-size:12px;color:#91a8bc;line-height:1.5}
+.tg{flex:none;border:1px solid #38536d;border-radius:10px;background:#13283d;color:#cfe3f3;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.panel.collapsed .body{display:none}
+#insp{position:absolute;left:14px;bottom:214px;width:min(310px,calc(100% - 28px));max-height:42%;overflow:auto;display:none;background:#0b1928f5;border:1px solid #38536d;border-radius:14px;padding:12px;backdrop-filter:blur(10px);z-index:2;overscroll-behavior:contain}
+#insp.on{display:block}
+#insp table{width:100%;border-collapse:collapse;font-size:12px}
+#insp td{padding:5px 0;border-top:1px solid #213a50;vertical-align:top}
+#insp td:first-child{color:#91a8bc;width:46%}
+#insp td:last-child{color:#fff;font-weight:700;text-align:right}
+#insp .tag{display:inline-block;font-size:10px;font-weight:900;letter-spacing:.12em;color:#07111e;background:#61d7ce;border-radius:6px;padding:2px 7px;margin-bottom:5px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:14px 0}
+.stat{background:#11263a;border:1px solid #2d455c;border-radius:12px;padding:10px}
+.stat small{display:block;color:#91a8bc}
+.stat strong{display:block;font-size:18px;margin-top:4px}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.zone{background:#11263a;color:#dce9f4;border:1px solid #2d455c;border-radius:10px;padding:9px;text-align:left;font-size:11px;min-height:48px;cursor:pointer}
+.zone b{display:block;color:#8cc9f6;margin-bottom:3px}
+.zone.selected{border-color:#5cbcff;background:#173b59}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+#mini{position:absolute;left:14px;bottom:14px;width:200px;height:188px;background:#07111ee6;border:1px solid #38536d;border-radius:12px;touch-action:none;cursor:pointer}
+.help{position:absolute;left:226px;bottom:14px;max-width:250px;background:#0b1928dd;border:1px solid #38536d;border-radius:12px;padding:10px 12px;font-size:11px;color:#b4c8d9;pointer-events:none}
+.notice{position:absolute;left:50%;top:15px;transform:translateX(-50%);background:#12334b;padding:8px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.notice.show{opacity:1}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:#07111e;color:#91a8bc;font-size:13px;letter-spacing:.08em;z-index:5;transition:opacity .5s}
+.loading.done{opacity:0;pointer-events:none}
+.dbtn{position:absolute;left:14px;top:56px;z-index:2;background:#13283dee;padding:9px 13px;font-size:12px}
+.dbtn.on{background:#7a2a2a;border-color:#d46a6a}
+#joy{position:absolute;left:16px;bottom:120px;width:132px;height:132px;border-radius:50%;background:#0b1928aa;border:2px solid #38536d;touch-action:none;display:none;z-index:2}
+#joyKnob{position:absolute;left:41px;top:41px;width:50px;height:50px;border-radius:50%;background:#61d7cecc;border:2px solid #d9fffb;pointer-events:none}
+.acts{position:absolute;right:14px;bottom:120px;display:none;flex-direction:column;gap:7px;z-index:2}
+.acts .btn{padding:11px 14px;font-size:12px;background:#13283dee;touch-action:none;user-select:none;-webkit-user-select:none}
+.acts .fk{display:none}
+#pedal{position:absolute;right:14px;bottom:118px;width:84px;height:118px;border-radius:18px 18px 28px 28px;border:2px solid #d46a6a;background:linear-gradient(#3a1d1d,#7a2a2a);color:#fff;font-weight:900;font-size:13px;letter-spacing:.08em;display:none;z-index:2;touch-action:none;user-select:none;-webkit-user-select:none}
+#pedal.on{background:linear-gradient(#a53a2a,#ff6a3a);box-shadow:0 0 18px #ff6a3a}
+#spd{position:absolute;left:50%;bottom:128px;transform:translateX(-50%);display:none;min-width:92px;text-align:center;background:#0b1928e6;border:1px solid #38536d;border-radius:14px;padding:6px 10px;z-index:2;pointer-events:none}
+#spd b{display:block;font-size:26px;line-height:1}
+#spd small{color:#91a8bc;font-size:10px;letter-spacing:.1em}
+#spd i{display:block;height:5px;border-radius:3px;background:#61d7ce;margin-top:5px;width:0}
+body.driving .acts{display:flex}
+body.indrive .acts{bottom:250px}
+body.indrive #pedal,body.indrive #spd{display:block}
+body.indrive .acts .fk{display:block}
+@media(pointer:coarse){body.driving #joy{display:block}}
+@media(max-width:700px){
+.top{height:58px;padding:8px 10px}
+.brand strong{font-size:11px}.brand small{display:none}.logo{width:38px;height:38px}
+.btn{padding:8px 10px;font-size:12px}
+.hud{top:8px;left:8px}.chip{padding:7px 9px;font-size:10px}.chip:nth-child(n+2){display:none}
+#mini{left:auto;right:8px;top:8px;bottom:auto;width:112px;height:105px;border-radius:9px}
+.panel{top:auto;bottom:8px;left:8px;right:8px;width:auto;max-height:55%;padding:11px;border-radius:15px}
+.eyebrow{margin:2px 0 5px;font-size:10px}
+.panel h1{font-size:16px;margin:0 0 4px}
+.stats{grid-template-columns:repeat(4,1fr);margin:9px 0}.stat{padding:7px}.stat strong{font-size:14px}
+.zones{grid-template-columns:repeat(3,1fr)}.zone{padding:7px;min-height:42px;font-size:10px}
+.help{display:none}
+.dbtn{left:176px;top:8px}
+#insp{left:8px;right:128px;top:46px;bottom:auto;width:auto;max-height:36%}
+#joy{bottom:118px}.acts{bottom:118px}}
+@media(max-height:520px) and (min-width:701px){
+.top{height:50px;padding:6px 12px}.logo{width:36px;height:36px}.brand small{display:none}
+.panel{width:250px;max-height:calc(100% - 16px);top:8px;right:8px;padding:11px}
+.panel h1{font-size:16px}.stats{grid-template-columns:repeat(4,1fr);margin:9px 0}.stat{padding:6px}.stat strong{font-size:13px}
+.zones{grid-template-columns:repeat(3,1fr)}.zone{min-height:38px;padding:6px;font-size:10px}
+#mini{width:140px;height:131px;left:auto;right:8px;bottom:8px}
+#insp{left:8px;top:92px;bottom:auto;width:230px;max-height:calc(100% - 100px)}
+.dbtn{left:14px;top:50px}.help{display:none}
+#joy{left:16px;bottom:16px}.acts{right:160px;bottom:16px;flex-direction:row}
+body.indrive .acts{bottom:90px}#pedal{right:160px;bottom:16px;width:120px;height:64px;border-radius:16px}#spd{bottom:16px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
+<body><div class="app">
+<header class="top"><div class="brand"><div class="logo">SCW</div><div><strong>INDUSTRIAL MEGA WAREHOUSE</strong><small>Process-flow digital twin · 12 operational zones</small></div></div><button class="btn" id="reset">Kamerani tiklash</button></header>
+<main class="main"><canvas id="scene"></canvas><div class="loading" id="loading">OMBOR YUKLANMOQDA…</div>
+<div class="hud"><div class="chip">BINO <b>160 × 150 m</b></div><div class="chip">ZONALAR <b>12</b></div><div class="chip">JOYLASHUV <b>U-FLOW</b></div></div>
+<canvas id="mini" width="400" height="376"></canvas>
+<button class="btn dbtn" id="drive">🚶 Ishchi</button><div id="insp"></div>
+<div id="joy"><div id="joyKnob"></div></div>
+<div class="acts"><button class="btn" id="act1">🚜 Minish (E)</button><button class="btn fk" id="actUp">Vilka ▲</button><button class="btn fk" id="actDn">Vilka ▼</button><button class="btn fk" id="actLoad">Yuk (G)</button></div>
+<button id="pedal">GAZ<br>▲▲</button><div id="spd"><small>TEZLIK</small><b id="spdv">0</b><small>km/h</small><i id="spdb"></i></div>
+<aside class="panel" id="panel">
+<div class="sheet-head"><div><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">U-oqimli 12 zonali logistika markazi.</div></div><button class="tg" id="toggle">Zonalar ▲</button></div>
+<div class="body"><div class="stats"><div class="stat"><small>Maydon</small><strong id="area">24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Muzlatkich</small><strong id="coldT" style="color:#7fd8ff">-18.4°C</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
+<div class="eyebrow">ZONANI TANLASH</div><div class="zones" id="zoneList"></div>
+<div class="controls"><button class="btn" id="top">Yuqoridan</button><button class="btn" id="fit">Butun bino</button><button class="btn" id="inside">Ichkarida</button><button class="btn" id="fp">Yuk ko‘zi</button><button class="btn" id="labels">Yorliqlar: ON</button><button class="btn" id="clear">Tozalash</button></div></div>
+</aside>
+<div class="help">Bosing: zona/jihoz haqida · 🚶 Ishchi: WASD yurish, E — forklift, R/F — vilka.</div><div class="notice" id="notice">Ko‘rinish yangilandi</div></main></div>
+<script src="src/core/industrial_layout.js"></script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {RoomEnvironment} from "three/addons/environments/RoomEnvironment.js";
+import {EffectComposer} from "three/addons/postprocessing/EffectComposer.js";
+import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
+import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
+import {OutputPass} from "three/addons/postprocessing/OutputPass.js";
+import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+const L=window.SCWIndustrialLayout;if(!L)throw Error("Industrial layout missing");
+const $=s=>document.querySelector(s);
+const W=L.BUILDING.width,D=L.BUILDING.depth,H=L.BUILDING.wallHeight,hw=W/2,hd=D/2;
+const canvas=$("#scene"),mobile=Math.min(innerWidth,innerHeight)<=700;
+let seed=20261119;const rnd=()=>{seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296};
+const R=(a,b)=>a+(b-a)*rnd(),pick=a=>a[Math.floor(rnd()*a.length)];
+/* ================= renderer, scene, camera ================= */
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?2:1.75));
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x14263a,320,1200);
+const camera=new THREE.PerspectiveCamera(mobile?58:46,1,.3,2500);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.08;controls.minDistance=2.5;controls.zoomSpeed=.8;controls.screenSpacePanning=true;controls.maxDistance=1000;controls.maxPolarAngle=Math.PI*.495;
+const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
+{const c=document.createElement("canvas");c.width=8;c.height=512;const q=c.getContext("2d"),g=q.createLinearGradient(0,0,0,512);g.addColorStop(0,"#0b1624");g.addColorStop(.55,"#1d3449");g.addColorStop(1,"#35566f");q.fillStyle=g;q.fillRect(0,0,8,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;scene.background=t}
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x3a3f45,.55));
+const sun=new THREE.DirectionalLight(0xfff0d8,2.2);sun.position.set(-70,120,60);sun.castShadow=true;
+sun.shadow.mapSize.set(mobile?2048:4096,mobile?2048:4096);Object.assign(sun.shadow.camera,{left:-125,right:125,top:125,bottom:-125,near:10,far:380});sun.shadow.bias=-.0004;sun.shadow.normalBias=.06;scene.add(sun);
+scene.add(new THREE.DirectionalLight(0x7fb0ff,.6).translateX(90).translateY(50).translateZ(-90));
+let composer=null;
+if(!mobile){const rt=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4});composer=new EffectComposer(renderer,rt);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(512,512),.32,.55,.9));composer.addPass(new OutputPass())}
+/* ================= procedural textures ================= */
+const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+function ctex(w,h,draw,rx=1,ry=1){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=aniso;t.colorSpace=THREE.SRGBColorSpace;return t}
+const concreteTex=ctex(1024,1024,(q,w,h)=>{
+q.fillStyle="#7d838a";q.fillRect(0,0,w,h);
+for(let i=0;i<9000;i++){q.fillStyle=rnd()<.5?`rgba(255,255,255,${.015+rnd()*.04})`:`rgba(0,0,0,${.02+rnd()*.05})`;const s=1+rnd()*4;q.fillRect(rnd()*w,rnd()*h,s,s)}
+for(let i=0;i<14;i++){const x=rnd()*w,y=rnd()*h,r=90+rnd()*160,g=q.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,"rgba(0,0,0,.035)");g.addColorStop(1,"rgba(0,0,0,0)");q.fillStyle=g;q.fillRect(x-r,y-r,r*2,r*2)}
+for(let i=0;i<60;i++){q.strokeStyle=`rgba(20,22,26,${.03+rnd()*.05})`;q.lineWidth=1+rnd()*2;q.beginPath();const x=rnd()*w,y=rnd()*h;q.moveTo(x,y);q.lineTo(x+R(-120,120),y+R(-120,120));q.stroke()}
+q.strokeStyle="rgba(12,16,20,.55)";q.lineWidth=2;for(let i=0;i<=3;i++){const p=i*w/3;q.beginPath();q.moveTo(p,0);q.lineTo(p,h);q.stroke();q.beginPath();q.moveTo(0,p);q.lineTo(w,p);q.stroke()}
+},W/20,D/20);
+function metalTex(rx,ry=1){return ctex(256,256,(q,w,h)=>{
+for(let x=0;x<w;x+=16){const g=q.createLinearGradient(x,0,x+16,0);g.addColorStop(0,"#8896a3");g.addColorStop(.45,"#d2dce5");g.addColorStop(1,"#74828f");q.fillStyle=g;q.fillRect(x,0,16,h)}
+const g=q.createLinearGradient(0,0,0,h);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(.62,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(8,12,16,.5)");q.fillStyle=g;q.fillRect(0,0,w,h);
+for(let i=0;i<420;i++){q.fillStyle=`rgba(0,0,0,${rnd()*.05})`;q.fillRect(rnd()*w,rnd()*h,1+rnd()*2,6+rnd()*34)}},rx,ry)}
+const roofTex=ctex(512,512,(q,w,h)=>{q.fillStyle="#56616b";q.fillRect(0,0,w,h);for(let i=0;i<3000;i++){q.fillStyle=`rgba(${rnd()<.5?255:0},${rnd()<.5?255:0},${rnd()<.5?255:0},.03)`;q.fillRect(rnd()*w,rnd()*h,2,2)}q.strokeStyle="rgba(0,0,0,.35)";q.lineWidth=3;for(let x=0;x<=w;x+=64){q.beginPath();q.moveTo(x,0);q.lineTo(x,h);q.stroke()}},W/8,D/8);
+const cartonTex=ctex(256,256,(q,w,h)=>{
+q.fillStyle="#d9bc8c";q.fillRect(0,0,w,h);
+for(let j=0;j<2;j++)for(let i=0;i<2;i++){const x=i*128,y=j*128;
+q.fillStyle=`rgba(${rnd()<.5?"255,240,210":"90,60,30"},${.05+rnd()*.08})`;q.fillRect(x,y,128,128);
+q.strokeStyle="rgba(80,52,24,.8)";q.lineWidth=4;q.strokeRect(x+2,y+2,124,124);
+q.fillStyle="rgba(238,226,196,.7)";q.fillRect(x+56,y,16,128);
+if(rnd()<.8){q.fillStyle="#f4f4f0";q.fillRect(x+80,y+78,40,32);q.fillStyle="#222";for(let k=0;k<9;k++)q.fillRect(x+84+k*4,y+96,rnd()<.5?1:2,10);q.fillRect(x+84,y+82,26,3)}
+if(rnd()<.3){q.fillStyle="rgba(200,40,30,.8)";q.fillRect(x+12,y+14,26,8)}}
+for(let i=0;i<1500;i++){q.fillStyle=`rgba(0,0,0,${rnd()*.06})`;q.fillRect(rnd()*w,rnd()*h,2,2)}});
+const poolTex=ctex(128,128,(q,w,h)=>{const g=q.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,"rgba(255,244,225,.55)");g.addColorStop(.5,"rgba(255,240,215,.18)");g.addColorStop(1,"rgba(255,240,215,0)");q.fillStyle=g;q.fillRect(0,0,w,h)});
+/* ================= live WMS state + screen textures ================= */
+const ZN=[["Z01","INBOUND"],["Z02","QC"],["Z03","RESERVE"],["Z04","AS/RS"],["Z05","PICKING"],["Z06","REPLEN"],["Z07","SORTING"],["Z08","PACKING"],["Z09","OUTBOUND"],["Z10","DISPATCH"],["Z11","RETURNS"],["Z12","CONTROL"]];
+const wms={inbound:1420,outbound:1285,coldT:-18.4,coldH:78,coldOpen:0,util:[72,64,88,91,76,58,69,73,61,67,34,45],hist:[],tick:0};
+for(let i=0;i<24;i++)wms.hist.push({i:40+rnd()*50,o:35+rnd()*50});
+function stepWMS(){wms.tick++;wms.inbound+=Math.floor(R(1,6));wms.outbound+=Math.floor(R(1,5));
+wms.util=wms.util.map((u,i)=>Math.max(20,Math.min(98,u+R(-2.2,2.2))));wms.hist.push({i:40+rnd()*50,o:35+rnd()*50});wms.hist.shift()}
+const SCR_W=1024,SCR_H=512;
+function mkScreen(w,h){const c=document.createElement("canvas");c.width=w;c.height=h;const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return{c,q:c.getContext("2d"),t}}
+const dashScr=mkScreen(SCR_W,SCR_H),dashTex=dashScr.t;
+const deskScr=mkScreen(256,160);
+function fmt(n){return Math.round(n).toLocaleString("en-US")}
+function drawDash(){const q=dashScr.q,w=SCR_W,h=SCR_H;
+q.fillStyle="#061a28";q.fillRect(0,0,w,h);q.fillStyle="#0c3550";q.fillRect(0,0,w,46);
+q.fillStyle="#7fe0ff";q.font="bold 26px Arial";q.textAlign="left";q.fillText("SCW CONTROL CENTER · LIVE WMS",18,32);
+q.fillStyle="#3ddc97";q.beginPath();q.arc(w-30,23,8,0,7);q.fill();q.fillStyle="#cfe9f7";q.font="16px Arial";q.textAlign="right";q.fillText(new Date().toLocaleTimeString("en-GB"),w-48,29);
+const card=(x,y,cw,ch,label,val,col)=>{q.fillStyle="#0b2a3f";q.fillRect(x,y,cw,ch);q.fillStyle="#7e9fb5";q.font="15px Arial";q.textAlign="left";q.fillText(label,x+12,y+24);q.fillStyle=col;q.font="bold 30px Arial";q.fillText(val,x+12,y+ch-14)};
+card(14,58,300,70,"INBOUND","+"+fmt(wms.inbound)+" PLT","#3ddc97");card(324,58,300,70,"OUTBOUND","-"+fmt(wms.outbound)+" PLT","#ffb347");card(634,58,376,70,"COLD STORAGE"+(wms.coldOpen>.2?" · DOOR OPEN":""),"TEMP "+wms.coldT.toFixed(1)+"°C","#7fd8ff");
+q.fillStyle="#0b2a3f";q.fillRect(14,140,490,360);q.fillStyle="#7e9fb5";q.font="15px Arial";q.fillText("ZONA BANDLIGI (%)",26,162);
+for(let i=0;i<12;i++){const y=174+i*26,u=wms.util[i];q.fillStyle="#9fd6ee";q.font="13px Arial";q.textAlign="left";q.fillText(ZN[i][0]+" "+ZN[i][1],26,y+14);q.fillStyle="#12384f";q.fillRect(130,y+2,300,16);q.fillStyle=u>90?"#ff6b5a":u>80?"#ffcf5a":"#38b6ff";q.fillRect(130,y+2,3*u,16);q.fillStyle="#fff";q.textAlign="right";q.fillText(Math.round(u)+"%",490,y+14)}
+q.fillStyle="#0b2a3f";q.fillRect(514,140,496,360);q.fillStyle="#7e9fb5";q.textAlign="left";q.font="15px Arial";q.fillText("PALLET OQIMI (soatlik)",526,162);
+const n=wms.hist.length,bw=(496-24)/n;wms.hist.forEach((v,i)=>{const x=526+i*bw;q.fillStyle="#3ddc97";q.fillRect(x,480-v.i*2.6,bw*.42,v.i*2.6);q.fillStyle="#ffb347";q.fillRect(x+bw*.45,480-v.o*2.6,bw*.42,v.o*2.6)});
+q.fillStyle="#3ddc97";q.fillRect(526,176,14,10);q.fillStyle="#cfe9f7";q.font="13px Arial";q.fillText("kirish",546,186);q.fillStyle="#ffb347";q.fillRect(610,176,14,10);q.fillText("chiqish",630,186);
+dashTex.needsUpdate=true}
+function drawDesk(){const q=deskScr.q;q.fillStyle="#06202f";q.fillRect(0,0,256,160);q.fillStyle="#0c3550";q.fillRect(0,0,256,24);q.fillStyle="#7fe0ff";q.font="bold 14px Arial";q.textAlign="left";q.fillText("WMS · TASKS",8,17);
+q.fillStyle="#3ddc97";q.font="bold 16px Arial";q.fillText("IN  +"+fmt(wms.inbound),8,52);q.fillStyle="#ffb347";q.fillText("OUT -"+fmt(wms.outbound),8,76);q.fillStyle="#7fd8ff";q.fillText("COLD "+wms.coldT.toFixed(1)+"°C",8,100);
+for(let i=0;i<12;i++){q.fillStyle="#38b6ff";q.fillRect(8+i*20,150-wms.util[i]*.4,14,wms.util[i]*.4)}deskScr.t.needsUpdate=true}
+drawDash();drawDesk();
+/* ================= materials ================= */
+const M=(c,r=.7,m=.1,x={})=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m,...x});
+const floorMat=M(0xb4b9be,.42,.02,{map:concreteTex,envMapIntensity:.7});
+const steel=M(0x8798a6,.45,.75),darkSteel=M(0x39434d,.6,.6),rackBlue=M(0x1c5c9b,.42,.6),rackBrace=M(0x2a74b8,.5,.5),rackOrange=M(0xf28a17,.45,.4),
+yellow=M(0xf3c431,.5,.2),black=M(0x14181c,.85,.1),rubber=M(0x0d1013,.95,0),plinth=M(0x59616a,.95,0),asphalt=M(0x242b32,.97,0),
+glass=M(0x7fb9d6,.08,.1,{transparent:true,opacity:.28}),palletMat=M(0xffffff,.92,0),cartonMat=M(0xffffff,.88,0,{map:cartonTex}),
+wrapMat=new THREE.MeshStandardMaterial({color:0xe8f1fa,roughness:.1,metalness:0,transparent:true,opacity:.3,depthWrite:false}),
+wireMat=new THREE.MeshStandardMaterial({color:0xaab7c3,roughness:.4,metalness:.7,transparent:true,opacity:.2,depthWrite:false}),
+beltMat=M(0x20262c,.8,.3),rollerMat=M(0xb7c3cd,.3,.8),cartMat=M(0x3d6f94,.6,.4),agvMat=M(0x1f5f86,.45,.5),orangeSafety=M(0xff7a1a,.5,.2),
+deskMat=M(0xc8ced4,.6,.2),screenOn=M(0xffffff,.3,.1,{map:deskScr.t,emissive:0xffffff,emissiveMap:deskScr.t,emissiveIntensity:1.0}),
+glowW=M(0x222222,.4,0,{emissive:0xe8f4ff,emissiveIntensity:3.2}),glowR=M(0x330000,.4,0,{emissive:0xff2a1a,emissiveIntensity:2.5}),glowG=M(0x003300,.4,0,{emissive:0x28ff6a,emissiveIntensity:2.5}),glowA=M(0x332200,.4,0,{emissive:0xffa21a,emissiveIntensity:3}),
+dashMat=new THREE.MeshStandardMaterial({color:0xffffff,map:dashTex,emissive:0xffffff,emissiveMap:dashTex,emissiveIntensity:1.1,roughness:.4}),
+poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
+paintY=new THREE.MeshStandardMaterial({color:0xf0c030,roughness:.6,metalness:0,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
+paintW=new THREE.MeshStandardMaterial({color:0xdfe6ec,roughness:.6,metalness:0,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
+paintG=new THREE.MeshStandardMaterial({color:0x2fae63,roughness:.6,metalness:0,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
+laneMat=new THREE.MeshStandardMaterial({color:0x56707f,roughness:.7,metalness:0,transparent:true,opacity:.45,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+/* ================= instancing engine (static scenery = few draw calls) ================= */
+const dummy=new THREE.Object3D(),UB=new THREE.BoxGeometry(1,1,1),UC=new THREE.CylinderGeometry(1,1,1,14),UP=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2);
+const reg=new Map();
+function inst(geo,mat,cast=true){const k=geo.uuid+mat.uuid;let r=reg.get(k);if(!r){r={geo,mat,m:[],c:[],cast};reg.set(k,r)}return r}
+function put(r,x,y,z,sx,sy,sz,rx,ry,rz,col){dummy.position.set(x,y,z);dummy.rotation.set(rx,ry,rz);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();r.m.push(dummy.matrix.clone());r.c.push(col)}
+function box(mat,x,y,z,w,h,d,ry=0,rz=0,col=null,rx=0){put(inst(UB,mat),x,y,z,w,h,d,rx,ry,rz,col)}
+function cyl(mat,x,y,z,r,len,axis="y",col=null){put(inst(UC,mat),x,y,z,r,len,r,axis==="z"?Math.PI/2:0,0,axis==="x"?Math.PI/2:0,col)}
+function decalPlane(mat,x,z,w,d,y=.02){put(inst(UP,mat,false),x,y,z,w,1,d,0,0,0,null)}
+function buildInstances(parent=scene){for(const r of reg.values()){const n=r.m.length;if(!n)continue;const o=new THREE.InstancedMesh(r.geo,r.mat,n);r.m.forEach((m,i)=>o.setMatrixAt(i,m));
+if(r.c.some(c=>c!==null)){const c=new THREE.Color();r.c.forEach((v,i)=>{c.setHex(v===null?0xffffff:v);o.setColorAt(i,c)})}
+o.castShadow=r.cast&&!r.mat.transparent;o.receiveShadow=!r.mat.transparent;o.frustumCulled=false;parent.add(o)}reg.clear()}
+const mk=(mat,w,h,d,x,y,z,parent,shadow=true)=>{const o=new THREE.Mesh(UB,mat);o.scale.set(w,h,d);o.position.set(x,y,z);o.castShadow=shadow&&!mobile;o.receiveShadow=true;parent.add(o);return o};
+const mkc=(mat,r,len,x,y,z,parent,axis="y")=>{const o=new THREE.Mesh(UC,mat);o.scale.set(r,len,r);o.position.set(x,y,z);if(axis==="z")o.rotation.x=Math.PI/2;if(axis==="x")o.rotation.z=Math.PI/2;o.castShadow=!mobile;parent.add(o);return o};
+/* ---- pallet geometry (EUR-style, long side along X) ---- */
+const palletGeo=(()=>{const p=[],a=(w,h,d,x,y,z)=>{const g=new THREE.BoxGeometry(w,h,d);g.translate(x,y,z);p.push(g)};
+for(let i=0;i<5;i++)a(1.2,.022,.15,0,.129,-.425+i*.2125);
+for(const x of[-.55,0,.55])a(.12,.09,1,x,.073,0);
+for(const z of[-.425,0,.425])a(1.2,.022,.15,0,.011,z);
+return mergeGeometries(p)})();
+const woods=[0xb48a58,0xa57f4e,0xc39a66,0x94704a,0xad8353];
+const kraft=[0xffffff,0xf4e6cf,0xd9e2ea,0xeadbc0,0xd1dccb,0xe6cfa8,0xc7d2dc];
+const wrapTints=[0xe8f1fa,0xe8f1fa,0xbfd8f2,0xe8f1fa,0xf3e6c8];
+function loadOnPallet(x,y,z,ry,o={}){
+const rPallet=inst(palletGeo,palletMat),rLoad=inst(UB,cartonMat),rWrap=inst(UB,wrapMat,false);
+put(rPallet,x,y,z,1,1,1,0,ry,0,pick(woods));
+if(rnd()<(o.empty??0))return;
+const c=Math.cos(ry),s=Math.sin(ry),lw=o.w??1.13,ld=o.d??.93;   // load footprint (long side along pallet X)
+let h=o.h??pick([.6,.9,1.2,1.5,1.7]);const tier=h>1.0&&rnd()<.35,h1=tier?h*.55:h,h2=h-h1;
+const jy=ry+R(-.04,.04);
+put(rLoad,x,y+.15+h1/2,z,lw*1,h1,ld,0,jy,0,pick(kraft));
+if(tier)put(rLoad,x,y+.15+h1+h2/2,z,lw*.9,h2,ld*.9,0,jy+R(-.08,.08),0,pick(kraft));
+if(o.wrap??rnd()<.38)put(rWrap,x,y+.15+h/2,z,lw*1.035,h*1.01,ld*1.05,0,jy,0,pick(wrapTints));
+}
+function rackRow(cx,z0,bays,N,fill){
+const bay=2.7,hf=.5,top=.2+N*2+.9,len=bays*bay;
+for(let b=0;b<=bays;b++){const z=z0+b*bay;
+for(const s of[-1,1])box(rackBlue,cx+s*hf,top/2,z,.12,top,.09);
+const panels=(b%4===0||b===bays)?Math.ceil(top/2):0;for(let k=0;k<panels;k++){const y0=k*2,y1=Math.min(top,y0+2),h=y1-y0;box(rackBrace,cx,(y0+y1)/2,z,Math.hypot(1,h),.035,.035,0,Math.atan2(h,1)*(k%2?-1:1));box(rackBrace,cx,y1,z,1,.035,.035)}
+if(b===0||b===bays)for(const s of[-1,1])box(yellow,cx+s*hf,.28,z,.22,.56,.22);
+}
+for(let k=1;k<=N;k++)for(const s of[-1,1])box(rackOrange,cx+s*hf,.2+k*2,z0+len/2,.08,.16,len);
+for(let b=0;b<bays;b++)for(let p=0;p<2;p++){const pz=z0+b*bay+.7+p*1.3;
+for(let k=0;k<=N;k++){if(rnd()>fill)continue;loadOnPallet(cx,k?.2+k*2+.07:0,pz,Math.PI/2,{h:pick([.6,.9,1.2,1.2,1.5]),wrap:rnd()<.3})}}
+}
+const solid=[];
+function floorPallet(x,z,ry=0,o={}){solid.push([x-.62,x+.62,z-.62,z+.62]);loadOnPallet(x,0,z,ry,o)}
+/* ================= building shell (cut-away: near walls and roof disappear from outside) ================= */
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(W,D),floorMat);floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(2600,2600),M(0x101a22,1,0));ground.rotation.x=-Math.PI/2;ground.position.y=-1.21;scene.add(ground);
+for(const s of[-1,1]){const y=new THREE.Mesh(new THREE.PlaneGeometry(W+30,26),M(0x262d35,.96,0));y.rotation.x=-Math.PI/2;y.position.set(0,-1.2,s*(hd+14));y.receiveShadow=true;scene.add(y)}
+function wall(w,x,z,ry,mat){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,H),mat);m.position.set(x,H/2,z);m.rotation.y=ry;m.receiveShadow=true;scene.add(m)}
+const wallNS=M(0xffffff,.55,.45,{map:metalTex(W/4)}),wallEW=M(0xffffff,.55,.45,{map:metalTex(D/4)});
+wall(W,0,-hd,0,wallNS);wall(W,0,hd,Math.PI,wallNS);wall(D,-hw,0,Math.PI/2,wallEW);wall(D,hw,0,-Math.PI/2,wallEW);
+const roofGroup=new THREE.Group();scene.add(roofGroup);
+{const roof=new THREE.Mesh(new THREE.PlaneGeometry(W,D),M(0xffffff,.8,.3,{map:roofTex,emissive:0x46515c,emissiveIntensity:1}));roof.rotation.x=Math.PI/2;roof.position.y=H;roofGroup.add(roof);
+const sky=new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,2.6,3.2)});for(let x=-60;x<=60;x+=30){const s=new THREE.Mesh(new THREE.PlaneGeometry(3.4,128),sky);s.rotation.x=Math.PI/2;s.position.set(x,H-.04,0);roofGroup.add(s)}}
+function segs(a,b,gaps){const o=[];let c=a;for(const[g0,g1]of gaps){if(g0>c)o.push([c,g0]);c=g1}if(c<b)o.push([c,b]);return o}
+const allDocks=[...L.DOCKS.inbound,...L.DOCKS.outbound];
+box(plinth,0,-.6,-hd-.25,W+1,1.2,.5);
+for(const[a,b]of segs(-hw-.5,hw+.5,allDocks.map(x=>[x-3.9,x+3.9])))box(plinth,(a+b)/2,-.6,hd+.25,b-a,1.2,.5);
+box(plinth,-hw-.25,-.6,0,.5,1.2,D+1);box(plinth,hw+.25,-.6,0,.5,1.2,D+1);
+for(let x=-hw;x<=hw;x+=20){box(steel,x,H/2-.6,-hd-.1,.5,H+1.2,.5);box(steel,x,H/2-.6,hd+.1,.5,H+1.2,.5)}
+for(let z=-75;z<=75;z+=25){box(steel,-hw-.1,H/2-.6,z,.5,H+1.2,.5);box(steel,hw+.1,H/2-.6,z,.5,H+1.2,.5)}
+box(steel,0,H+.1,-hd,W+.6,.55,.55);box(steel,0,H+.1,hd,W+.6,.55,.55);box(steel,-hw,H+.1,0,.55,.55,D+.6);box(steel,hw,H+.1,0,.55,.55,D+.6);
+for(let z=-75;z<=75;z+=25)box(darkSteel,0,H-.4,z,W,.55,.3);
+for(let x=-hw+10;x<hw;x+=10)box(darkSteel,x,H-.12,0,.25,.22,D);
+const lightPts=[];
+for(let x=-60;x<=60;x+=20)for(let z=-60;z<=60;z+=20){box(black,x,14.05,z,.09,1.2,.09);cyl(darkSteel,x,13.95,z,.55,.22);cyl(glowW,x,13.8,z,.46,.06);lightPts.push([x,z])}
+buildInstances(roofGroup);
+for(const[x,z]of lightPts)put(inst(UP,poolMat,false),x,.03,z,17,1,17,0,0,0,null);
+/* ================= picking infrastructure (invisible proxies, raycast-able) ================= */
+const pickMat=new THREE.MeshBasicMaterial({visible:false}),pickables=[];
+function addPick(parent,x,y,z,w,h,d,info,o={}){const m=new THREE.Mesh(UB,pickMat);m.scale.set(w,h,d);m.position.set(x,y,z);m.userData={info,small:!!o.small};parent.add(m);pickables.push(m);return m}
+const pct=v=>Math.round(v)+"%";
+const palette={receiving:0x2f8fc4,inspection:0xc8a42a,returns:0x9b5fb0,storage:0x2f78b0,automated_storage:0x3a64d0,replenishment:0x2fa07e,picking:0x7fa02f,sorting:0xc08a2f,packing:0xc87a3f,staging:0x2fa0aa,dispatch:0x2fb09a,control:0x7c6fd0};
+const zones=[...L.zones].sort((a,b)=>a.priority-b.priority),pads=new Map();
+for(const z of zones){
+const pm=new THREE.MeshBasicMaterial({color:palette[z.kind]||0x34516a,transparent:true,opacity:.12,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+const p=new THREE.Mesh(new THREE.PlaneGeometry(z.width-.8,z.depth-.8),pm);p.rotation.x=-Math.PI/2;p.position.set(z.x,.012,z.z);scene.add(p);pads.set(z.id,p);
+box(paintW,z.x,.02,z.minZ+.2,z.width,.02,.22);box(paintW,z.x,.02,z.maxZ-.2,z.width,.02,.22);box(paintW,z.minX+.2,.02,z.z,.22,.02,z.depth);box(paintW,z.maxX-.2,.02,z.z,.22,.02,z.depth);
+}
+function laneX(z,x0,x1,w=3){const len=x1-x0,cx=(x0+x1)/2;decalPlane(laneMat,cx,z,len,w,.014);box(paintY,cx,.025,z-w/2,len,.02,.14);box(paintY,cx,.025,z+w/2,len,.02,.14);for(let x=x0+2;x<x1-2;x+=7)box(paintW,x,.025,z,3,.02,.12)}
+function laneZ(x,z0,z1,w=3){const len=z1-z0,cz=(z0+z1)/2;decalPlane(laneMat,x,cz,w,len,.014);box(paintY,x-w/2,.025,cz,.14,.02,len);box(paintY,x+w/2,.025,cz,.14,.02,len);for(let z=z0+2;z<z1-2;z+=7)box(paintW,x,.025,z,.12,.02,3)}
+for(const c of L.corridors){if(c.from.z===c.to.z)laneX(c.from.z,c.from.x,c.to.x,c.width);else laneZ(c.from.x,c.from.z,c.to.z,c.width)}
+for(const[x,z]of[[-28,-4],[13,-4],[-28,36],[13,36],[13,51.5],[-28,24]])for(const sx of[-1,1])for(const sz of[-1,1]){cyl(yellow,x+sx*2.3,.55,z+sz*2.3,.13,1.1);cyl(black,x+sx*2.3,.78,z+sz*2.3,.135,.12)}
+/* ================= racks (each rack block is clickable) ================= */
+const AX=[0,1,2,3,4,5].map(i=>-8+(i-2.5)*3.6);
+function RR(zone,cx,z0,bays,N,fill,double=true,label="R"){
+const xs=double?[cx-.55,cx+.55]:[cx];for(const x of xs)rackRow(x,z0,bays,N,fill);
+const len=bays*2.7,h=.2+N*2+.9,id=label+"-"+Math.abs(Math.round(cx))+"-"+Math.abs(Math.round(z0));
+addPick(scene,cx,h/2,z0+len/2,double?2.2:1.3,h,len,()=>({tag:"STELLAJ",title:"Rack "+id,desc:"Pallet stellaj bloki — "+zone,rows:[["Zona",zone],["Qavatlar",N+" ta"],["Bo‘limlar",bays+" × "+(double?2:1)+" qator"],["Pallet o‘rinlari",bays*2*N*(double?2:1)],["Bandlik",pct(fill*100)],["Uzunlik",len.toFixed(1)+" m"]]}))}
+for(const cx of[-72,-65,-58,-51,-44,-37]){RR("Z03 Reserve",cx,-47.5,8,5,.86);RR("Z03 Reserve",cx,-22.9,8,5,.84);RR("Z03 Reserve",cx,1.7,7,5,.8)}
+for(const cx of[-44,-37])RR("Z03 Reserve",cx,-72,8,5,.85);
+for(const a of AX){for(const s of[-1.2,1.2])rackRow(a+s,-70,20,6,.9);box(steel,a,.12,-43,.3,.12,54);box(steel,a,13.45,-43,.35,.22,54)}
+addPick(scene,-8,7,-43,22,14,54,()=>({tag:"AS/RS",title:"High-Bay AS/RS bloki",desc:"6 yo‘lakli avtomatik saqlash, 14 m balandlik",rows:[["Yo‘laklar","6 ta stacker kran"],["Qavatlar","6"],["Pallet o‘rinlari",6*2*20*2*6],["Bandlik",pct(wms.util[3])],["Kranlar holati","RUN"]]}));
+for(const cx of[21,28])RR("Z06 Replenishment",cx,-70,8,3,.8);
+for(let cx=21;cx<=70;cx+=7)RR("Z05 Picking",cx,-38,10,3,.78);
+for(let cx=21;cx<=70;cx+=7){box(cartMat,cx,.5,-9.6,1.5,.18,1.0);for(const[sx,sz]of[[-.65,-.4],[.65,-.4],[-.65,.4],[.65,.4]])cyl(black,cx+sx,.14,-9.6+sz,.1,.08,"z");box(cartonMat,cx,1.0,-9.6,1.1,.7,.8,0,0,pick(kraft))}
+addPick(scene,45.5,.8,-9.6,52,1.6,1.6,()=>({tag:"JIHOZ",title:"Terish aravachalari",desc:"Picker aravachalari — Z05 Picking boshi",rows:[["Soni","8 ta"],["Holat","Buyurtma yig‘ilmoqda"],["Bandlik",pct(wms.util[4])]]}),{small:false});
+/* ================= zone content ================= */
+function bench(x,z,ry=0,o={}){const y0=o.y0||0;if(!y0)solid.push([x-1.7,x+1.7,z-.65,z+.65]);const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
+box(deskMat,x,y0+.95,z,3.4,.08,1.2,ry);for(const lx of[-1.6,1.6])for(const lz of[-.5,.5]){const[px,pz]=T(lx,lz);box(darkSteel,px,y0+.47,pz,.07,.95,.07)}
+box(darkSteel,x,y0+.35,z,3.1,.05,1.0,ry);
+if(o.monitor!==false){for(const off of(o.dual?[-1.1,.2]:[-.9])){const[mx,mz]=T(off,-.35);box(black,mx,y0+1.45,mz,.7,.42,.04,ry);const[sx,sz]=T(off,-.33);box(screenOn,sx,y0+1.45,sz,.62,.34,.02,ry);box(black,mx,y0+1.07,mz,.1,.12,.1,ry);
+if(o.pickMon)addPick(scene,sx,y0+1.45,sz,.8,.55,.3,()=>({tag:"MONITOR",title:"WMS ish stansiyasi",desc:"Operator monitori — jonli vazifalar va zona bandligi",rows:[["INBOUND","+"+fmt(wms.inbound)+" PLT"],["OUTBOUND","-"+fmt(wms.outbound)+" PLT"],["Cold Storage",wms.coldT.toFixed(1)+"°C"],["Yangilanish","har 1.5 s"]]}),{small:true})}}
+for(let i=0;i<(o.boxes??2);i++){const[bx,bz]=T(.2+i*.9,.1);box(cartonMat,bx,y0+1.25,bz,.7,.42,.55,ry+R(-.2,.2),0,pick(kraft))}}
+function rollCage(x,z,ry=0,full=true){solid.push([x-.5,x+.5,z-.45,z+.45]);box(wireMat,x,.95,z,.85,1.5,.75,ry);box(darkSteel,x,.18,z,.85,.1,.75,ry);for(const sx of[-1,1])for(const sz of[-1,1]){const c=Math.cos(ry),s=Math.sin(ry);box(darkSteel,x+(sx*.42)*c+(sz*.37)*s,.95,z-(sx*.42)*s+(sz*.37)*c,.04,1.5,.04)}
+if(full){box(cartonMat,x,.55,z,.7,.6,.6,ry+R(-.2,.2),0,pick(kraft));if(rnd()<.6)box(cartonMat,x,1.05,z,.6,.4,.5,ry+R(-.3,.3),0,pick(kraft))}
+for(const sx of[-1,1])cyl(black,x+sx*.3*Math.cos(ry),.08,z-sx*.3*Math.sin(ry),.07,.06,"z")}
+function conv(x,z,len,ry=0){if(Math.abs(Math.sin(ry))<.5)solid.push([x-len/2,x+len/2,z-.6,z+.6]);else solid.push([x-.6,x+.6,z-len/2,z+len/2]);const c=Math.cos(ry),s=Math.sin(ry),T=(lx,lz)=>[x+lx*c+lz*s,z-lx*s+lz*c];
+box(beltMat,x,.78,z,len,.06,1.0,ry);for(const lz of[-.55,.55]){const[px,pz]=T(0,lz);box(steel,px,.88,pz,len,.2,.06,ry)}
+for(let lx=-len/2+.5;lx<=len/2;lx+=2.5)for(const lz of[-.5,.5]){const[px,pz]=T(lx,lz);box(darkSteel,px,.38,pz,.07,.76,.07)}
+for(let lx=-len/2+1.2;lx<len/2;lx+=1.2){const[px,pz]=T(lx,0);box(rollerMat,px,.82,pz,.04,.03,.95,ry)}}
+function arrow(x,z,dir){const a=dir; // dir: 0 = +x, PI/2 = -z(north), PI = -x, -PI/2 = +z(south)
+box(paintW,x,.03,z,1.8,.02,.14,a);const c=Math.cos(a),s=Math.sin(a);for(const k of[-1,1]){box(paintW,x+c*.8-(-s)*0,.03,z-s*.8,.7,.02,.14,a+k*.7)}}
+function zoneInfo(code,extra=[]){const z=L.getZone(code),i=ZN.findIndex(a=>a[0]===z.code);return()=>({tag:z.code,title:z.code+" · "+z.name,desc:roles[z.id],rows:[["O‘lcham",z.width+" × "+z.depth+" m"],["Maydon",z.width*z.depth+" m²"],["Bandlik",pct(wms.util[i])],...extra]})}
+const roles={INBOUND:"Yuk mashinasidan pallet tushiriladi va qabul qilinadi",QUALITY:"Mahsulot sifati va miqdori tekshiriladi",RETURNS:"Qaytarilgan mahsulotlar ko‘rib chiqiladi",RESERVE:"Asosiy pallet saqlash — stellaj qatorlari va muzlatkich",HIGH_BAY:"Avtomatik baland saqlash — stacker kranlar",REPLENISHMENT:"Terish zonasi zaxiradan to‘ldiriladi",PICKING:"Buyurtma bo‘yicha mahsulot yig‘iladi",SORTING:"Konveyer halqasida yo‘nalish bo‘yicha saralanadi",PACKING:"Qadoqlash va yorliq yopishtirish",OUTBOUND:"Jo‘natishga tayyor yuklar yo‘nalish bo‘yicha to‘planadi",DISPATCH:"Yuk mashinasiga ortish va jo‘natish",CONTROL:"Butun ombor monitoringi va boshqaruvi"};
+for(const z of[57,61])for(let x=-74;x<=-36;x+=3.4)if(rnd()<.7&&Math.abs(x+66)>1.7&&Math.abs(x+54)>1.7&&Math.abs(x+42)>1.7)floorPallet(x,z,0,{wrap:rnd()<.55});
+for(const x of L.DOCKS.inbound){box(paintY,x-3.6,.025,66,.18,.02,18);box(paintY,x+3.6,.025,66,.18,.02,18);for(let k=0;k<4;k++)arrow(x,56.5+k*3,-Math.PI/2)}
+conv(-47,36,30,0);for(const x of[-61,-33])box(steel,x,.9,36,.5,.3,1.3);
+const laserMat=new THREE.MeshBasicMaterial({color:0xff2020,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false});
+for(const sz of[-1.3,1.3])box(yellow,-54,1.7,36+sz,.16,3.4,.16);box(yellow,-54,3.4,36,.2,.22,2.9);box(black,-54,3.15,36,.3,.18,2.0);
+const laser=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.0),laserMat);laser.rotation.y=Math.PI/2;laser.position.set(-54,1.7,36);scene.add(laser);
+addPick(scene,-54,1.8,36,.8,3.6,3.2,()=>({tag:"SKANER",title:"Lazer skaner arkasi",desc:"Konveyer ustidagi qizil lazerli shtrix-kod arkasi",rows:[["Rejim","Uzluksiz skan"],["Skan/soat",fmt(1800+wms.tick*3)],["O‘qish aniqligi","99.8%"],["Konveyer","0.8 m/s"]]}),{small:true});
+box(darkSteel,-43,.12,36,2.4,.24,1.6);box(steel,-43,.26,36,2.2,.04,1.4);box(black,-43,.9,34.8,.5,.4,.12);box(glowG,-43,.92,34.73,.34,.14,.02);box(darkSteel,-43,.5,34.8,.08,.8,.08);
+addPick(scene,-43,.6,36,2.6,1.2,1.9,()=>({tag:"TAROZI",title:"Elektron tarozi platformasi",desc:"Pallet og‘irligini nazorat qilish",rows:[["Oxirgi og‘irlik",(640+(wms.tick*37%260)).toFixed(0)+" kg"],["Aniqlik","±0.1 kg"],["Chegara","1 500 kg"]]}),{small:true});
+{const cx=-57.5,cz=44,w=9,d=6;
+for(let i=0;i<=8;i++){const x=cx-w/2+i*w/8;for(const z of[cz-d/2,cz+d/2])box(i%2?paintW:glowR,x,.55,z,.9,1.1,.12)}
+for(let i=0;i<=5;i++){const z=cz-d/2+i*d/5;for(const x of[cx-w/2,cx+w/2])box(i%2?paintW:glowR,x,.55,z,.12,1.1,.9)}
+for(const[x,z]of[[cx-w/2,cz-d/2],[cx+w/2,cz-d/2],[cx-w/2,cz+d/2],[cx+w/2,cz+d/2]])box(glowR,x,1.2,z,.14,2.4,.14);
+box(glowR,cx,2.3,cz-d/2,w,.1,.1);box(glowR,cx,2.3,cz+d/2,w,.1,.1);box(glowR,cx-w/2,2.3,cz,.1,.1,d);box(glowR,cx+w/2,2.3,cz,.1,.1,d);
+for(let i=0;i<5;i++)floorPallet(cx-3+(i%3)*2.8,cz-1+Math.floor(i/3)*2.4,R(-.2,.2),{wrap:true,h:.9});
+addPick(scene,cx,1.2,cz,w,2.4,d,()=>({tag:"QUARANTINE",title:"QUARANTINE / BRAK katagi",desc:"Brak va shubhali mahsulotlar izolyatsiya qilinadi",rows:[["Palletlar","5"],["Sabab","Zarar / sana / partiya"],["Holat","Bloklangan"],["Ruxsat","QC supervisor"]]}))}
+for(const x of[-46,-39])bench(x,44.5,0,{boxes:2});
+floorPallet(-33,42,Math.PI/2,{wrap:true});floorPallet(-33,45.5,Math.PI/2);
+{const x0=-78.5,x1=-65.5,z0=26.5,z1=47.5;
+for(let x=x0;x<=x1;x+=1.3){for(const z of[z0,z1])if(!(z===z1&&x>-74&&x<-70))box(yellow,x,.55,z,.07,1.1,.07)}
+for(let z=z0;z<=z1;z+=1.3)for(const x of[x0,x1])box(yellow,x,.55,z,.07,1.1,.07);
+for(const z of[z0,z1]){box(wireMat,(x0+x1)/2,.8,z,x1-x0,1.1,.03)}box(wireMat,x0,.8,(z0+z1)/2,.03,1.1,z1-z0);box(wireMat,x1,.8,(z0+z1)/2,.03,1.1,z1-z0);
+for(let i=0;i<9;i++)rollCage(-76.5+(i%3)*2.4,30+Math.floor(i/3)*2.6,R(-.3,.3));
+for(let i=0;i<4;i++)floorPallet(-68+(i%2)*1.6,29+Math.floor(i/2)*2.5,0,{wrap:rnd()<.3});
+bench(-70,43,0,{boxes:2});
+addPick(scene,-72,1,37,13.5,2,21.5,zoneInfo("Z11",[["Qaytarilgan","Qabul → tekshiruv"],["Panjara","Kirish nazorati"]]))}
+for(let i=0;i<12;i++)rollCage(40+(i%6)*3.4,-52+Math.floor(i/6)*3.2,R(-.15,.15));
+for(let i=0;i<8;i++)floorPallet(56+(i%4)*3.6,-60+Math.floor(i/4)*3.6,R(-.2,.2),{wrap:true});
+for(let i=0;i<6;i++)floorPallet(34+i*3.4,-68,Math.PI/2,{wrap:true,h:pick([1.2,1.5])});
+conv(-8,-12.5,24,0);for(const a of AX)box(steel,a,.5,-13.5,1.4,.9,1.4);
+for(const x of[-24.5,6.5])for(let i=0;i<3;i++)floorPallet(x,-60+i*7,Math.PI/2,{wrap:true});
+conv(30,6,20,0);conv(30,28,20,0);conv(20,17,22,Math.PI/2);conv(40,17,22,Math.PI/2);
+box(yellow,30,2.1,5,.14,4.2,.14);box(yellow,30,2.1,7,.14,4.2,.14);box(yellow,30,4.2,6,.18,.18,2.4);box(glowG,30,3.7,6,.04,.5,.4);
+for(let i=0;i<4;i++){rollCage(22.5+i*5,2.5,0,true);rollCage(22.5+i*5,31.5,0,rnd()<.6)}
+addPick(scene,30,.9,17,22,1.2,24,()=>({tag:"KONVEYER",title:"Sorting konveyer halqasi",desc:"Yopiq halqa: skan → yo‘naltirish → roll-cage",rows:[["Tezlik","1.5 m/s"],["Posilka/soat",fmt(4200+wms.tick*5)],["Bandlik",pct(wms.util[6])],["Divert stantsiyalar","8"]]}),{small:false});
+conv(62,17,30,0);
+for(const x of[52,58,64,70]){bench(x,12,0,{boxes:3});bench(x,22,Math.PI,{boxes:3});box(cartonMat,x,.4,9.8,1.0,.7,.7,0,0,pick(kraft));box(cartonMat,x,.45,24.2,1.0,.8,.7,0,0,pick(kraft))}
+for(let i=0;i<4;i++)floorPallet(75,4+i*7,Math.PI/2,{wrap:true});
+addPick(scene,62,.9,17,30,1.2,1.6,()=>({tag:"KONVEYER",title:"Packing feed konveyeri",desc:"Saralangan posilkalar qadoqlash stantsiyalariga",rows:[["Tezlik","1.5 m/s"],["Stansiyalar","8"],["Bandlik",pct(wms.util[7])]]}));
+for(const x of[-1,1].map(s=>s)){}
+for(let x=22;x<=72;x+=12){box(paintY,x,.025,44,.2,.02,11);for(let k=0;k<2;k++)arrow(x+6,39.5+k*9,-Math.PI/2)}
+for(let x=18;x<=74;x+=3.4){if(rnd()<.8)floorPallet(x,40.2,0,{wrap:true,h:pick([1.2,1.5,1.7])});if(rnd()<.8)floorPallet(x,47.8,0,{wrap:true,h:pick([1.2,1.5,1.7])})}
+for(const x of L.DOCKS.outbound){box(paintY,x-3.6,.025,66,.18,.02,18);box(paintY,x+3.6,.025,66,.18,.02,18);for(const z of[57,60]){if(rnd()<.9)floorPallet(x-1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])});if(rnd()<.9)floorPallet(x+1.6,z,0,{wrap:true,h:pick([1.2,1.5,1.7])})}}
+{const cx=0,cz=60,w=22,d=20,y=5.2;
+box(darkSteel,cx,y-.25,cz,w,.5,d);box(deskMat,cx,y+.02,cz,w-.4,.05,d-.4);
+for(const dx of[-10.5,0,10.5])for(const dz of[-9.5,9.5])box(steel,cx+dx,y/2,cz+dz,.45,y,.45);
+for(let x=cx-w/2+.6;x<=cx+w/2-.5;x+=1.2){box(glass,x,y+.6,cz+d/2,.05,1.1,.05);box(glass,x,y+.6,cz-d/2+.05,.05,1.1,.05)}
+box(glass,cx,y+.6,cz+d/2,w,1.1,.03);box(steel,cx,y+1.15,cz+d/2,w,.06,.06);box(steel,cx+w/2,y+1.15,cz,.06,.06,d);box(glass,cx+w/2,y+.6,cz,.03,1.1,d);
+box(steel,cx-w/2,y+1.15,cz,.06,.06,d);box(glass,cx-w/2,y+.6,cz,.03,1.1,d);box(black,cx,y+1.7,cz-d/2,w,3.3,.15);
+for(let i=0;i<17;i++){box(darkSteel,-13.3,.15+i*.31,cz+8.5-i*.78,1.5,.1,.62)}box(steel,-13.3,y-.05,cz-5,1.7,.1,1.6);for(let i=0;i<17;i++)box(steel,-14.1,.65+i*.31,cz+8.5-i*.78,.05,1,.05);
+for(const x of[-6,0,6])for(const z of[56,62])bench(x,z,0,{y0:y,monitor:true,dual:true,boxes:0,pickMon:true});
+for(const x of[-7,-2.3,2.3,7])box(deskMat,x,1.2,cz+7,2.6,2.4,1.6);box(darkSteel,cx,.3,cz+8.6,w-2,.6,1.4);
+addPick(scene,cx,y/2,cz,w,y,d,zoneInfo("Z12",[["Operator o‘rinlari","6"],["Ko‘rinish","Inbound + Outbound + oqim"]]));
+const wallScreen=new THREE.Mesh(new THREE.PlaneGeometry(20.4,2.9),dashMat);wallScreen.position.set(cx,y+1.7,cz-d/2+.1);scene.add(wallScreen);
+addPick(scene,cx,y+1.7,cz-d/2+.2,20.6,3,.4,()=>({tag:"VIDEO-DEVOR",title:"WMS video-devor",desc:"Butun ombor jonli ko‘rsatkichlari (1.5 s)",rows:[["INBOUND","+"+fmt(wms.inbound)+" PLT"],["OUTBOUND","-"+fmt(wms.outbound)+" PLT"],["Cold Storage",wms.coldT.toFixed(1)+"°C"],["O‘rtacha bandlik",pct(wms.util.reduce((a,b)=>a+b,0)/12)]]}),{small:true})}
+for(const[x,z,col]of[[-6,57,0xf0e030],[0,57,0xff7a1a]]){const w=workerModel(col);w.g.position.set(x,5.25,z);w.g.rotation.y=Math.PI}
+function wheel(g,x,y,z,r){const t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.42,18),M(0x101214,.9,0));t.rotation.x=Math.PI/2;t.position.set(x,y,z);t.castShadow=!mobile;g.add(t);const h=new THREE.Mesh(new THREE.CylinderGeometry(r*.55,r*.55,.44,14),steel);h.rotation.x=Math.PI/2;h.position.set(x,y,z);g.add(h)}
+const trailerTex=metalTex(3);
+function truck(x,z,ry,trailerCol,cabCol){const g=new THREE.Group(),tm=M(trailerCol,.5,.35,{map:trailerTex}),cm=M(cabCol,.35,.55);
+mk(tm,12,3.0,2.5,6.15,2.65,0,g);mk(darkSteel,12,.35,2.2,6.1,1.05,0,g);mk(rubber,.25,.5,2.5,-.1,1.1,0,g);
+for(const sz of[-1,1]){mk(glowR,.06,.28,.22,-.02,1.55,sz*1.05,g,false);for(let i=1;i<12;i++)mk(steel,.04,2.9,.05,i,2.65,sz*1.26,g,false)}
+for(const wx of[9.3,10.6])for(const wz of[-1.15,1.15])wheel(g,wx,.5,wz,.5);
+mk(darkSteel,.1,1.0,.1,3.4,.6,-.9,g);mk(darkSteel,.1,1.0,.1,3.4,.6,.9,g);
+mk(cm,2.7,2.3,2.4,13.9,2.1,0,g);mk(cm,1.3,.7,2.2,14.2,3.55,0,g);mk(glass,.05,1.0,2.1,15.26,2.85,0,g,false);mk(black,.3,.4,2.5,15.4,.85,0,g);
+for(const sz of[-1,1]){mk(glowW,.06,.22,.4,15.25,1.4,sz*.9,g,false);mkc(steel,.1,2.6,12.7,3.1,sz*1.0,g)}
+for(const wx of[13.1,14.9])for(const wz of[-1.1,1.1])wheel(g,wx,.5,wz,.5);
+mk(darkSteel,2.4,.25,2.2,12.9,1.0,0,g);
+g.position.set(x,-1.15,z);g.rotation.y=ry;scene.add(g);return g}
+/* ================= docks (south wall only), levelers, chocks, scanner posts ================= */
+const levMat=M(0x66727e,.6,.3);
+const glowC=M(0x0a2a3a,.4,0,{emissive:0x38bdf8,emissiveIntensity:3.2});
+const docksState=[];
+function dock(x,idx,kind,trailerCol,cabCol,green=true){
+const zi=hd-.12,zo=hd+.7;
+box(black,x,2.2,zi,6.6,4.4,.12);box(steel,x,3.9,hd-.2,6.6,1.5,.1);
+for(let i=0;i<7;i++)box(darkSteel,x,3.2+i*.23,hd-.28,6.4,.04,.04);
+for(const sx of[-1,1]){box(yellow,x+sx*3.45,2.3,zi,.2,4.6,.22);box(rubber,x+sx*3.5,.8,hd+.18,.45,.7,.35);box(rubber,x+sx*3.55,2.3,hd+.28,.5,4.4,.5)}
+box(rubber,x,4.65,hd+.28,7.6,.5,.5);box(yellow,x,.03,zo,6.8,.12,1.5);
+box(black,x+4.3,3.4,zi,.35,.95,.18);cyl(green?glowG:glowR,x+4.3,3.7,zi-.12,.09,.08,"z");cyl(green?glowR:glowG,x+4.3,3.3,zi-.12,.09,.08,"z");
+box(levMat,x,.07,hd-.55,3.2,.1,2.3,0,0,null,-.09);box(darkSteel,x,.03,hd-1.7,3.3,.06,.35);box(yellow,x-1.6,.1,hd-.55,.12,.03,2.3,0,0,null,-.09);box(yellow,x+1.6,.1,hd-.55,.12,.03,2.3,0,0,null,-.09);
+for(let k=0;k<6;k++)box(k%2?black:yellow,x-1.25+k*.5,.12,hd+.5,.5,.03,.3);
+for(const sz of[-1.15,1.15]){box(black,x+sz,-1.02,hd+.6+11.4,.28,.32,.45);box(yellow,x+sz,-.84,hd+.6+11.4,.29,.06,.46);box(black,x+sz,-1.02,hd+.6+11.95,.28,.32,.45)}
+for(const sx of[-1,1]){const px=x+sx*3.0,pz=hd-1.6;box(yellow,px,.95,pz,.14,1.9,.14);box(black,px,1.75,pz,.28,.34,.22);box(glowR,px,1.75,pz-.12,.2,.05,.02)}
+const tr=truck(x,hd+.6,-Math.PI/2,trailerCol,cabCol);
+const st={id:"D"+String(idx).padStart(2,"0"),kind,x};docksState.push(st);
+const info=()=>{const inb=kind==="INBOUND",ph=(wms.tick+idx*3)%12;return{tag:st.id,title:st.id+" · "+(inb?"Inbound":"Outbound")+" dok rampasi",desc:"Gidravlik dock leveler, g‘ildirak tireklari, skaner ustunlari",rows:[["Yo‘nalish",inb?"Z01 Inbound ←":"→ Z10 Dispatch"],["Leveler","Pastga tushirilgan (+0 mm)"],["Fura holati",ph<4?"Kutilmoqda":ph<9?(inb?"Tushirilmoqda":"Yuklanmoqda"):"Chiqishga tayyor"],["Palletlar",(ph*6+12)+" / 33"],["Chocks","O‘rnatilgan"],["Skaner","ONLINE"],["Vorota",ph<4?"Yopiq":"Ochiq"]]}};
+addPick(scene,x,2,hd-1.2,7.2,4.2,3.2,info);
+addPick(scene,x,.7,hd+8,3.4,3.4,15.5,()=>{const f=info();return{...f,tag:"FURA",title:"Fura / treyler "+st.id,desc:"Dok darvozasiga ulangan treyler"}});
+}
+L.DOCKS.inbound.forEach((x,i)=>dock(x,i+1,"INBOUND",[0xf0f4f8,0xdbe6f0,0xe9e1d2][i],0x2f6ea8,i!==2));
+L.DOCKS.outbound.forEach((x,i)=>dock(x,i+4,"OUTBOUND",[0xdde8f1,0xf0f4f8,0xe9e1d2][i],[0x3a8a5e,0x2f6ea8,0xa84a2f][i],i!==1));
+for(let x=-76;x<=76;x+=12)box(paintW,x,-1.19,hd+18,.2,.02,14);
+/* ================= COLD STORAGE (-18.4°C) ================= */
+const C=L.COLD,cx0=C.x-C.width/2,cx1=C.x+C.width/2,cz0=C.z-C.depth/2,cz1=C.z+C.depth/2,CH=C.height;
+const cwTex=ctex(256,256,(q,w,h)=>{q.fillStyle="#e4eff7";q.fillRect(0,0,w,h);for(let x=0;x<w;x+=64){q.fillStyle="rgba(90,140,180,.35)";q.fillRect(x,0,2,h);q.fillStyle="rgba(255,255,255,.5)";q.fillRect(x+2,0,2,h)}
+for(let i=0;i<500;i++){q.fillStyle=`rgba(120,170,210,${rnd()*.06})`;q.fillRect(rnd()*w,rnd()*h,2,2)}},C.width/4,2);
+const cwMat=new THREE.MeshStandardMaterial({color:0xeaf5fc,map:cwTex,roughness:.45,metalness:.1,transparent:true,opacity:1,emissive:0x1d3a50,emissiveIntensity:.35});
+const coldGroup=new THREE.Group();scene.add(coldGroup);
+const T=.6,DW=3.8,dxc=C.doorX;
+function cwall(w,h,d,x,y,z){const m=mk(cwMat,w,h,d,x,y,z,coldGroup,false);return m}
+cwall(T,CH,C.depth,cx0+T/2,CH/2,C.z);cwall(T,CH,C.depth,cx1-T/2,CH/2,C.z);cwall(C.width,CH,T,C.x,CH/2,cz0+T/2);
+cwall((dxc-DW/2)-cx0,CH,T,((dxc-DW/2)+cx0)/2,CH/2,cz1-T/2);cwall(cx1-(dxc+DW/2),CH,T,((dxc+DW/2)+cx1)/2,CH/2,cz1-T/2);
+cwall(DW,CH-4.3,T,dxc,4.3+(CH-4.3)/2,cz1-T/2);
+const ceil=cwall(C.width,.5,C.depth,C.x,CH+.25,C.z);
+{const f=new THREE.Mesh(new THREE.PlaneGeometry(C.width-1.2,C.depth-1.2),new THREE.MeshStandardMaterial({color:0x9fd3f0,roughness:.18,metalness:.1,transparent:true,opacity:.55,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));f.rotation.x=-Math.PI/2;f.position.set(C.x,.04,C.z);scene.add(f)}
+for(const x of[-74,-66,-58])box(glowC,x,CH-.15,C.z,.25,.08,C.depth-3);
+for(const z of[-72,-66,-60,-54])box(glowC,C.x,CH-.18,z,C.width-4,.08,.22);
+const coldLight=new THREE.PointLight(0x38bdf8,mobile?40:70,34,1.6);coldLight.position.set(C.x,6.5,C.z);scene.add(coldLight);
+const coldLight2=new THREE.PointLight(0x7fd8ff,25,18,1.8);coldLight2.position.set(dxc,3.5,cz1-3);scene.add(coldLight2);
+const evapFans=[];for(const[fx,fz]of[[-70,-71],[-70,-57],[-60,-71],[-60,-57]]){
+const g=new THREE.Group();g.position.set(fx,CH-.9,fz);coldGroup.add(g);
+mk(darkSteel,3.0,.8,2.4,0,0,0,g,false);mk(steel,2.8,.06,2.2,0,-.43,0,g,false);
+const rot=new THREE.Group();rot.position.set(0,-.5,0);g.add(rot);for(let i=0;i<4;i++){const b=mk(steel,1.0,.03,.28,.5,0,0,rot,false);b.parent.remove(b);const arm=new THREE.Group();arm.rotation.y=i*Math.PI/2;arm.add(b);b.position.set(.5,0,0);rot.add(arm)}
+mk(black,.22,.2,.22,0,0,0,rot,false);evapFans.push(rot)}
+{const sv=kraft.slice(),sw=wrapTints.slice();kraft.splice(0,kraft.length,0xbfe3ff,0xd7eeff,0xa9d4f2,0xe6f4ff);wrapTints.splice(0,wrapTints.length,0xcdeaff,0xe6f6ff);
+const prev=seed;for(const x of[-74,-58.5]){RR("Cold Storage",x,-72.5,7,3,.9,true,"C")}RR("Cold Storage",-53.2,-72.5,7,3,.85,false,"C");
+for(let i=0;i<6;i++)floorPallet(-72+i*3.2,-53,0,{wrap:true,h:pick([1.2,1.5])});
+kraft.splice(0,kraft.length,...sv);wrapTints.splice(0,wrapTints.length,...sw)}
+const doorTex=ctex(128,128,(q,w,h)=>{for(let i=0;i<16;i++){q.fillStyle=i%4<2?"#f2c21b":"#1b6fd1";q.fillRect(0,i*8,w,8);q.fillStyle="rgba(0,0,0,.35)";q.fillRect(0,i*8+6,w,2)}q.fillStyle="rgba(255,255,255,.12)";q.fillRect(0,0,16,h)});
+const doorMat=new THREE.MeshStandardMaterial({color:0xffffff,map:doorTex,roughness:.5,metalness:.3});
+const doorG=new THREE.Group();doorG.position.set(dxc,4.2,cz1+.05);scene.add(doorG);
+const doorPanel=mk(doorMat,DW-.1,4.2,.12,0,-2.1,0,doorG);
+const doorHood=new THREE.Group();scene.add(doorHood);
+mk(M(0x1b6fd1,.5,.3),.25,4.4,.5,dxc-DW/2-.1,2.2,cz1+.1,doorHood);mk(M(0x1b6fd1,.5,.3),.25,4.4,.5,dxc+DW/2+.1,2.2,cz1+.1,doorHood);
+mk(yellow,DW+.7,.5,.6,dxc,4.45,cz1+.1,doorHood);mk(black,DW+.7,.12,.6,dxc,4.2,cz1+.1,doorHood,false);
+const sign=mkScreen(512,128),signTex=sign.t;
+const signMesh=new THREE.Mesh(new THREE.PlaneGeometry(4.6,1.15),new THREE.MeshBasicMaterial({map:signTex,toneMapped:false}));signMesh.position.set(dxc,5.5,cz1+.45);scene.add(signMesh);mk(black,4.8,1.3,.12,dxc,5.5,cz1+.38,scene,false);
+function drawSign(){const q=sign.q;q.fillStyle="#04141f";q.fillRect(0,0,512,128);q.fillStyle="#0a3a55";q.fillRect(0,0,512,34);q.fillStyle="#7fe0ff";q.font="bold 22px Arial";q.textAlign="center";q.fillText("COLD STORAGE · -18°C ZONE",256,25);
+q.fillStyle=wms.coldOpen>.2?"#ffcf5a":"#7fd8ff";q.font="bold 29px Arial";q.fillText("TEMP: "+wms.coldT.toFixed(1)+"°C | HUM: "+Math.round(wms.coldH)+"% | FEFO",256,84);
+q.fillStyle=wms.coldOpen>.2?"#ffcf5a":"#3ddc97";q.font="bold 18px Arial";q.fillText(wms.coldOpen>.2?"DOOR OPEN":"DOOR CLOSED",256,114);signTex.needsUpdate=true}
+drawSign();
+const coldInfo=tag=>()=>({tag,title:tag==="DOOR"?"Cold Storage tezkor rulo-eshigi":"Cold Storage (-18.4°C)",desc:"Izolyatsiyalangan sovutkich kamera — FEFO tartibi",rows:[["Harorat",wms.coldT.toFixed(1)+"°C"],["Namlik",Math.round(wms.coldH)+"%"],["Eshik",wms.coldOpen>.5?"OCHIQ":wms.coldOpen>.05?"HARAKATDA":"YOPIQ"],["Evaporator","4 ta, ishlayapti"],["Bandlik",pct(wms.util[2])],["Rejim","FEFO"]]});
+addPick(scene,dxc,2.6,cz1+.2,DW+.8,5.4,.8,coldInfo("DOOR"),{small:true});
+for(const[x,y,z,w,h,d]of[[C.x,CH/2,cz0+.3,C.width,CH,.6],[cx0+.3,CH/2,C.z,.6,CH,C.depth],[cx1-.3,CH/2,C.z,.6,CH,C.depth],[C.x,CH+.25,C.z,C.width,.5,C.depth],[((dxc-DW/2)+cx0)/2,CH/2,cz1-.3,(dxc-DW/2)-cx0,CH,.6],[((dxc+DW/2)+cx1)/2,CH/2,cz1-.3,cx1-(dxc+DW/2),CH,.6]]){addPick(scene,x,y,z,w,h,d,coldInfo("COLD"),{}).userData.cold=true}
+const MN=mobile?160:340,mpos=new Float32Array(MN*3),msz=new Float32Array(MN),mal=new Float32Array(MN),mlife=new Float32Array(MN),mmax=new Float32Array(MN),mvel=new Float32Array(MN*3);
+for(let i=0;i<MN;i++){mlife[i]=-1;mpos[i*3+1]=-50}
+const mgeo=new THREE.BufferGeometry();mgeo.setAttribute("position",new THREE.BufferAttribute(mpos,3).setUsage(THREE.DynamicDrawUsage));mgeo.setAttribute("aSize",new THREE.BufferAttribute(msz,1).setUsage(THREE.DynamicDrawUsage));mgeo.setAttribute("aAlpha",new THREE.BufferAttribute(mal,1).setUsage(THREE.DynamicDrawUsage));
+const mistMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uScale:{value:600}},
+vertexShader:"attribute float aSize;attribute float aAlpha;varying float vA;uniform float uScale;void main(){vA=aAlpha;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=min(aSize*uScale/max(-mv.z,.5),180.);gl_Position=projectionMatrix*mv;}",
+fragmentShader:"varying float vA;void main(){vec2 p=gl_PointCoord-.5;float d=length(p);float a=smoothstep(.5,.05,d)*vA;if(a<.01)discard;gl_FragColor=vec4(.84,.94,1.,a);}"});
+const mist=new THREE.Points(mgeo,mistMat);mist.frustumCulled=false;mist.renderOrder=6;scene.add(mist);
+let spawnAcc=0;
+function stepMist(dt,open){spawnAcc+=dt*open*(mobile?34:80);
+for(let i=0;i<MN;i++){
+if(mlife[i]<0&&spawnAcc>=1){spawnAcc--;mlife[i]=0;mmax[i]=R(3.5,5.5);mpos[i*3]=dxc+R(-1.6,1.6);mpos[i*3+1]=R(.08,.4);mpos[i*3+2]=cz1+.4;mvel[i*3]=R(-.45,.45);mvel[i*3+1]=R(.02,.16);mvel[i*3+2]=R(1.3,2.5)}
+if(mlife[i]>=0){mlife[i]+=dt;const l=mlife[i]/mmax[i];if(l>=1){mlife[i]=-1;mal[i]=0;msz[i]=0;mpos[i*3+1]=-50;continue}
+const drag=Math.exp(-.45*dt);mvel[i*3]*=drag;mvel[i*3+2]*=drag;mpos[i*3]+=mvel[i*3]*dt;mpos[i*3+2]+=mvel[i*3+2]*dt;mpos[i*3+1]=Math.min(1.1,mpos[i*3+1]+mvel[i*3+1]*dt);
+msz[i]=1.3+l*2.6;mal[i]=Math.min(1,l*6)*(1-l)*.5}}
+mgeo.attributes.position.needsUpdate=mgeo.attributes.aSize.needsUpdate=mgeo.attributes.aAlpha.needsUpdate=true}
+function forkliftModel(col){const g=new THREE.Group(),b=M(col,.45,.35);
+mk(b,1.9,.7,1.15,-.1,.7,0,g);mk(darkSteel,.6,.85,1.15,-1.0,.8,0,g);mk(b,.9,.45,1.0,.35,1.2,0,g);mk(black,.5,.12,.55,-.35,1.15,0,g);mk(black,.1,.5,.5,-.62,1.45,0,g);
+for(const sx of[-.7,.45])for(const sz of[-.5,.5])mk(darkSteel,.06,1.35,.06,sx,1.9,sz,g);mk(darkSteel,1.3,.06,1.15,-.12,2.58,0,g);for(let i=0;i<4;i++)mk(darkSteel,1.3,.05,.06,-.12,2.64,-.45+i*.3,g);
+mkc(black,.13,.06,.4,1.55,0,g,"x").rotation.z=-.5;mk(glowA,.18,.12,.18,-.1,2.7,0,g,false);
+for(const sz of[-.55,.55])wheel(g,.55,.38,sz,.38),wheel(g,-.85,.32,sz,.32);
+for(const sz of[-.32,.32])mk(darkSteel,.09,2.7,.1,1.05,1.45,sz,g);
+const lift=new THREE.Group();lift.position.set(1.12,.15,0);g.add(lift);mk(darkSteel,.1,.55,1.0,0,.3,0,lift);mk(steel,.07,.9,.8,.08,.7,0,lift);
+for(const sz of[-.32,.32])mk(steel,1.15,.06,.13,.65,0,sz,lift);
+const load=new THREE.Group();lift.add(load);load.position.set(.7,.06,0);const pm=new THREE.Mesh(palletGeo,palletMat);pm.material=M(0xb48a58,.9,0);pm.rotation.y=Math.PI/2;load.add(pm);const lb=mk(cartonMat.clone(),.93,1.0,1.13,0,.67,0,load);lb.material.color.setHex(pick(kraft));
+g.position.y=.02;scene.add(g);return{g,lift,load}}
+function agvModel(){const g=new THREE.Group();mk(agvMat,1.7,.34,1.15,0,.4,0,g);mk(darkSteel,1.4,.08,.9,0,.62,0,g);for(let i=0;i<6;i++)mkc(rollerMat,.05,.88,-.55+i*.22,.68,0,g,"z");
+mk(orangeSafety,.08,.12,1.15,.88,.4,0,g,false);mk(orangeSafety,.08,.12,1.15,-.88,.4,0,g,false);mkc(glowA,.12,.1,.7,.76,.4,g);
+const cb=mk(cartonMat.clone(),.9,.6,.8,0,1.0,0,g);cb.material.color.setHex(pick(kraft));g.position.y=.02;scene.add(g);return g}
+function craneModel(){const g=new THREE.Group();mk(steel,.16,13,.16,-.5,6.6,0,g);mk(steel,.16,13,.16,.5,6.6,0,g);mk(steel,1.2,.28,.5,0,13.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
+const lift=new THREE.Group();g.add(lift);mk(rackOrange,1.1,.12,1.2,0,0,0,lift);mk(darkSteel,1.2,.5,.12,0,.3,-.55,lift);const pm=new THREE.Mesh(palletGeo,M(0xb48a58,.9,0));pm.rotation.y=Math.PI/2;pm.position.y=.08;lift.add(pm);mk(cartonMat.clone(),.93,.9,1.13,0,.7,0,lift);scene.add(g);return{g,lift}}
+function workerModel(vest){const g=new THREE.Group(),skin=M(0xd9a47e,.8,0);const legs=[];
+for(const sx of[-.1,.1]){const l=new THREE.Group();l.position.set(0,.9,sx);g.add(l);mk(M(0x2a3441,.9,0),.16,.9,.18,0,-.45,0,l,false);legs.push(l)}
+mk(M(vest,.7,0),.3,.6,.5,0,1.25,0,g,false);mk(M(0x1c2630,.9,0),.32,.1,.52,0,1.0,0,g,false);mk(skin,.16,.18,.16,0,1.7,0,g,false);
+const hat=new THREE.Mesh(new THREE.SphereGeometry(.15,10,6,0,Math.PI*2,0,Math.PI/2),M(0xf4f4f4,.5,0));hat.position.y=1.75;g.add(hat);
+for(const sz of[-.3,.3])mk(M(0x2a3441,.9,0),.12,.55,.12,0,1.2,sz,g,false);
+scene.add(g);return{g,legs}}
+/* ================= movers: polyline paths (ping-pong / loop) with smooth heading + lane offset ================= */
+class Mover{constructor(pts,o={}){this.pts=pts;this.seg=[];this.tot=0;for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);this.seg.push(l);this.tot+=l}
+this.speed=o.speed||1.5;this.loop=!!o.loop;this.lane=o.lane||0;this.s=(o.start||0)*this.tot;this.dir=o.dir||1;this.pause=o.pause??1.2;this.wait=0;this.lat=this.lane*this.dir;this.x=0;this.z=0;this.hx=1;this.hz=0;this.yaw=null;this.moving=true;this.update(0)}
+update(dt){if(this.wait>0){this.wait-=dt;this.moving=false}else{this.moving=true;this.s+=this.dir*this.speed*dt;
+if(this.loop){this.s=((this.s%this.tot)+this.tot)%this.tot}else if(this.s>=this.tot){this.s=this.tot;this.dir=-1;this.wait=this.pause}else if(this.s<=0){this.s=0;this.dir=1;this.wait=this.pause}}
+let d=this.s,i=0;while(i<this.seg.length-1&&d>this.seg[i]){d-=this.seg[i];i++}
+const a=this.pts[i],b=this.pts[i+1],f=Math.min(1,d/this.seg[i]),fx=(b[0]-a[0])/this.seg[i],fz=(b[1]-a[1])/this.seg[i];
+this.lat+=(this.lane*this.dir-this.lat)*Math.min(1,dt*3);
+this.x=a[0]+(b[0]-a[0])*f-fz*this.lat;this.z=a[1]+(b[1]-a[1])*f+fx*this.lat;
+this.hx=fx*this.dir;this.hz=fz*this.dir;const target=Math.atan2(-this.hz,this.hx);
+if(this.yaw===null)this.yaw=target;else{let dd=target-this.yaw;while(dd>Math.PI)dd-=2*Math.PI;while(dd<-Math.PI)dd+=2*Math.PI;this.yaw+=dd*Math.min(1,dt*6)}}}
+const vehicles=[];
+function zoneNameAt(x,z){const a=L.zoneAt(x,z);return a?a.code+" "+a.name:(Math.abs(x-L.COLD.x)<14&&Math.abs(z-L.COLD.z)<12?"Cold Storage":"Yo‘lak")}
+const fkSpecs=[
+{id:"FL-01",c:0xf2a31b,p:[[-68.5,-44],[-68.5,18]],sp:2.0,st:.1,task:"Reserve → Picking"},
+{id:"FL-02",c:0xf2a31b,p:[[-54.5,-44],[-54.5,18]],sp:1.8,st:.7,task:"Palletni stellajga qo‘yish"},
+{id:"FL-03",c:0x3aa07a,p:[[38.5,-36],[38.5,-10]],sp:1.7,st:.3,task:"Replenishment"},
+{id:"FL-04",c:0xf2a31b,p:[[-72,67],[-34,67]],sp:2.2,st:.5,task:"Inbound → QC"},
+{id:"FL-05",c:0x3aa07a,p:[[34,66],[74,66]],sp:2.2,st:.2,task:"Outbound → Dok"},
+{id:"FL-06",c:0x2f8fc4,p:[[-54,-49.3],[-66,-49.3],[-66,-66]],sp:2.0,st:0,pause:3,task:"Cold Storage shuttle"}];
+const forklifts=fkSpecs.map(s=>{const m=forkliftModel(s.c),mv=new Mover(s.p,{speed:s.sp,start:s.st,pause:s.pause??1.5});const v={...m,mv,id:s.id,type:"fork",task:s.task};
+addPick(m.g,.2,1.3,0,3.2,2.8,1.6,()=>({tag:v.id,title:"Forklift "+v.id,desc:"Elektr. forklift — pallet tashish",rows:[["Vazifa",v.task],["Yuk",v.load.visible?"Pallet ortilgan":"Bo‘sh"],["Tezlik",(v.mv.moving?v.mv.speed:0).toFixed(1)+" m/s"],["Joylashuv",zoneNameAt(v.mv.x,v.mv.z)],["Batareya",(88-(wms.tick*.2%30)).toFixed(0)+"%"],["Holat",v.mv.moving?"Harakatda":"Yuklanmoqda"]]}),{small:true});
+vehicles.push(v);return v});
+const coldFork=forklifts[5];
+const agvSpecs=[["z",-4,-26,76,.75,.05,1],["z",-4,-26,76,.75,.6,-1],["z",36,-26,76,.75,.3,1],["z",36,-26,76,.75,.8,-1],["z",51.5,15,76,.75,.4,1],["x",13,-70,46,.75,.2,1],["x",-28,-70,70,.75,.7,1],["x",13,-70,46,.75,.75,-1]];
+const agvs=agvSpecs.map(([ax,c,a,b,lane,st,dir],i)=>{const g=agvModel(),p=ax==="z"?[[a,c],[b,c]]:[[c,a],[c,b]];const mv=new Mover(p,{speed:1.6,lane:ax==="z"?lane:-lane,start:st,dir,pause:2});
+const v={g,mv,id:"AGV-"+String(i+1).padStart(2,"0"),type:"agv"};g.userData.v=v;
+addPick(g,0,.7,0,2.0,1.5,1.4,()=>({tag:v.id,title:"AGV "+v.id,desc:"Avtonom mobil robot — konveyer/yo‘lak transporti",rows:[["Marshrut",ax==="z"?"Gorizontal yo‘lak z="+c:"Vertikal yo‘lak x="+c],["Tezlik",(v.mv.moving?1.6:0).toFixed(1)+" m/s"],["Joylashuv",zoneNameAt(v.mv.x,v.mv.z)],["Batareya",(92-i*3-(wms.tick*.1%20)).toFixed(0)+"%"],["Holat",v.mv.moving?"Yuk tashiyapti":"Kutmoqda"]]}),{small:true});
+vehicles.push(v);return v});
+const wkSpecs=[[[-61.5,-44],[-61.5,18],0xff7a1a],[[31.5,-36],[31.5,-10],0xf0e030],[[-72,53],[-34,53],0xff7a1a],[[-60,33],[-34,33],0xf0e030],[[50,14],[75,14],0xff7a1a],[[18,44],[74,44],0xf0e030],[[-21,-60],[-21,-20],0xff7a1a],[[38,-46.5],[74,-46.5],0xf0e030],[[30,12],[30,24],0xff7a1a]];
+const workers=wkSpecs.map(([a,b,col],i)=>{const w=workerModel(col),mv=new Mover([a,b],{speed:.9+rnd()*.35,start:rnd(),pause:2+rnd()*2});
+const v={...w,mv,id:"W-"+String(i+1).padStart(2,"0"),type:"worker"};
+addPick(w.g,0,.9,0,.9,1.9,.9,()=>({tag:v.id,title:"Ishchi "+v.id,desc:"Ombor operatori",rows:[["Joylashuv",zoneNameAt(v.mv.x,v.mv.z)],["Vazifa",["Terish","Tekshirish","Qadoqlash","Joylash"][i%4]],["Holat",v.mv.moving?"Yurmoqda":"Ishlayapti"],["Xavfsizlik","Yelek + kaska"]]}),{small:true});
+vehicles.push(v);return v});
+function craneM(){const g=new THREE.Group();mk(steel,.16,13,.16,-.5,6.6,0,g);mk(steel,.16,13,.16,.5,6.6,0,g);mk(steel,1.2,.28,.5,0,13.2,0,g);mk(darkSteel,1.5,.4,1.3,0,.32,0,g);for(let i=0;i<6;i++)mk(rackBrace,.04,.04,1.0,0,1+i*2,0,g,false);
+const lift=new THREE.Group();g.add(lift);mk(rackOrange,1.1,.12,1.2,0,0,0,lift);mk(darkSteel,1.2,.5,.12,0,.3,-.55,lift);const pm=new THREE.Mesh(palletGeo,M(0xb48a58,.9,0));pm.rotation.y=Math.PI/2;pm.position.y=.08;lift.add(pm);mk(cartonMat.clone(),.93,.9,1.13,0,.7,0,lift);scene.add(g);return{g,lift}}
+const cranes=AX.map((a,i)=>{const c={...craneM(),x:a,ph:i*1.1,n:i+1};
+addPick(c.g,0,6.6,0,1.8,13.4,1.6,()=>({tag:"CRANE-"+c.n,title:"Stacker kran #"+c.n,desc:"Avtomatik saqlash/olish krani — AS/RS yo‘lak "+c.n,rows:[["Yo‘lak",c.n+" / 6"],["Lift balandligi",c.lift.position.y.toFixed(1)+" m"],["Holat",c.lift.children[2].visible?"Pallet bilan":"Bo‘sh"],["Pozitsiya z",c.g.position.z.toFixed(1)+" m"],["Sikl/soat",(34+c.n*2)+""]]}),{small:true});return c});
+const parcels=[];
+function pathOf(pts){const seg=[];let tot=0;for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(l);tot+=l}return{pts,seg,tot}}
+function posOn(p,s){let d=s;for(let i=0;i<p.seg.length;i++){if(d<=p.seg[i]){const f=d/p.seg[i];return[p.pts[i][0]+(p.pts[i+1][0]-p.pts[i][0])*f,p.pts[i][1]+(p.pts[i+1][1]-p.pts[i][1])*f]}d-=p.seg[i]}return p.pts[p.pts.length-1]}
+function parcel(path,speed,off){const m=new THREE.Mesh(UB,cartonMat.clone());m.material.color.setHex(pick(kraft));const sz=[R(.5,.8),R(.35,.55),R(.45,.7)];m.scale.set(...sz);m.castShadow=!mobile;scene.add(m);parcels.push({m,path,speed,s:off*path.tot,sz})}
+const ringP=pathOf([[20,6],[40,6],[40,28],[20,28],[20,6]]),packP=pathOf([[47,17],[77,17]]),qcP=pathOf([[-62,36],[-32,36]]);
+for(let i=0;i<14;i++)parcel(ringP,1.5,i/14);for(let i=0;i<10;i++)parcel(packP,1.5,i/10);for(let i=0;i<8;i++)parcel(qcP,.8,i/8);
+buildInstances();
+/* ================= sprite zone labels (dark-blue glass) ================= */
+const labels=[];
+function makeLabel(text,x,y,z,col){const c=document.createElement("canvas");c.width=640;c.height=160;const q=c.getContext("2d");
+const g=q.createLinearGradient(0,0,0,160);g.addColorStop(0,"rgba(18,48,82,.94)");g.addColorStop(1,"rgba(6,18,34,.94)");q.fillStyle=g;q.strokeStyle="rgba(127,208,255,.9)";q.lineWidth=5;q.beginPath();q.roundRect(6,6,628,148,30);q.fill();q.stroke();
+q.fillStyle="rgba(255,255,255,.08)";q.beginPath();q.roundRect(14,12,612,52,24);q.fill();q.fillStyle="#"+col.toString(16).padStart(6,"0");q.fillRect(30,136,580,7);
+q.textAlign="center";q.textBaseline="middle";q.fillStyle="#e8f6ff";q.font="bold 62px Arial";q.fillText(text,320,76);
+const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false}));
+sp.position.set(x,y,z);sp.scale.set(10,2.5,1);sp.renderOrder=10;scene.add(sp);labels.push(sp);return sp}
+for(const z of zones){const i=ZN.findIndex(a=>a[0]===z.code);makeLabel(z.code+" · "+ZN[i][1],z.x,z.kind==="automated_storage"?14.2:z.kind==="control"?11:8.5,z.z,palette[z.kind]||0x5aaee9)}
+makeLabel("COLD · -18.4°C",L.COLD.x,10.8,L.COLD.z,0x38bdf8);
+/* ================= camera presets and UI ================= */
+let goal=null,fpMode=false;
+function fitDist(hW,hH){const t=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));return Math.max(hH/t,hW/(t*camera.aspect))}
+function homePose(){const d=fitDist(112,76)*(mobile?1.0:1.32);const tg=new THREE.Vector3(mobile?0:14,0,mobile?4:8);return{pos:new THREE.Vector3(.5,.7,.82).normalize().multiplyScalar(d).add(tg),target:tg}}
+function topPose(){const d=fitDist(84,80)*1.04;return{pos:new THREE.Vector3(0,d,.01),target:new THREE.Vector3(0,0,0)}}
+function insidePose(){return{pos:new THREE.Vector3(-26,3.4,40),target:new THREE.Vector3(30,mobile?2.6:4.5,0)}}
+function fly(p,instant){if(instant){camera.position.copy(p.pos);controls.target.copy(p.target);controls.update();goal=null}else goal=p}
+const list=$("#zoneList"),panel=$("#panel"),toggle=$("#toggle"),insp=$("#insp");
+function syncToggle(){toggle.textContent=panel.classList.contains("collapsed")?"Zonalar ▲":"Yopish ▼"}
+if(mobile||innerHeight<=520)panel.classList.add("collapsed");syncToggle();
+toggle.onclick=()=>{panel.classList.toggle("collapsed");syncToggle()};
+$("#area").textContent=(W*D).toLocaleString("en-US").replace(/,/g," ")+" m²";
+for(const z of zones){const b=document.createElement("button");b.className="zone";b.dataset.id=z.id;b.innerHTML="<b>"+z.code+"</b>"+z.name;b.onclick=()=>selectZone(z.id);list.appendChild(b)}
+{const b=document.createElement("button");b.className="zone";b.dataset.id="COLD";b.innerHTML="<b>COLD</b>Cold Storage −18.4°C";b.onclick=()=>selectZone("COLD");list.appendChild(b)}
+const defaultDesc="12 zona · U-oqim · geometriya tekshirildi";
+const notice=$("#notice");function notify(t){notice.textContent=t;notice.classList.add("show");clearTimeout(notify.t);notify.t=setTimeout(()=>notice.classList.remove("show"),1600)}
+/* ---- inspector + selection ---- */
+let selProvider=null,selObj=null,selZoneId=null;
+const hl=new THREE.LineSegments(new THREE.EdgesGeometry(UB),new THREE.LineBasicMaterial({color:0x61d7ce,depthTest:false,transparent:true,opacity:.95}));hl.visible=false;hl.renderOrder=20;hl.frustumCulled=false;scene.add(hl);
+const bb=new THREE.Box3(),bsz=new THREE.Vector3(),bct=new THREE.Vector3();
+let inspKey=null;
+insp.addEventListener("click",e=>{if(e.target.closest("#inspX"))clearSelection()});
+function renderInsp(){if(!selProvider){insp.classList.remove("on");insp.innerHTML="";inspKey=null;return}
+const d=selProvider(),key=d.tag+"|"+d.title+"|"+d.rows.map(r=>r[0]).join(",");
+if(key!==inspKey){inspKey=key;insp.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><span class="tag">'+d.tag+'</span><div style="font-weight:800;font-size:15px">'+d.title+'</div></div><button class="tg" id="inspX" aria-label="Yopish">✕</button></div><div class="muted" style="margin:3px 0 7px">'+d.desc+'</div><table>'+d.rows.map(r=>"<tr><td>"+r[0]+'</td><td>'+r[1]+"</td></tr>").join("")+"</table>";insp.scrollTop=0}
+else{const c=insp.querySelectorAll("td:last-child");d.rows.forEach((r,i)=>{if(c[i]&&c[i].textContent!==String(r[1]))c[i].textContent=r[1]})}
+insp.classList.add("on")}
+function setZonePads(id){for(const[k,p]of pads)p.material.opacity=id?(k===id?.28:.05):.12;for(const el of list.children)el.classList.toggle("selected",el.dataset.id===id)}
+function select(provider,obj,zoneId=null){selProvider=provider;selObj=obj;selZoneId=zoneId;setZonePads(zoneId);renderInsp();if(!obj)hl.visible=false}
+function clearSelection(){selProvider=null;selObj=null;selZoneId=null;hl.visible=false;setZonePads(null);renderInsp();$("#zoneTitle").textContent="Industrial Mega Warehouse";$("#zoneDesc").textContent=defaultDesc}
+function selectZone(id,go=true){
+if(id==="COLD"){select(()=>({tag:"COLD",title:"Cold Storage (-18.4°C)",desc:"Izolyatsiyalangan sovutkich kamera — FEFO",rows:[["Harorat",wms.coldT.toFixed(1)+"°C"],["Namlik",Math.round(wms.coldH)+"%"],["Eshik",wms.coldOpen>.5?"OCHIQ":wms.coldOpen>.05?"HARAKATDA":"YOPIQ"],["O‘lcham",C.width+" × "+C.depth+" m"],["Rejim","FEFO"]]}),null,"COLD");
+if(go){const tg=new THREE.Vector3(C.x,2,C.z);fly({pos:tg.clone().add(new THREE.Vector3(.2,.9,.8).normalize().multiplyScalar(mobile?60:48)),target:tg})}return}
+const z=L.getZone(id);if(!z)return;select(zoneInfo(z.id),null,z.id);$("#zoneTitle").textContent=z.code+" · "+z.name;$("#zoneDesc").textContent=roles[z.id]+" · "+z.width+" × "+z.depth+" m";
+if(go){const dist=Math.max(z.width,z.depth)*(mobile?1.7:1.25)+22,tg=new THREE.Vector3(z.x,2,z.z);fly({pos:tg.clone().add(new THREE.Vector3(.4,.8,.8).normalize().multiplyScalar(dist)),target:tg})}
+if(mobile){panel.classList.add("collapsed");syncToggle()}}
+function exitFP(){if(!fpMode)return;fpMode=false;controls.enabled=true;$("#fp").textContent="Yuk ko‘zi"}
+$("#reset").onclick=()=>{exitFP();clearSelection();fly(homePose())};$("#fit").onclick=()=>{exitFP();clearSelection();fly(homePose())};$("#top").onclick=()=>{exitFP();fly(topPose())};
+$("#inside").onclick=()=>{exitFP();clearSelection();fly(insidePose());notify("Ombor ichkarisida")};$("#clear").onclick=clearSelection;
+$("#fp").onclick=()=>{if(!fpMode&&drive)setDrive(null);fpMode=!fpMode;controls.enabled=!fpMode;$("#fp").textContent=fpMode?"Chiqish":"Yuk ko‘zi";goal=null;if(fpMode){notify("Forklift ko‘zi: sovutkich eshigiga yaqinlashing");if(mobile){panel.classList.add("collapsed");syncToggle()}}else fly(homePose(),true)};
+let showLabels=true;$("#labels").onclick=()=>{showLabels=!showLabels;labels.forEach(s=>s.visible=showLabels);$("#labels").textContent="Yorliqlar: "+(showLabels?"ON":"OFF");notify(showLabels?"Yorliqlar yoqildi":"Yorliqlar o‘chirildi")};
+/* ---- tap picking (touch friendly: screen-space tolerance for small objects) ---- */
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),vp=new THREE.Vector3(),floorPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0),hitPt=new THREE.Vector3();
+function pickAt(cx,cy,touch=false){
+const r=canvas.getBoundingClientRect(),lx=cx-r.left,ly=cy-r.top;ndc.set(lx/r.width*2-1,-(ly/r.height)*2+1);ray.setFromCamera(ndc,camera);
+const faded=cwMat.opacity<.5,cand=pickables.filter(p=>!(p.userData.cold&&faded));
+const hits=ray.intersectObjects(cand,false);let best=hits.length?hits[0].object:null;for(const h of hits){if(h.object.userData.small&&h.distance<hits[0].distance+8){best=h.object;break}}
+if(!best||!best.userData.small){let bd=1e9,bs=null;const rad=touch?40:18;
+for(const p of cand){if(!p.userData.small)continue;vp.setFromMatrixPosition(p.matrixWorld).project(camera);if(vp.z>1||vp.z<-1)continue;const d=Math.hypot((vp.x*.5+.5)*r.width-lx,(-vp.y*.5+.5)*r.height-ly);if(d<rad&&d<bd){bd=d;bs=p}}
+if(bs){const hd2=hits.length?hits[0].distance:1e9,dd=camera.position.distanceTo(vp.setFromMatrixPosition(bs.matrixWorld));if(dd<hd2+25)best=bs}}
+if(best){select(best.userData.info,best,null);return true}
+if(ray.ray.intersectPlane(floorPlane,hitPt)){
+if(faded&&hitPt.x>C.x-C.width/2&&hitPt.x<C.x+C.width/2&&hitPt.z>C.z-C.depth/2&&hitPt.z<C.z+C.depth/2){selectZone("COLD",false);return true}
+const z=L.zoneAt(hitPt.x,hitPt.z);if(z){selectZone(z.id,false);return true}}
+clearSelection();return false}
+let dn=null,multi=0;
+canvas.addEventListener("pointerdown",e=>{multi++;if(multi>1){dn=null;return}dn={x:e.clientX,y:e.clientY,t:performance.now(),touch:e.pointerType!=="mouse"}});
+canvas.addEventListener("pointerup",e=>{multi=Math.max(0,multi-1);if(dn&&performance.now()-dn.t<600&&Math.hypot(e.clientX-dn.x,e.clientY-dn.y)<(dn.touch?14:6))pickAt(e.clientX,e.clientY,dn.touch);dn=null});
+canvas.addEventListener("pointercancel",()=>{multi=0;dn=null});
+/* ---- minimap radar ---- */
+const mini=$("#mini"),mq=mini.getContext("2d"),MS=2.5,mbase=document.createElement("canvas");mbase.width=400;mbase.height=376;
+const mX=x=>(x+80)*MS,mZ=z=>(z+75)*MS;
+{const q=mbase.getContext("2d");q.fillStyle="#07111e";q.fillRect(0,0,400,376);q.fillStyle="#0d1e30";q.fillRect(0,0,400,376);
+q.strokeStyle="rgba(120,160,190,.18)";q.lineWidth=2;for(const c of L.corridors){q.beginPath();q.moveTo(mX(c.from.x),mZ(c.from.z));q.lineTo(mX(c.to.x),mZ(c.to.z));q.stroke()}
+for(const z of zones){q.fillStyle="#"+(palette[z.kind]||0x34516a).toString(16).padStart(6,"0")+"55";q.fillRect(mX(z.minX),mZ(z.minZ),z.width*MS,z.depth*MS);q.strokeStyle="rgba(190,225,250,.75)";q.lineWidth=1.5;q.strokeRect(mX(z.minX),mZ(z.minZ),z.width*MS,z.depth*MS);
+q.fillStyle="#e8f6ff";q.font="bold 17px Arial";q.textAlign="center";q.textBaseline="middle";q.fillText(z.code,mX(z.x),mZ(z.z))}
+q.fillStyle="#38bdf855";q.fillRect(mX(C.x-C.width/2),mZ(C.z-C.depth/2),C.width*MS,C.depth*MS);q.strokeStyle="#38bdf8";q.lineWidth=2;q.strokeRect(mX(C.x-C.width/2),mZ(C.z-C.depth/2),C.width*MS,C.depth*MS);q.fillStyle="#bfe9ff";q.font="bold 14px Arial";q.fillText("COLD",mX(C.x),mZ(C.z)-16);
+q.fillStyle="#f3c431";for(const x of allDocks)q.fillRect(mX(x)-9,mZ(75)-5,18,5);
+q.strokeStyle="#5aaee9";q.lineWidth=3;q.strokeRect(1.5,1.5,397,373)}
+let camYaw=0;
+function drawMini(){mq.drawImage(mbase,0,0);
+for(const v of vehicles){if(v.type==="worker")continue;mq.fillStyle=v.type==="agv"?"#38e0ff":"#ffa21a";mq.beginPath();mq.arc(mX(v.mv.x),mZ(v.mv.z),v.type==="agv"?4.2:5,0,7);mq.fill()}
+drawPlayerMini();const d=camera.getWorldDirection(vp);if(Math.hypot(d.x,d.z)>.2)camYaw=Math.atan2(d.z,d.x);
+const hf=Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.aspect),len=Math.min(90,12+camera.position.distanceTo(controls.target)*.45)*MS,cx=mX(camera.position.x),cz=mZ(camera.position.z);
+mq.fillStyle="rgba(97,215,206,.25)";mq.strokeStyle="#61d7ce";mq.lineWidth=1.5;mq.beginPath();mq.moveTo(cx,cz);mq.lineTo(cx+Math.cos(camYaw-hf)*len,cz+Math.sin(camYaw-hf)*len);mq.lineTo(cx+Math.cos(camYaw+hf)*len,cz+Math.sin(camYaw+hf)*len);mq.closePath();mq.fill();mq.stroke();
+mq.fillStyle="#fff";mq.beginPath();mq.arc(cx,cz,4.5,0,7);mq.fill()}
+mini.addEventListener("pointerdown",e=>{e.preventDefault();const r=mini.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*160-80,z=(e.clientY-r.top)/r.height*150-75;exitFP();
+const tg=new THREE.Vector3(THREE.MathUtils.clamp(x,-78,78),0,THREE.MathUtils.clamp(z,-73,73));fly({pos:tg.clone().add(new THREE.Vector3(0,mobile?42:34,mobile?30:24)),target:tg});notify("Xarita: "+(L.zoneAt(x,z)?.code||"yo‘lak"))});
+/* ================= drive mode: player worker + player forklift ================= */
+const blockers=[];
+for(const p of pickables){if(p.parent!==scene)continue;const tg=p.userData.info().tag;
+if((tg==="STELLAJ"||tg==="AS/RS"||tg==="QUARANTINE"||tg==="Z12"||(tg==="COLD"&&p.scale.y>1)))blockers.push([p.position.x-p.scale.x/2,p.position.x+p.scale.x/2,p.position.z-p.scale.z/2,p.position.z+p.scale.z/2])}
+for(const s of solid)blockers.push(s);
+const doorBlock=[dxc-DW/2,dxc+DW/2,cz1-.5,cz1+.3];
+function blocked(x,z,r){if(x<-78.4+r||x>78.4-r||z<-73.8+r||z>73.8-r)return true;
+const all=wms.coldOpen<.6?[...blockers,doorBlock]:blockers;
+for(const b of all){const cx=Math.max(b[0],Math.min(x,b[1])),cz=Math.max(b[2],Math.min(z,b[3]));if((x-cx)*(x-cx)+(z-cz)*(z-cz)<r*r)return true}return false}
+function blockedVeh(x,z,yaw){const c=Math.cos(yaw),s=-Math.sin(yaw);return blocked(x,z,.95)||blocked(x+c*1.5,z+s*1.5,.6)||blocked(x-c*.9,z-s*.9,.8)}
+const pw=workerModel(0x19b5ff),pf=forkliftModel(0xd9322e);
+const P={x:-12,z:30,yaw:0},F={x:-12,z:41,yaw:0,v:0,lift:.15,loaded:false};
+pw.g.position.set(P.x,0,P.z);pf.g.position.set(F.x,.02,F.z);pf.load.visible=false;
+const mkrMat=M(0x19e6ff,.3,0,{emissive:0x19e6ff,emissiveIntensity:2.2});
+const m1=new THREE.Mesh(new THREE.ConeGeometry(.22,.5,4),mkrMat);m1.rotation.x=Math.PI;m1.position.y=2.3;pw.g.add(m1);
+const m2=new THREE.Mesh(new THREE.ConeGeometry(.3,.6,4),mkrMat);m2.rotation.x=Math.PI;m2.position.set(0,3.5,0);pf.g.add(m2);
+addPick(pw.g,0,.9,0,.9,1.9,.9,()=>({tag:"SIZ",title:"Sizning ishchingiz",desc:"Boshqariladigan ishchi (WASD / joystik)",rows:[["Joylashuv",zoneNameAt(P.x,P.z)],["Rejim",drive==="worker"?"Boshqarilmoqda":"Kutmoqda"],["Xavfsizlik","Yelek + kaska"]]}),{small:true});
+addPick(pf.g,.2,1.3,0,3.2,2.8,1.6,()=>({tag:"FL-07",title:"Forklift FL-07 (sizniki)",desc:"Qo‘lda boshqariladigan forklift",rows:[["Joylashuv",zoneNameAt(F.x,F.z)],["Tezlik",Math.abs(F.v).toFixed(1)+" m/s"],["Vilka",(F.lift-.15).toFixed(1)+" m"],["Yuk",F.loaded?"Pallet ortilgan":"Bo‘sh"],["Rejim",drive==="forklift"?"Haydalmoqda":"To‘xtagan"]]}),{small:true});
+let drive=null,liftDir=0,fol={x:0,z:0},pedalBtn=false,orbiting=false,lastUser=0;
+const spdv=$("#spdv"),spdb=$("#spdb");
+controls.addEventListener("start",()=>{orbiting=true;lastUser=performance.now()});controls.addEventListener("end",()=>{orbiting=false;lastUser=performance.now()});
+let pmix=null,pact={},pcur=null;
+new GLTFLoader().load("https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Soldier.glb",g=>{const mdl=g.scene;mdl.traverse(o=>{if(o.isMesh){o.castShadow=!mobile;o.receiveShadow=true;o.frustumCulled=false}});for(const c of pw.g.children)if(c!==m1)c.visible=false;pw.g.add(mdl);pmix=new THREE.AnimationMixer(mdl);for(const a of g.animations)pact[a.name.toLowerCase()]=pmix.clipAction(a);if(pact.idle){pcur=pact.idle;pcur.play()}window.__soldier=true},undefined,()=>{});
+function playAnim(n,ts=1){const a=pact[n];if(!a)return;a.timeScale=ts;if(a!==pcur){a.reset().play();if(pcur)pcur.crossFadeTo(a,.25,false);pcur=a}}
+const keys=new Set(),joy={x:0,y:0};
+function axes(){let ix=(keys.has("d")||keys.has("arrowright")?1:0)-(keys.has("a")||keys.has("arrowleft")?1:0),iy=(keys.has("w")||keys.has("arrowup")?1:0)-(keys.has("s")||keys.has("arrowdown")?1:0);ix+=joy.x;iy+=joy.y;const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}return{ix,iy,run:keys.has("shift")||Math.hypot(joy.x,joy.y)>.9}}
+function syncDriveUI(){const b=$("#drive");b.textContent=drive?"✕ Chiqish":"🚶 Ishchi";b.classList.toggle("on",!!drive);document.body.classList.toggle("driving",!!drive);document.body.classList.toggle("indrive",drive==="forklift");
+$("#act1").textContent=drive==="forklift"?"⬇ Tushish (E)":"🚜 Minish (E)";pw.g.visible=drive!=="forklift";if(drive!=="forklift"){pedalBtn=false;$("#pedal").classList.remove("on")}controls.minDistance=drive?3:2.5;controls.maxDistance=drive?45:1000}
+function setDrive(m){if(m===drive)return;if(m&&fpMode)exitFP();drive=m;syncDriveUI();clearSelection();
+if(m){const T=m==="forklift"?F:P,yaw=m==="forklift"?F.yaw:P.yaw,hx=m==="forklift"?Math.cos(yaw):Math.sin(yaw),hz=m==="forklift"?-Math.sin(yaw):Math.cos(yaw);
+const tg=new THREE.Vector3(T.x,1.4,T.z);fly({pos:new THREE.Vector3(T.x-hx*(mobile?11:9),mobile?7:5.5,T.z-hz*(mobile?11:9)),target:tg});fol.x=T.x;fol.z=T.z;if(mobile||innerHeight<=520){panel.classList.add("collapsed");syncToggle()}notify(m==="worker"?"Ishchi: WASD / joystik · Shift — yugurish · E — forklift":"Forklift: W/S, Shift yoki GAZ pedali — tezlanish")}
+else{controls.target.y=Math.max(controls.target.y,1)}}
+function toggleVehicle(){if(!drive){notify("Avval 🚶 Ishchi rejimini yoqing");return}
+if(drive==="worker"){if(Math.hypot(P.x-F.x,P.z-F.z)<4.5){drive="forklift";F.v=0;syncDriveUI();const hx=Math.cos(F.yaw),hz=-Math.sin(F.yaw);fly({pos:new THREE.Vector3(F.x-hx*(mobile?12:10),mobile?8:6,F.z-hz*(mobile?12:10)),target:new THREE.Vector3(F.x,1.4,F.z)});fol.x=F.x;fol.z=F.z;notify("Forkliftdasiz: W/S gaz, A/D burilish")}else notify("Forklift'ga 4 m yaqinlashing")}
+else{if(Math.abs(F.v)>.6){notify("Avval to‘xtating");return}const hx=Math.cos(F.yaw),hz=-Math.sin(F.yaw);let ok=null;
+for(const[k,s]of[[1,1.9],[-1,1.9],[1,2.7],[-1,2.7]]){const x=F.x+(-hz)*k*s,z=F.z+hx*k*s;if(!blocked(x,z,.45)){ok=[x,z];break}}
+if(!ok)ok=[F.x-hx*2.6,F.z-hz*2.6];P.x=ok[0];P.z=ok[1];P.yaw=Math.atan2(-hz,hx);pw.g.position.set(P.x,0,P.z);drive="worker";syncDriveUI();fly({pos:new THREE.Vector3(P.x-Math.sin(P.yaw)*9,5.5,P.z-Math.cos(P.yaw)*9),target:new THREE.Vector3(P.x,1.4,P.z)});fol.x=P.x;fol.z=P.z}}
+function toggleLoad(){if(drive!=="forklift")return;F.loaded=!F.loaded;notify(F.loaded?"Pallet ortildi":"Pallet tushirildi")}
+addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)&&drive)e.preventDefault();
+if(k==="e"&&!e.repeat)toggleVehicle();else if(k==="escape")setDrive(null);else if(k==="g"&&!e.repeat)toggleLoad();else keys.add(k)});
+addEventListener("keyup",e=>keys.delete(e.key.toLowerCase()));addEventListener("blur",()=>keys.clear());
+{const pd=$("#pedal"),on=e=>{e.preventDefault();pedalBtn=true;pd.classList.add("on");pd.setPointerCapture(e.pointerId)},off=()=>{pedalBtn=false;pd.classList.remove("on")};pd.addEventListener("pointerdown",on);pd.addEventListener("pointerup",off);pd.addEventListener("pointercancel",off)}
+$("#drive").onclick=()=>setDrive(drive?null:"worker");$("#act1").onclick=toggleVehicle;$("#actLoad").onclick=toggleLoad;
+for(const[id,dir]of[["#actUp",1],["#actDn",-1]]){const b=$(id);b.addEventListener("pointerdown",e=>{e.preventDefault();liftDir=dir;b.setPointerCapture(e.pointerId)});const up=()=>{liftDir=0};b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up)}
+{const joyEl=$("#joy"),knob=$("#joyKnob");let jid=null;
+const jm=e=>{const r=joyEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const Rr=r.width/2-20,m=Math.hypot(dx,dy);if(m>Rr){dx*=Rr/m;dy*=Rr/m}knob.style.transform="translate("+dx+"px,"+dy+"px)";joy.x=dx/Rr;joy.y=-dy/Rr};
+joyEl.addEventListener("pointerdown",e=>{e.preventDefault();jid=e.pointerId;joyEl.setPointerCapture(e.pointerId);jm(e)});
+joyEl.addEventListener("pointermove",e=>{if(e.pointerId===jid)jm(e)});
+const je=e=>{if(e.pointerId!==jid)return;jid=null;joy.x=joy.y=0;knob.style.transform="translate(0,0)"};joyEl.addEventListener("pointerup",je);joyEl.addEventListener("pointercancel",je)}
+function wrapAng(a){while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a}
+function updatePlayer(dt){
+if(drive==="worker"){const{ix,iy,run}=axes(),m=Math.hypot(ix,iy);let mv=false,spd=0;
+if(m>.06){camera.getWorldDirection(vp);let fx=vp.x,fz=vp.z;const fl=Math.hypot(fx,fz)||1;fx/=fl;fz/=fl;const dx=fx*iy-fz*ix,dz=fz*iy+fx*ix,dl=Math.hypot(dx,dz)||1,sp=(spd=run?7.5:4.4*Math.min(1,m))*dt,sx=dx/dl*sp,sz=dz/dl*sp;
+if(!blocked(P.x+sx,P.z,.4))P.x+=sx;if(!blocked(P.x,P.z+sz,.4))P.z+=sz;P.yaw+=wrapAng(Math.atan2(dx,dz)-P.yaw)*Math.min(1,dt*12);mv=true}
+pw.g.position.set(P.x,0,P.z);pw.g.rotation.y=P.yaw;const sw=mv?Math.sin(t*(run?10:6))*.5:0;pw.legs[0].rotation.z=sw;pw.legs[1].rotation.z=-sw;if(pmix){if(mv)playAnim(spd>5.5?"run":"walk",spd>5.5?spd/7.5:spd/4.4);else playAnim("idle");pmix.update(dt)}}
+if(drive==="forklift"){const{ix,iy}=axes(),pd=pedalBtn||keys.has("shift");let tv=iy>0?iy*7:iy*3.2;if(pd&&iy>-.3)tv=13;const dv=tv-F.v;F.v+=Math.sign(dv)*Math.min(Math.abs(dv),dt*(Math.abs(tv)<Math.abs(F.v)?(iy<-.1&&F.v>0?9:3.5):(pd?5.5:4.2)));
+spdv.textContent=Math.round(Math.abs(F.v)*3.6);spdb.style.width=Math.min(100,Math.abs(F.v)/13*100)+"%";spdb.style.background=Math.abs(F.v)>7.5?"#ff6a3a":"#61d7ce";
+const ny=F.yaw-ix*dt*1.6*Math.min(1,Math.abs(F.v)/1.5)/(1+Math.abs(F.v)/9)*(F.v<0?-1:1);if(!blockedVeh(F.x,F.z,ny))F.yaw=ny;
+const nx=F.x+Math.cos(F.yaw)*F.v*dt,nz=F.z-Math.sin(F.yaw)*F.v*dt;if(!blockedVeh(nx,nz,F.yaw)){F.x=nx;F.z=nz}else F.v=0;
+const ld=(liftDir||((keys.has("r")?1:0)-(keys.has("f")?1:0)));F.lift=Math.max(.15,Math.min(3.4,F.lift+ld*1.3*dt))}
+pf.g.position.set(F.x,.02,F.z);pf.g.rotation.y=F.yaw;pf.lift.position.y=F.lift;pf.load.visible=F.loaded;m1.rotation.y=m2.rotation.y=t*2;m1.position.y=2.3+Math.sin(t*3)*.08;
+if(drive){const T=drive==="forklift"?F:P;if(!goal){const ddx=T.x-fol.x,ddz=T.z-fol.z;camera.position.x+=ddx;camera.position.z+=ddz;controls.target.x+=ddx;controls.target.z+=ddz}fol.x=T.x;fol.z=T.z;
+if(drive==="forklift"&&!goal&&!orbiting&&F.v>1.2&&performance.now()-lastUser>1800){const ox=camera.position.x-controls.target.x,oz=camera.position.z-controls.target.z,r=Math.hypot(ox,oz)||1,a=Math.atan2(ox,oz),ad=Math.atan2(-Math.cos(F.yaw),Math.sin(F.yaw)),a2=a+wrapAng(ad-a)*Math.min(1,dt*1.6);camera.position.x=controls.target.x+Math.sin(a2)*r;camera.position.z=controls.target.z+Math.cos(a2)*r}}}
+function drawPlayerMini(){mq.fillStyle="#ff4a3d";mq.beginPath();mq.arc(mX(F.x),mZ(F.z),6,0,7);mq.fill();mq.strokeStyle="#fff";mq.lineWidth=2;mq.stroke();
+if(pw.g.visible){mq.fillStyle="#7dff6a";mq.beginPath();mq.arc(mX(P.x),mZ(P.z),5.5,0,7);mq.fill();mq.stroke()}}
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h)}camera.aspect=w/h;camera.updateProjectionMatrix();mistMat.uniforms.uScale.value=h*renderer.getPixelRatio()/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2)))}
+addEventListener("resize",resize);resize();
+const qs=new URLSearchParams(location.search),q0=qs.get("view");fly(q0==="inside"?insidePose():q0==="top"?topPose():homePose(),true);
+if(qs.get("zone"))selectZone(qs.get("zone"));
+if(qs.get("cam")){const[a,b,c2,d2,e2,f2]=qs.get("cam").split(",").map(Number);camera.position.set(a,b,c2);controls.target.set(d2,e2,f2);controls.update()}
+/* ================= loop ================= */
+let t=0,last=0,first=true,wmsT=0,signT=0,lastNear=0,miniF=0,fpHead=new THREE.Vector3();
+const doorWorld=new THREE.Vector3(L.COLD.doorX,0,cz1);
+function updateVehicles(dt){
+for(const c of cranes){const a=t*.2+c.ph;c.g.position.set(c.x,0,-43+Math.sin(a)*24.5);c.lift.position.set(0,1.2+(Math.sin(a*1.9)*.5+.5)*10.5,0);c.lift.children[2].visible=Math.sin(a*.7)>-.3}
+for(const v of vehicles){const m=v.mv;m.update(dt);
+if(v.type==="worker"){v.g.position.set(m.x,0,m.z);v.g.rotation.y=Math.atan2(m.hx,m.hz);const sw=m.moving?Math.sin(t*5+m.x)*.45:0;v.legs[0].rotation.z=sw;v.legs[1].rotation.z=-sw}
+else{v.g.position.set(m.x,.02,m.z);v.g.rotation.y=m.yaw;
+if(v.type==="fork"){v.lift.position.y=m.moving?.35:.15+(Math.sin(t*1.4+m.x)*.5+.5)*1.6;v.load.visible=m.dir>0}}}}
+function nearestDoorDist(){let d=1e9;for(const f of forklifts)d=Math.min(d,Math.hypot(f.mv.x-doorWorld.x,f.mv.z-doorWorld.z));if(fpMode)d=Math.min(d,Math.hypot(camera.position.x-doorWorld.x,camera.position.z-doorWorld.z));d=Math.min(d,Math.hypot(F.x-doorWorld.x,F.z-doorWorld.z));if(drive==="worker")d=Math.min(d,Math.hypot(P.x-doorWorld.x,P.z-doorWorld.z));return d}
+function animate(ms){
+requestAnimationFrame(animate);
+const dt=Math.min(.05,(ms-last)/1000||0);last=ms;t+=dt;
+updateVehicles(dt);
+for(const p of parcels){p.s+=dt*p.speed;if(p.s>=p.path.tot)p.s-=p.path.tot;const[px,pz]=posOn(p.path,p.s);p.m.position.set(px,.82+p.sz[1]/2,pz)}
+const nd=nearestDoorDist(),target=nd<9?1:0;wms.coldOpen+=(target-wms.coldOpen)*Math.min(1,dt*(target?2.6:1.6));if(Math.abs(wms.coldOpen-target)<.002)wms.coldOpen=target;
+const o=wms.coldOpen,eo=o*o*(3-2*o);doorPanel.scale.y=4.2*(1-.93*eo);doorPanel.position.y=-doorPanel.scale.y/2;
+wms.coldT+=((o>.25?-16.9:-18.4)-wms.coldT)*Math.min(1,dt*.45);wms.coldH+=((o>.25?81:78)-wms.coldH)*Math.min(1,dt*.3);
+stepMist(dt,o>.12?o:0);for(const f of evapFans)f.rotation.y+=dt*7;
+const fadeT=camera.position.y>H+1.5?.16:1;cwMat.opacity+=(fadeT-cwMat.opacity)*Math.min(1,dt*5);cwMat.depthWrite=cwMat.opacity>.9;ceil.visible=!(camera.position.y>H+1.5&&false);
+signT+=dt;if(signT>.5){signT=0;drawSign();$("#coldT").textContent=wms.coldT.toFixed(1)+"°C"}
+wmsT+=dt;if(wmsT>1.5){wmsT=0;stepWMS();drawDash();drawDesk();renderInsp()}
+if(goal&&!fpMode){camera.position.lerp(goal.pos,.09);controls.target.lerp(goal.target,.09);if(camera.position.distanceTo(goal.pos)<.3&&controls.target.distanceTo(goal.target)<.15)goal=null}
+updatePlayer(dt);
+if(fpMode){const m=coldFork.mv;const hx=Math.cos(m.yaw),hz=-Math.sin(m.yaw);camera.position.set(m.x-hx*.2,2.3,m.z-hz*.2);fpHead.set(m.x+hx*10,1.6,m.z+hz*10);camera.lookAt(fpHead);controls.target.copy(fpHead)}
+else{ // zoom / pan stability: clamp target and camera, scale near plane with distance
+const tg=controls.target;tg.x=THREE.MathUtils.clamp(tg.x,-95,95);tg.z=THREE.MathUtils.clamp(tg.z,-95,95);tg.y=THREE.MathUtils.clamp(tg.y,0,25);if(camera.position.y<.5)camera.position.y=.5;
+const dist=camera.position.distanceTo(tg),n=THREE.MathUtils.clamp(dist/130,.15,3);if(Math.abs(n-camera.near)>.02){camera.near=n;camera.updateProjectionMatrix()}}
+roofGroup.visible=camera.position.y<H+1.5;
+for(const sp of labels){const d=camera.position.distanceTo(sp.position),k=THREE.MathUtils.clamp(d*.05,4.5,15)*(mobile?1.15:1);sp.scale.set(k,k*.25,1);sp.material.opacity=THREE.MathUtils.clamp((d-9)/14,0,1)}
+if(selObj){selObj.updateWorldMatrix(true,false);bb.setFromObject(selObj);bb.getSize(bsz);bb.getCenter(bct);hl.position.copy(bct);hl.scale.set(bsz.x+.15,bsz.y+.15,bsz.z+.15);hl.visible=true}
+if(!fpMode)controls.update();
+if((miniF++&1)===0)drawMini();
+composer?composer.render():renderer.render(scene,camera);
+if(first){first=false;$("#loading").classList.add("done");window.__scwReady=true;window.__scwStats={calls:renderer.info.render.calls,tris:renderer.info.render.triangles}}
+}
+window.__scw={wms,forklifts,agvs,camera,controls,pickAt,selectZone,L,THREE,pickables,get fp(){return fpMode},setFP:v=>{if(v!==fpMode)$("#fp").click()},coldFork,cwMat,P,F,setDrive,get drive(){return drive},blocked};
+requestAnimationFrame(animate);
+const check=L.validate();$("#zoneDesc").textContent=check.valid?defaultDesc:"Layout xatosi: "+check.errors.join(", ");
+</script></body></html>
