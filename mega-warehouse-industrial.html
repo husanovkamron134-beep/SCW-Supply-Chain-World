@@ -52,7 +52,15 @@ canvas#scene{width:100%;height:100%;display:block;touch-action:none}
 .acts{position:absolute;right:14px;bottom:120px;display:none;flex-direction:column;gap:7px;z-index:2}
 .acts .btn{padding:11px 14px;font-size:12px;background:#13283dee;touch-action:none;user-select:none;-webkit-user-select:none}
 .acts .fk{display:none}
+#pedal{position:absolute;right:14px;bottom:118px;width:84px;height:118px;border-radius:18px 18px 28px 28px;border:2px solid #d46a6a;background:linear-gradient(#3a1d1d,#7a2a2a);color:#fff;font-weight:900;font-size:13px;letter-spacing:.08em;display:none;z-index:2;touch-action:none;user-select:none;-webkit-user-select:none}
+#pedal.on{background:linear-gradient(#a53a2a,#ff6a3a);box-shadow:0 0 18px #ff6a3a}
+#spd{position:absolute;left:50%;bottom:128px;transform:translateX(-50%);display:none;min-width:92px;text-align:center;background:#0b1928e6;border:1px solid #38536d;border-radius:14px;padding:6px 10px;z-index:2;pointer-events:none}
+#spd b{display:block;font-size:26px;line-height:1}
+#spd small{color:#91a8bc;font-size:10px;letter-spacing:.1em}
+#spd i{display:block;height:5px;border-radius:3px;background:#61d7ce;margin-top:5px;width:0}
 body.driving .acts{display:flex}
+body.indrive .acts{bottom:250px}
+body.indrive #pedal,body.indrive #spd{display:block}
 body.indrive .acts .fk{display:block}
 @media(pointer:coarse){body.driving #joy{display:block}}
 @media(max-width:700px){
@@ -78,7 +86,8 @@ body.indrive .acts .fk{display:block}
 #mini{width:140px;height:131px;left:auto;right:8px;bottom:8px}
 #insp{left:8px;top:92px;bottom:auto;width:230px;max-height:calc(100% - 100px)}
 .dbtn{left:14px;top:50px}.help{display:none}
-#joy{left:16px;bottom:16px}.acts{right:160px;bottom:16px;flex-direction:row}}
+#joy{left:16px;bottom:16px}.acts{right:160px;bottom:16px;flex-direction:row}
+body.indrive .acts{bottom:90px}#pedal{right:160px;bottom:16px;width:120px;height:64px;border-radius:16px}#spd{bottom:16px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
 <body><div class="app">
@@ -89,6 +98,7 @@ body.indrive .acts .fk{display:block}
 <button class="btn dbtn" id="drive">🚶 Ishchi</button><div id="insp"></div>
 <div id="joy"><div id="joyKnob"></div></div>
 <div class="acts"><button class="btn" id="act1">🚜 Minish (E)</button><button class="btn fk" id="actUp">Vilka ▲</button><button class="btn fk" id="actDn">Vilka ▼</button><button class="btn fk" id="actLoad">Yuk (G)</button></div>
+<button id="pedal">GAZ<br>▲▲</button><div id="spd"><small>TEZLIK</small><b id="spdv">0</b><small>km/h</small><i id="spdb"></i></div>
 <aside class="panel" id="panel">
 <div class="sheet-head"><div><div class="eyebrow">SCW DIGITAL TWIN · INDUSTRIAL EDITION</div><h1 id="zoneTitle">Industrial Mega Warehouse</h1><div class="muted" id="zoneDesc">U-oqimli 12 zonali logistika markazi.</div></div><button class="tg" id="toggle">Zonalar ▲</button></div>
 <div class="body"><div class="stats"><div class="stat"><small>Maydon</small><strong id="area">24 000 m²</strong></div><div class="stat"><small>Zona</small><strong>12</strong></div><div class="stat"><small>Muzlatkich</small><strong id="coldT" style="color:#7fd8ff">-18.4°C</strong></div><div class="stat"><small>Holat</small><strong style="color:#63d6a5">READY</strong></div></div>
@@ -106,6 +116,7 @@ import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
 import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
 import {OutputPass} from "three/addons/postprocessing/OutputPass.js";
 import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 const L=window.SCWIndustrialLayout;if(!L)throw Error("Industrial layout missing");
 const $=s=>document.querySelector(s);
 const W=L.BUILDING.width,D=L.BUILDING.depth,H=L.BUILDING.wallHeight,hw=W/2,hd=D/2;
@@ -636,14 +647,19 @@ const m1=new THREE.Mesh(new THREE.ConeGeometry(.22,.5,4),mkrMat);m1.rotation.x=M
 const m2=new THREE.Mesh(new THREE.ConeGeometry(.3,.6,4),mkrMat);m2.rotation.x=Math.PI;m2.position.set(0,3.5,0);pf.g.add(m2);
 addPick(pw.g,0,.9,0,.9,1.9,.9,()=>({tag:"SIZ",title:"Sizning ishchingiz",desc:"Boshqariladigan ishchi (WASD / joystik)",rows:[["Joylashuv",zoneNameAt(P.x,P.z)],["Rejim",drive==="worker"?"Boshqarilmoqda":"Kutmoqda"],["Xavfsizlik","Yelek + kaska"]]}),{small:true});
 addPick(pf.g,.2,1.3,0,3.2,2.8,1.6,()=>({tag:"FL-07",title:"Forklift FL-07 (sizniki)",desc:"Qo‘lda boshqariladigan forklift",rows:[["Joylashuv",zoneNameAt(F.x,F.z)],["Tezlik",Math.abs(F.v).toFixed(1)+" m/s"],["Vilka",(F.lift-.15).toFixed(1)+" m"],["Yuk",F.loaded?"Pallet ortilgan":"Bo‘sh"],["Rejim",drive==="forklift"?"Haydalmoqda":"To‘xtagan"]]}),{small:true});
-let drive=null,liftDir=0,fol={x:0,z:0};
+let drive=null,liftDir=0,fol={x:0,z:0},pedalBtn=false,orbiting=false,lastUser=0;
+const spdv=$("#spdv"),spdb=$("#spdb");
+controls.addEventListener("start",()=>{orbiting=true;lastUser=performance.now()});controls.addEventListener("end",()=>{orbiting=false;lastUser=performance.now()});
+let pmix=null,pact={},pcur=null;
+new GLTFLoader().load("https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Soldier.glb",g=>{const mdl=g.scene;mdl.traverse(o=>{if(o.isMesh){o.castShadow=!mobile;o.receiveShadow=true;o.frustumCulled=false}});for(const c of pw.g.children)if(c!==m1)c.visible=false;pw.g.add(mdl);pmix=new THREE.AnimationMixer(mdl);for(const a of g.animations)pact[a.name.toLowerCase()]=pmix.clipAction(a);if(pact.idle){pcur=pact.idle;pcur.play()}window.__soldier=true},undefined,()=>{});
+function playAnim(n,ts=1){const a=pact[n];if(!a)return;a.timeScale=ts;if(a!==pcur){a.reset().play();if(pcur)pcur.crossFadeTo(a,.25,false);pcur=a}}
 const keys=new Set(),joy={x:0,y:0};
 function axes(){let ix=(keys.has("d")||keys.has("arrowright")?1:0)-(keys.has("a")||keys.has("arrowleft")?1:0),iy=(keys.has("w")||keys.has("arrowup")?1:0)-(keys.has("s")||keys.has("arrowdown")?1:0);ix+=joy.x;iy+=joy.y;const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}return{ix,iy,run:keys.has("shift")||Math.hypot(joy.x,joy.y)>.9}}
 function syncDriveUI(){const b=$("#drive");b.textContent=drive?"✕ Chiqish":"🚶 Ishchi";b.classList.toggle("on",!!drive);document.body.classList.toggle("driving",!!drive);document.body.classList.toggle("indrive",drive==="forklift");
-$("#act1").textContent=drive==="forklift"?"⬇ Tushish (E)":"🚜 Minish (E)";pw.g.visible=drive!=="forklift";controls.minDistance=drive?3:2.5;controls.maxDistance=drive?45:1000}
+$("#act1").textContent=drive==="forklift"?"⬇ Tushish (E)":"🚜 Minish (E)";pw.g.visible=drive!=="forklift";if(drive!=="forklift"){pedalBtn=false;$("#pedal").classList.remove("on")}controls.minDistance=drive?3:2.5;controls.maxDistance=drive?45:1000}
 function setDrive(m){if(m===drive)return;if(m&&fpMode)exitFP();drive=m;syncDriveUI();clearSelection();
 if(m){const T=m==="forklift"?F:P,yaw=m==="forklift"?F.yaw:P.yaw,hx=m==="forklift"?Math.cos(yaw):Math.sin(yaw),hz=m==="forklift"?-Math.sin(yaw):Math.cos(yaw);
-const tg=new THREE.Vector3(T.x,1.4,T.z);fly({pos:new THREE.Vector3(T.x-hx*(mobile?11:9),mobile?7:5.5,T.z-hz*(mobile?11:9)),target:tg});fol.x=T.x;fol.z=T.z;if(mobile||innerHeight<=520){panel.classList.add("collapsed");syncToggle()}notify(m==="worker"?"Ishchi: WASD / joystik · E — forklift":"Forklift: W/S gaz, A/D burilish, R/F vilka")}
+const tg=new THREE.Vector3(T.x,1.4,T.z);fly({pos:new THREE.Vector3(T.x-hx*(mobile?11:9),mobile?7:5.5,T.z-hz*(mobile?11:9)),target:tg});fol.x=T.x;fol.z=T.z;if(mobile||innerHeight<=520){panel.classList.add("collapsed");syncToggle()}notify(m==="worker"?"Ishchi: WASD / joystik · Shift — yugurish · E — forklift":"Forklift: W/S, Shift yoki GAZ pedali — tezlanish")}
 else{controls.target.y=Math.max(controls.target.y,1)}}
 function toggleVehicle(){if(!drive){notify("Avval 🚶 Ishchi rejimini yoqing");return}
 if(drive==="worker"){if(Math.hypot(P.x-F.x,P.z-F.z)<4.5){drive="forklift";F.v=0;syncDriveUI();const hx=Math.cos(F.yaw),hz=-Math.sin(F.yaw);fly({pos:new THREE.Vector3(F.x-hx*(mobile?12:10),mobile?8:6,F.z-hz*(mobile?12:10)),target:new THREE.Vector3(F.x,1.4,F.z)});fol.x=F.x;fol.z=F.z;notify("Forkliftdasiz: W/S gaz, A/D burilish")}else notify("Forklift'ga 4 m yaqinlashing")}
@@ -654,6 +670,7 @@ function toggleLoad(){if(drive!=="forklift")return;F.loaded=!F.loaded;notify(F.l
 addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)&&drive)e.preventDefault();
 if(k==="e"&&!e.repeat)toggleVehicle();else if(k==="escape")setDrive(null);else if(k==="g"&&!e.repeat)toggleLoad();else keys.add(k)});
 addEventListener("keyup",e=>keys.delete(e.key.toLowerCase()));addEventListener("blur",()=>keys.clear());
+{const pd=$("#pedal"),on=e=>{e.preventDefault();pedalBtn=true;pd.classList.add("on");pd.setPointerCapture(e.pointerId)},off=()=>{pedalBtn=false;pd.classList.remove("on")};pd.addEventListener("pointerdown",on);pd.addEventListener("pointerup",off);pd.addEventListener("pointercancel",off)}
 $("#drive").onclick=()=>setDrive(drive?null:"worker");$("#act1").onclick=toggleVehicle;$("#actLoad").onclick=toggleLoad;
 for(const[id,dir]of[["#actUp",1],["#actDn",-1]]){const b=$(id);b.addEventListener("pointerdown",e=>{e.preventDefault();liftDir=dir;b.setPointerCapture(e.pointerId)});const up=()=>{liftDir=0};b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up)}
 {const joyEl=$("#joy"),knob=$("#joyKnob");let jid=null;
@@ -663,16 +680,18 @@ joyEl.addEventListener("pointermove",e=>{if(e.pointerId===jid)jm(e)});
 const je=e=>{if(e.pointerId!==jid)return;jid=null;joy.x=joy.y=0;knob.style.transform="translate(0,0)"};joyEl.addEventListener("pointerup",je);joyEl.addEventListener("pointercancel",je)}
 function wrapAng(a){while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a}
 function updatePlayer(dt){
-if(drive==="worker"){const{ix,iy,run}=axes(),m=Math.hypot(ix,iy);let mv=false;
-if(m>.06){camera.getWorldDirection(vp);let fx=vp.x,fz=vp.z;const fl=Math.hypot(fx,fz)||1;fx/=fl;fz/=fl;const dx=fx*iy-fz*ix,dz=fz*iy+fx*ix,dl=Math.hypot(dx,dz)||1,sp=(run?5.2:3)*Math.min(1,m)*dt,sx=dx/dl*sp,sz=dz/dl*sp;
+if(drive==="worker"){const{ix,iy,run}=axes(),m=Math.hypot(ix,iy);let mv=false,spd=0;
+if(m>.06){camera.getWorldDirection(vp);let fx=vp.x,fz=vp.z;const fl=Math.hypot(fx,fz)||1;fx/=fl;fz/=fl;const dx=fx*iy-fz*ix,dz=fz*iy+fx*ix,dl=Math.hypot(dx,dz)||1,sp=(spd=run?7.5:4.4*Math.min(1,m))*dt,sx=dx/dl*sp,sz=dz/dl*sp;
 if(!blocked(P.x+sx,P.z,.4))P.x+=sx;if(!blocked(P.x,P.z+sz,.4))P.z+=sz;P.yaw+=wrapAng(Math.atan2(dx,dz)-P.yaw)*Math.min(1,dt*12);mv=true}
-pw.g.position.set(P.x,0,P.z);pw.g.rotation.y=P.yaw;const sw=mv?Math.sin(t*(run?10:6))*.5:0;pw.legs[0].rotation.z=sw;pw.legs[1].rotation.z=-sw}
-if(drive==="forklift"){const{ix,iy}=axes();const tv=iy>0?iy*4.6:iy*2.2;const dv=tv-F.v;F.v+=Math.sign(dv)*Math.min(Math.abs(dv),dt*(Math.abs(tv)<Math.abs(F.v)?4.5:3));
-const ny=F.yaw-ix*dt*1.5*Math.min(1,Math.abs(F.v)/1.5)*(F.v<0?-1:1);if(!blockedVeh(F.x,F.z,ny))F.yaw=ny;
+pw.g.position.set(P.x,0,P.z);pw.g.rotation.y=P.yaw;const sw=mv?Math.sin(t*(run?10:6))*.5:0;pw.legs[0].rotation.z=sw;pw.legs[1].rotation.z=-sw;if(pmix){if(mv)playAnim(spd>5.5?"run":"walk",spd>5.5?spd/7.5:spd/4.4);else playAnim("idle");pmix.update(dt)}}
+if(drive==="forklift"){const{ix,iy}=axes(),pd=pedalBtn||keys.has("shift");let tv=iy>0?iy*7:iy*3.2;if(pd&&iy>-.3)tv=13;const dv=tv-F.v;F.v+=Math.sign(dv)*Math.min(Math.abs(dv),dt*(Math.abs(tv)<Math.abs(F.v)?(iy<-.1&&F.v>0?9:3.5):(pd?5.5:4.2)));
+spdv.textContent=Math.round(Math.abs(F.v)*3.6);spdb.style.width=Math.min(100,Math.abs(F.v)/13*100)+"%";spdb.style.background=Math.abs(F.v)>7.5?"#ff6a3a":"#61d7ce";
+const ny=F.yaw-ix*dt*1.6*Math.min(1,Math.abs(F.v)/1.5)/(1+Math.abs(F.v)/9)*(F.v<0?-1:1);if(!blockedVeh(F.x,F.z,ny))F.yaw=ny;
 const nx=F.x+Math.cos(F.yaw)*F.v*dt,nz=F.z-Math.sin(F.yaw)*F.v*dt;if(!blockedVeh(nx,nz,F.yaw)){F.x=nx;F.z=nz}else F.v=0;
 const ld=(liftDir||((keys.has("r")?1:0)-(keys.has("f")?1:0)));F.lift=Math.max(.15,Math.min(3.4,F.lift+ld*1.3*dt))}
 pf.g.position.set(F.x,.02,F.z);pf.g.rotation.y=F.yaw;pf.lift.position.y=F.lift;pf.load.visible=F.loaded;m1.rotation.y=m2.rotation.y=t*2;m1.position.y=2.3+Math.sin(t*3)*.08;
-if(drive){const T=drive==="forklift"?F:P;if(!goal){const ddx=T.x-fol.x,ddz=T.z-fol.z;camera.position.x+=ddx;camera.position.z+=ddz;controls.target.x+=ddx;controls.target.z+=ddz}fol.x=T.x;fol.z=T.z}}
+if(drive){const T=drive==="forklift"?F:P;if(!goal){const ddx=T.x-fol.x,ddz=T.z-fol.z;camera.position.x+=ddx;camera.position.z+=ddz;controls.target.x+=ddx;controls.target.z+=ddz}fol.x=T.x;fol.z=T.z;
+if(drive==="forklift"&&!goal&&!orbiting&&F.v>1.2&&performance.now()-lastUser>1800){const ox=camera.position.x-controls.target.x,oz=camera.position.z-controls.target.z,r=Math.hypot(ox,oz)||1,a=Math.atan2(ox,oz),ad=Math.atan2(-Math.cos(F.yaw),Math.sin(F.yaw)),a2=a+wrapAng(ad-a)*Math.min(1,dt*1.6);camera.position.x=controls.target.x+Math.sin(a2)*r;camera.position.z=controls.target.z+Math.cos(a2)*r}}}
 function drawPlayerMini(){mq.fillStyle="#ff4a3d";mq.beginPath();mq.arc(mX(F.x),mZ(F.z),6,0,7);mq.fill();mq.strokeStyle="#fff";mq.lineWidth=2;mq.stroke();
 if(pw.g.visible){mq.fillStyle="#7dff6a";mq.beginPath();mq.arc(mX(P.x),mZ(P.z),5.5,0,7);mq.fill();mq.stroke()}}
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h)}camera.aspect=w/h;camera.updateProjectionMatrix();mistMat.uniforms.uScale.value=h*renderer.getPixelRatio()/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2)))}
